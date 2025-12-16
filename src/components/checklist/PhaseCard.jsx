@@ -54,7 +54,6 @@ export default function PhaseCard({
               <Icon className={`h-5 w-5 ${isCriticalPhase ? 'text-amber-600' : 'text-slate-600'}`} />
             </div>
             <div className="cursor-pointer" onClick={onToggle}>
-            <div>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 {displayName}
                 {isCriticalPhase && (
