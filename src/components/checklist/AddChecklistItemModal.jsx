@@ -26,6 +26,8 @@ export default function AddChecklistItemModal({ phase, projectId, isOpen, onClos
       applicable_technologies: ['all'],
       applicable_site_types: ['all']
     });
+    // Limpiar el formulario después de crear
+    setFormData({ title: '', description: '', weight: 'medium', order: 999 });
   };
   
   const handleClose = () => {

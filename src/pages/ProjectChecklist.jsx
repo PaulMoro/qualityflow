@@ -113,9 +113,12 @@ export default function ProjectChecklist() {
       }
       await base44.entities.ChecklistItem.update(itemId, updateData);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
-      toast.success('Ítem actualizado correctamente');
+      // Solo mostrar toast si no es una actualización de estado de completado
+      if (!variables.data.status) {
+        toast.success('Ítem actualizado correctamente');
+      }
     }
   });
   
@@ -224,8 +227,14 @@ export default function ProjectChecklist() {
   
   const handleSaveEdit = (data) => {
     if (editingItem) {
-      updateItemMutation.mutate({ itemId: editingItem.id, data });
-      setEditingItem(null);
+      updateItemMutation.mutate({ 
+        itemId: editingItem.id, 
+        data 
+      }, {
+        onSuccess: () => {
+          setEditingItem(null);
+        }
+      });
     }
   };
   

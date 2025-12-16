@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,23 @@ import { WEIGHT_CONFIG } from './checklistTemplates';
 
 export default function EditChecklistItemModal({ item, isOpen, onClose, onSave, onDelete, isLoading }) {
   const [formData, setFormData] = useState({
-    title: item?.title || '',
-    description: item?.description || '',
-    weight: item?.weight || 'medium',
-    order: item?.order || 1
+    title: '',
+    description: '',
+    weight: 'medium',
+    order: 1
   });
+  
+  // Actualizar formData cuando cambia el item
+  useEffect(() => {
+    if (item) {
+      setFormData({
+        title: item.title || '',
+        description: item.description || '',
+        weight: item.weight || 'medium',
+        order: item.order || 1
+      });
+    }
+  }, [item]);
   
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,10 +39,21 @@ export default function EditChecklistItemModal({ item, isOpen, onClose, onSave, 
     }
   };
   
+  const handleClose = () => {
+    // Resetear el formulario al cerrar
+    setFormData({
+      title: '',
+      description: '',
+      weight: 'medium',
+      order: 1
+    });
+    onClose();
+  };
+  
   const isValid = formData.title.trim();
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Editar ítem del checklist</DialogTitle>
@@ -104,7 +127,7 @@ export default function EditChecklistItemModal({ item, isOpen, onClose, onSave, 
               Eliminar
             </Button>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={!isValid || isLoading}>
