@@ -21,6 +21,7 @@ import RoleSelector from '../components/team/RoleSelector';
 import ConflictAlert from '../components/conflicts/ConflictAlert';
 import EditChecklistItemModal from '../components/checklist/EditChecklistItemModal';
 import AddChecklistItemModal from '../components/checklist/AddChecklistItemModal';
+import EditProjectModal from '../components/project/EditProjectModal';
 import { 
   PHASES, 
   SITE_TYPE_CONFIG, 
@@ -39,6 +40,7 @@ export default function ProjectChecklist() {
   const [viewMode, setViewMode] = useState('all');
   const [editingItem, setEditingItem] = useState(null);
   const [addingToPhase, setAddingToPhase] = useState(null);
+  const [isEditingProject, setIsEditingProject] = useState(false);
   
   const queryClient = useQueryClient();
   
@@ -145,6 +147,8 @@ export default function ProjectChecklist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setIsEditingProject(false);
+      toast.success('Proyecto actualizado correctamente');
     }
   });
   
@@ -250,6 +254,10 @@ export default function ProjectChecklist() {
     createItemMutation.mutate(data);
   };
   
+  const handleSaveProject = (data) => {
+    updateProjectMutation.mutate(data);
+  };
+  
   const togglePhase = (phase) => {
     setExpandedPhases(prev => 
       prev.includes(phase) 
@@ -303,6 +311,14 @@ export default function ProjectChecklist() {
             
             <div className="flex flex-wrap items-center gap-3">
               <RoleSelector value={userRole} onChange={setUserRole} showLabel={false} />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsEditingProject(true)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Editar Proyecto
+              </Button>
               <Button variant="outline" size="sm" onClick={expandAll}>
                 Expandir todo
               </Button>
@@ -444,6 +460,14 @@ export default function ProjectChecklist() {
         onClose={() => setAddingToPhase(null)}
         onCreate={handleCreateItem}
         isLoading={createItemMutation.isPending}
+      />
+      
+      <EditProjectModal
+        project={project}
+        isOpen={isEditingProject}
+        onClose={() => setIsEditingProject(false)}
+        onSave={handleSaveProject}
+        isLoading={updateProjectMutation.isPending}
       />
     </div>
   );
