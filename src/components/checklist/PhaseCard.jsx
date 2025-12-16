@@ -27,6 +27,7 @@ export default function PhaseCard({
 }) {
   const phaseConfig = PHASES[phase];
   const Icon = iconMap[phaseConfig?.icon] || FileText;
+  const displayName = customPhaseName || phaseConfig?.name || phase;
   
   const completed = items.filter(i => i.status === 'completed').length;
   const total = items.length;
@@ -37,17 +38,16 @@ export default function PhaseCard({
   return (
     <Card className={`overflow-hidden transition-all duration-300 ${isCriticalPhase ? 'ring-2 ring-amber-200' : ''}`}>
       <CardHeader 
-        className="cursor-pointer hover:bg-slate-50 transition-colors py-4"
-        onClick={onToggle}
+        className="hover:bg-slate-50 transition-colors py-4"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={onToggle}>
             <div className={`p-2 rounded-lg ${isCriticalPhase ? 'bg-amber-100' : 'bg-slate-100'}`}>
               <Icon className={`h-5 w-5 ${isCriticalPhase ? 'text-amber-600' : 'text-slate-600'}`} />
             </div>
             <div>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                {phaseConfig?.name || phase}
+                {displayName}
                 {isCriticalPhase && (
                   <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
                     Crítico para este proyecto
@@ -61,6 +61,17 @@ export default function PhaseCard({
           </div>
           
           <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditPhase(phase);
+              }}
+            >
+              <Edit2 className="h-4 w-4 text-slate-400" />
+            </Button>
             {hasCritical && (
               <Badge className="bg-red-100 text-red-700 border-0">
                 Críticos pendientes
@@ -77,11 +88,13 @@ export default function PhaseCard({
             <span className="text-sm font-medium text-slate-600 w-12">
               {progress.toFixed(0)}%
             </span>
-            {isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-slate-400" />
-            ) : (
-              <ChevronRight className="h-5 w-5 text-slate-400" />
-            )}
+            <div className="cursor-pointer" onClick={onToggle}>
+              {isExpanded ? (
+                <ChevronDown className="h-5 w-5 text-slate-400" />
+              ) : (
+                <ChevronRight className="h-5 w-5 text-slate-400" />
+              )}
+            </div>
           </div>
         </div>
       </CardHeader>
