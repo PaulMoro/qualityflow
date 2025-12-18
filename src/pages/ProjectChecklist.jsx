@@ -84,52 +84,7 @@ export default function ProjectChecklist() {
     enabled: !!projectId
   });
   
-  // Generar checklist inicial si no existe
-  const initializeChecklistMutation = useMutation({
-    mutationFn: async () => {
-      if (!project) return;
-      
-      const template = generateFilteredChecklist(project.site_type, project.technology);
-      
-      if (template.length === 0) {
-        console.error('No se generaron ítems del template');
-        return;
-      }
-      
-      const items = template.map((item, index) => ({
-        project_id: projectId,
-        phase: item.phase,
-        title: item.title,
-        description: item.description || '',
-        weight: item.weight,
-        order: item.order || index,
-        status: 'pending',
-        applicable_technologies: item.technologies,
-        applicable_site_types: item.siteTypes
-      }));
-      
-      console.log('Creando items:', items.length);
-      const result = await base44.entities.ChecklistItem.bulkCreate(items);
-      console.log('Items creados:', result);
-      return result;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
-      if (data) {
-        toast.success(`${data.length || 'Checklist'} ítems generados correctamente`);
-      }
-    },
-    onError: (error) => {
-      console.error('Error al inicializar checklist:', error);
-      toast.error('Error al generar el checklist');
-    }
-  });
-  
-  useEffect(() => {
-    if (project && checklistItems.length === 0 && !itemsLoading && !initializeChecklistMutation.isPending) {
-      initializeChecklistMutation.mutate();
-    }
-  }, [project, checklistItems.length, itemsLoading]);
+
   
   const updateItemMutation = useMutation({
     mutationFn: async ({ itemId, data, oldStatus, item }) => {
@@ -466,23 +421,19 @@ export default function ProjectChecklist() {
             )}
             
             {/* Indicador de carga de checklist */}
-            {itemsLoading || initializeChecklistMutation.isPending ? (
+            {itemsLoading ? (
               <div className="bg-white rounded-xl p-8 shadow-sm border text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-                <p className="text-slate-600">Generando checklist del proyecto...</p>
+                <p className="text-slate-600">Cargando checklist del proyecto...</p>
               </div>
             ) : checklistItems.length === 0 ? (
               <div className="bg-white rounded-xl p-8 shadow-sm border text-center">
-                <p className="text-slate-600 mb-4">No hay ítems en el checklist</p>
-                <Button onClick={() => initializeChecklistMutation.mutate()}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Generar Checklist
-                </Button>
+                <p className="text-slate-600 mb-4">No hay ítems en el checklist para este proyecto</p>
               </div>
             ) : null}
             
             {/* Fases del checklist */}
-            {!itemsLoading && !initializeChecklistMutation.isPending && checklistItems.length > 0 && (
+            {!itemsLoading && checklistItems.length > 0 && (
               <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="phases" type="PHASE">
                   {(provided) => (
