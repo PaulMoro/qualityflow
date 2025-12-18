@@ -36,7 +36,7 @@ export default function ProjectChecklist() {
   const urlParams = new URLSearchParams(window.location.search);
   const projectId = urlParams.get('id');
   
-  const [expandedPhases, setExpandedPhases] = useState(['documentation']);
+  const [expandedPhases, setExpandedPhases] = useState(['requirements']);
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
   const [user, setUser] = useState(null);
   const [viewMode, setViewMode] = useState('all');
@@ -44,9 +44,6 @@ export default function ProjectChecklist() {
   const [addingToPhase, setAddingToPhase] = useState(null);
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editingPhase, setEditingPhase] = useState(null);
-  const [phaseOrder, setPhaseOrder] = useState(() => 
-    Object.keys(PHASES).sort((a, b) => PHASES[a].order - PHASES[b].order)
-  );
   
   const queryClient = useQueryClient();
   
@@ -72,25 +69,8 @@ export default function ProjectChecklist() {
   
   const { data: checklistItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ['checklist-items', projectId],
-    queryFn: async () => {
-      console.log('=== QUERY CHECKLIST ITEMS ===');
-      console.log('ProjectId:', projectId);
-      console.log('Tipo de projectId:', typeof projectId);
-      const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
-      console.log('Items obtenidos:', items.length);
-      console.log('Items completos:', items);
-      if (items.length > 0) {
-        console.log('Primer item - project_id:', items[0].project_id, 'tipo:', typeof items[0].project_id);
-        console.log('ProjectId buscado:', projectId, 'tipo:', typeof projectId);
-        console.log('¿Coinciden?:', items[0].project_id === projectId);
-      }
-      return items;
-    },
-    enabled: !!projectId,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    staleTime: 0,
-    cacheTime: 0
+    queryFn: () => base44.entities.ChecklistItem.filter({ project_id: projectId }),
+    enabled: !!projectId
   });
   
   const { data: conflicts = [] } = useQuery({
@@ -102,23 +82,13 @@ export default function ProjectChecklist() {
   // Generar checklist inicial si no existe
   const initializeChecklistMutation = useMutation({
     mutationFn: async () => {
-      console.log('=== INICIO INICIALIZACIÓN ===');
-      console.log('ProjectId que se usará:', projectId);
-      console.log('Project site_type:', project.site_type);
-      console.log('Project technology:', project.technology);
+      if (!project || checklistItems.length > 0) return;
       
       const template = generateFilteredChecklist(project.site_type, project.technology);
-      console.log('Template generado:', template.length, 'items');
-      
-      if (template.length === 0) {
-        throw new Error('No se generaron items del checklist. Verifica el site_type y technology del proyecto.');
-      }
-      
       const items = template.map(item => ({
         project_id: projectId,
         phase: item.phase,
         title: item.title,
-        description: item.description || '',
         weight: item.weight,
         order: item.order,
         status: 'pending',
@@ -126,43 +96,18 @@ export default function ProjectChecklist() {
         applicable_site_types: item.siteTypes
       }));
       
-      console.log('Items a crear con project_id:', projectId);
-      console.log('Total items:', items.length);
-      console.log('Primer item completo:', items[0]);
-      
-      const result = await base44.entities.ChecklistItem.bulkCreate(items);
-      console.log('Resultado bulkCreate:', result);
-      console.log('Verificando primer item creado - project_id:', result?.[0]?.project_id);
-      
-      return result;
+      await base44.entities.ChecklistItem.bulkCreate(items);
     },
-    onSuccess: async (data) => {
-      console.log('Success! Items creados:', data?.length);
-      
-      // Invalidar y remover el cache anterior
-      queryClient.removeQueries({ queryKey: ['checklist-items', projectId] });
-      
-      // Esperar un momento para asegurar que la BD se actualice
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Forzar refetch manual con exact match
-      const newData = await queryClient.fetchQuery({
-        queryKey: ['checklist-items', projectId],
-        queryFn: async () => {
-          const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
-          console.log('Items refetch después de crear:', items.length);
-          return items;
-        }
-      });
-      
-      console.log('Refetch completado, items obtenidos:', newData?.length);
-      toast.success(`Checklist inicializado: ${data?.length || 0} items creados`);
-    },
-    onError: (error) => {
-      console.error('Error al inicializar checklist:', error);
-      toast.error(`Error: ${error.message}`);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
     }
   });
+  
+  useEffect(() => {
+    if (project && checklistItems.length === 0 && !itemsLoading) {
+      initializeChecklistMutation.mutate();
+    }
+  }, [project, checklistItems.length, itemsLoading]);
   
   const updateItemMutation = useMutation({
     mutationFn: async ({ itemId, data }) => {
@@ -253,13 +198,9 @@ export default function ProjectChecklist() {
   
   // Agrupar items por fase
   const itemsByPhase = useMemo(() => {
-    console.log('=== AGRUPANDO ITEMS POR FASE ===');
-    console.log('ChecklistItems recibidos:', checklistItems.length, checklistItems);
-    
     const grouped = {};
     Object.keys(PHASES).forEach(phase => {
-      grouped[phase] = checklistItems.filter(item => (item.data?.phase || item.phase) === phase);
-      console.log(`Fase ${phase}:`, grouped[phase].length, 'items');
+      grouped[phase] = checklistItems.filter(item => item.phase === phase);
     });
     return grouped;
   }, [checklistItems]);
@@ -271,9 +212,9 @@ export default function ProjectChecklist() {
     const filtered = {};
     Object.keys(itemsByPhase).forEach(phase => {
       if (viewMode === 'pending') {
-        filtered[phase] = itemsByPhase[phase].filter(i => (i.data?.status || i.status) === 'pending');
+        filtered[phase] = itemsByPhase[phase].filter(i => i.status === 'pending');
       } else if (viewMode === 'critical') {
-        filtered[phase] = itemsByPhase[phase].filter(i => (i.data?.weight || i.weight) === 'critical');
+        filtered[phase] = itemsByPhase[phase].filter(i => i.weight === 'critical');
       } else {
         filtered[phase] = itemsByPhase[phase];
       }
@@ -331,40 +272,44 @@ export default function ProjectChecklist() {
     setEditingPhase(null);
   };
   
-  const handleDragEnd = async (result) => {
+  const handlePhaseReorder = async (result) => {
     if (!result.destination) return;
     
-    const { source, destination, type } = result;
+    const sourceIndex = result.source.index;
+    const destIndex = result.destination.index;
     
-    if (type === 'PHASE') {
-      // Reordenar fases
-      const newPhaseOrder = Array.from(phaseOrder);
-      const [removed] = newPhaseOrder.splice(source.index, 1);
-      newPhaseOrder.splice(destination.index, 0, removed);
-      setPhaseOrder(newPhaseOrder);
-      
-      // Guardar en el proyecto
-      updateProjectMutation.mutate({ phase_order: newPhaseOrder });
-    } else if (type === 'ITEM') {
-      // Reordenar ítems dentro de una fase
-      const phase = source.droppableId;
-      const items = [...(itemsByPhase[phase] || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
-      const [movedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, movedItem);
-      
-      // Actualizar el orden de todos los ítems
-      const updates = items.map((item, index) => ({
-        id: item.id,
-        order: index + 1
-      }));
-      
-      // Actualizar en la base de datos
-      for (const update of updates) {
-        await base44.entities.ChecklistItem.update(update.id, { order: update.order });
-      }
-      
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
-    }
+    if (sourceIndex === destIndex) return;
+    
+    const reordered = Array.from(orderedPhases);
+    const [removed] = reordered.splice(sourceIndex, 1);
+    reordered.splice(destIndex, 0, removed);
+    
+    updateProjectMutation.mutate({ 
+      phase_order: reordered.map(p => p[0])
+    });
+  };
+  
+  const handleItemReorder = async (phase, result) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destIndex = result.destination.index;
+    
+    if (sourceIndex === destIndex) return;
+    
+    const phaseItems = [...itemsByPhase[phase]].sort((a, b) => a.order - b.order);
+    const [removed] = phaseItems.splice(sourceIndex, 1);
+    phaseItems.splice(destIndex, 0, removed);
+    
+    // Actualizar orden de todos los items afectados
+    const updates = phaseItems.map((item, index) => 
+      updateItemMutation.mutateAsync({ 
+        itemId: item.id, 
+        data: { order: index + 1 } 
+      })
+    );
+    
+    await Promise.all(updates);
   };
   
   const togglePhase = (phase) => {
@@ -378,20 +323,25 @@ export default function ProjectChecklist() {
   const expandAll = () => setExpandedPhases(Object.keys(PHASES));
   const collapseAll = () => setExpandedPhases([]);
   
-  // Cargar orden de fases guardado
-  useEffect(() => {
-    if (project?.phase_order) {
-      setPhaseOrder(project.phase_order);
+  // Ordenar fases según phase_order personalizado o por defecto
+  const orderedPhases = useMemo(() => {
+    const phases = Object.entries(PHASES);
+    
+    if (project?.phase_order && project.phase_order.length > 0) {
+      // Usar orden personalizado
+      return project.phase_order
+        .map(phaseKey => phases.find(p => p[0] === phaseKey))
+        .filter(Boolean);
     }
-  }, [project]);
+    
+    // Usar orden por defecto
+    return phases.sort((a, b) => a[1].order - b[1].order);
+  }, [project?.phase_order]);
   
   if (projectLoading || !project) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-sm text-slate-600">Cargando proyecto...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -487,68 +437,51 @@ export default function ProjectChecklist() {
             )}
             
             {/* Fases del checklist */}
-            {console.log('RENDER DECISION - checklistItems.length:', checklistItems.length, 'itemsLoading:', itemsLoading)}
-            {checklistItems.length === 0 && !itemsLoading ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 text-center">
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Inicializar Checklist de Calidad</h3>
-                <p className="text-slate-600 mb-6">
-                  Este proyecto no tiene checklist. Haz clic para crear automáticamente todas las fases y tareas 
-                  según el tipo de sitio ({siteTypeConfig?.name}) y tecnología ({techConfig?.name}).
-                </p>
-                <Button 
-                  onClick={() => initializeChecklistMutation.mutate()}
-                  disabled={initializeChecklistMutation.isPending}
-                  size="lg"
-                >
-                  {initializeChecklistMutation.isPending ? 'Inicializando...' : 'Crear Checklist Completo'}
-                </Button>
-              </div>
-            ) : (
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="phases" type="PHASE">
-                  {(provided) => (
-                    <div 
-                      {...provided.droppableProps} 
-                      ref={provided.innerRef}
-                      className="space-y-4"
-                    >
-                      {phaseOrder.map((phaseKey, index) => {
-                       const allItems = itemsByPhase[phaseKey] || [];
-                       console.log(`RENDER Fase ${phaseKey}:`, allItems.length, 'items');
-
-                       return (
-                         <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
-                           {(provided, snapshot) => (
-                             <div
-                               ref={provided.innerRef}
-                               {...provided.draggableProps}
-                               className={snapshot.isDragging ? 'opacity-50' : ''}
-                             >
-                               <PhaseCard
-                                 phase={phaseKey}
-                                 items={allItems}
-                                 isExpanded={expandedPhases.includes(phaseKey)}
-                                 onToggle={() => togglePhase(phaseKey)}
-                                 onItemUpdate={handleItemUpdate}
-                                 onItemEdit={handleItemEdit}
-                                 onAddItem={handleAddItem}
-                                 onEditPhase={handleEditPhase}
-                                 userRole={userRole}
-                                 isCriticalPhase={criticalPhases.includes(phaseKey)}
-                                 customPhaseName={project?.custom_phase_names?.[phaseKey]}
-                                 dragHandleProps={provided.dragHandleProps}
-                               />
-                             </div>
-                           )}
-                         </Draggable>
-                       );
-                      })}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            )}
+            <DragDropContext onDragEnd={handlePhaseReorder}>
+              <Droppable droppableId="phases">
+                {(provided) => (
+                  <div 
+                    {...provided.droppableProps} 
+                    ref={provided.innerRef}
+                    className="space-y-4"
+                  >
+                    {orderedPhases.map(([phaseKey, phaseConfig], index) => {
+                      const items = filteredItemsByPhase[phaseKey] || [];
+                      if (items.length === 0 && viewMode !== 'all') return null;
+                      
+                      return (
+                        <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                            >
+                              <PhaseCard
+                                phase={phaseKey}
+                                items={itemsByPhase[phaseKey] || []}
+                                isExpanded={expandedPhases.includes(phaseKey)}
+                                onToggle={() => togglePhase(phaseKey)}
+                                onItemUpdate={handleItemUpdate}
+                                onItemEdit={handleItemEdit}
+                                onAddItem={handleAddItem}
+                                onEditPhase={handleEditPhase}
+                                onItemReorder={handleItemReorder}
+                                userRole={userRole}
+                                isCriticalPhase={criticalPhases.includes(phaseKey)}
+                                customPhaseName={project?.custom_phase_names?.[phaseKey]}
+                                dragHandleProps={provided.dragHandleProps}
+                                isDragging={snapshot.isDragging}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           </div>
           
           {/* Panel lateral - Resumen */}

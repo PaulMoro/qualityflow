@@ -1,16 +1,16 @@
 import React from 'react';
-import { Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, FileText, GitBranch, Palette, Code, Zap, Search, Smartphone, CheckSquare, Shield, Rocket, Plus, Edit2, GripVertical, Calendar, Settings } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, GitBranch, Palette, Code, Zap, Search, Smartphone, CheckSquare, Shield, Rocket, Plus, Edit2, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChecklistItemRow from './ChecklistItemRow';
 import { PHASES } from './checklistTemplates';
 
 const iconMap = {
-  FileText, GitBranch, Palette, Code, Zap, Search, Smartphone, CheckSquare, Shield, Rocket, Calendar, Settings
+  FileText, GitBranch, Palette, Code, Zap, Search, Smartphone, CheckSquare, Shield, Rocket
 };
 
 export default function PhaseCard({ 
@@ -22,49 +22,47 @@ export default function PhaseCard({
   onItemEdit,
   onAddItem,
   onEditPhase,
+  onItemReorder,
   userRole,
   isCriticalPhase,
   customPhaseName,
-  dragHandleProps
+  dragHandleProps,
+  isDragging
 }) {
   const phaseConfig = PHASES[phase];
   const Icon = iconMap[phaseConfig?.icon] || FileText;
   const displayName = customPhaseName || phaseConfig?.name || phase;
   
-  // Normalizar items para acceder a data
-  const normalizedItems = items.map(item => ({
-    ...item,
-    phase: item.data?.phase || item.phase,
-    status: item.data?.status || item.status,
-    weight: item.data?.weight || item.weight,
-    title: item.data?.title || item.title,
-    description: item.data?.description || item.description,
-    order: item.data?.order || item.order
-  }));
-  
-  const completed = normalizedItems.filter(i => i.status === 'completed').length;
-  const total = normalizedItems.length;
+  const completed = items.filter(i => i.status === 'completed').length;
+  const total = items.length;
   const progress = total > 0 ? (completed / total) * 100 : 0;
-  const hasCritical = normalizedItems.some(i => i.weight === 'critical' && i.status !== 'completed');
-  const hasConflicts = normalizedItems.some(i => i.status === 'conflict');
+  const hasCritical = items.some(i => i.weight === 'critical' && i.status !== 'completed');
+  const hasConflicts = items.some(i => i.status === 'conflict');
   
+  const handleDragEnd = (result) => {
+    if (onItemReorder) {
+      onItemReorder(phase, result);
+    }
+  };
+
   return (
-    <Card className={`overflow-hidden transition-all duration-300 ${isCriticalPhase ? 'ring-2 ring-amber-200' : ''}`}>
+    <Card className={`overflow-hidden transition-all duration-300 ${isCriticalPhase ? 'ring-2 ring-amber-200' : ''} ${isDragging ? 'shadow-lg opacity-80' : ''}`}>
       <CardHeader 
         className="hover:bg-slate-50 transition-colors py-4"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
-            <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing">
+            <div 
+              {...dragHandleProps}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-slate-200 rounded transition-colors"
+            >
               <GripVertical className="h-5 w-5 text-slate-400" />
             </div>
-            <div 
-              className={`p-2 rounded-lg ${isCriticalPhase ? 'bg-amber-100' : 'bg-slate-100'} cursor-pointer`}
-              onClick={onToggle}
-            >
-              <Icon className={`h-5 w-5 ${isCriticalPhase ? 'text-amber-600' : 'text-slate-600'}`} />
-            </div>
-            <div className="cursor-pointer" onClick={onToggle}>
+            <div className="cursor-pointer flex items-center gap-3 flex-1" onClick={onToggle}>
+              <div className={`p-2 rounded-lg ${isCriticalPhase ? 'bg-amber-100' : 'bg-slate-100'}`}>
+                <Icon className={`h-5 w-5 ${isCriticalPhase ? 'text-amber-600' : 'text-slate-600'}`} />
+              </div>
+            <div>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 {displayName}
                 {isCriticalPhase && (
@@ -76,6 +74,7 @@ export default function PhaseCard({
               <p className="text-sm text-slate-500 mt-0.5">
                 {completed} de {total} completados
               </p>
+            </div>
             </div>
           </div>
           
@@ -127,23 +126,20 @@ export default function PhaseCard({
             transition={{ duration: 0.2 }}
           >
             <CardContent className="pt-0 pb-4">
-              <Droppable droppableId={phase} type="ITEM">
-                {(provided) => (
-                  <div 
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="border-t pt-4 space-y-1"
-                  >
-                    {normalizedItems
-                      .slice()
-                      .sort((a, b) => (a.order || 0) - (b.order || 0))
-                      .map((item, index) => (
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId={`items-${phase}`}>
+                  {(provided) => (
+                    <div 
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="border-t pt-4 space-y-1"
+                    >
+                      {items.sort((a, b) => a.order - b.order).map((item, index) => (
                         <Draggable key={item.id} draggableId={item.id} index={index}>
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={snapshot.isDragging ? 'opacity-50' : ''}
                             >
                               <ChecklistItemRow 
                                 item={item} 
@@ -151,15 +147,17 @@ export default function PhaseCard({
                                 onEdit={onItemEdit}
                                 userRole={userRole}
                                 dragHandleProps={provided.dragHandleProps}
+                                isDragging={snapshot.isDragging}
                               />
                             </div>
                           )}
                         </Draggable>
                       ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
               
               {/* Botón para agregar nuevo ítem */}
               <div className="mt-3 pt-3 border-t">
