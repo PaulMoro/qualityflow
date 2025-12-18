@@ -292,7 +292,7 @@ export default function ProjectChecklist() {
     } else if (type === 'ITEM') {
       // Reordenar ítems dentro de una fase
       const phase = source.droppableId;
-      const items = [...(itemsByPhase[phase] || [])].sort((a, b) => a.order - b.order);
+      const items = [...(itemsByPhase[phase] || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
       const [movedItem] = items.splice(source.index, 1);
       items.splice(destination.index, 0, movedItem);
       
