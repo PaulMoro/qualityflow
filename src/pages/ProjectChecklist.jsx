@@ -483,6 +483,7 @@ export default function ProjectChecklist() {
                 )}
               </Droppable>
             </DragDropContext>
+            )}
           </div>
           
           {/* Panel lateral - Resumen */}
