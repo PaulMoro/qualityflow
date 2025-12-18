@@ -123,25 +123,28 @@ export default function PhaseCard({
                     ref={provided.innerRef}
                     className="border-t pt-4 space-y-1"
                   >
-                    {[...items].sort((a, b) => (a.order || 0) - (b.order || 0)).map((item, index) => (
-                      <Draggable key={item.id} draggableId={item.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className={snapshot.isDragging ? 'opacity-50' : ''}
-                          >
-                            <ChecklistItemRow 
-                              item={item} 
-                              onUpdate={onItemUpdate}
-                              onEdit={onItemEdit}
-                              userRole={userRole}
-                              dragHandleProps={provided.dragHandleProps}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
+                    {items
+                      .slice()
+                      .sort((a, b) => (a.order || 0) - (b.order || 0))
+                      .map((item, index) => (
+                        <Draggable key={item.id} draggableId={item.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={snapshot.isDragging ? 'opacity-50' : ''}
+                            >
+                              <ChecklistItemRow 
+                                item={item} 
+                                onUpdate={onItemUpdate}
+                                onEdit={onItemEdit}
+                                userRole={userRole}
+                                dragHandleProps={provided.dragHandleProps}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
                     {provided.placeholder}
                   </div>
                 )}
