@@ -11,12 +11,13 @@ import { es } from 'date-fns/locale';
 
 export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dragHandleProps }) {
   const [showNotes, setShowNotes] = useState(false);
-  const [notes, setNotes] = useState(item.notes || '');
+  const itemData = item.data || item;
+  const [notes, setNotes] = useState(itemData.notes || '');
   
-  const weightConfig = WEIGHT_CONFIG[item.weight];
-  const isCompleted = item.status === 'completed';
-  const isConflict = item.status === 'conflict';
-  const isNotApplicable = item.status === 'not_applicable';
+  const weightConfig = WEIGHT_CONFIG[itemData.weight];
+  const isCompleted = itemData.status === 'completed';
+  const isConflict = itemData.status === 'conflict';
+  const isNotApplicable = itemData.status === 'not_applicable';
   
   const handleStatusChange = (checked) => {
     if (checked) {
