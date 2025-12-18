@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, Users, ArrowRight, AlertTriangle, CheckCircle2, Clock, GripVertical, MoreVertical, Copy, Trash2 } from 'lucide-react';
+import { Calendar, Users, ArrowRight, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -26,7 +25,7 @@ const RISK_CONFIG = {
   high: { color: 'bg-red-500', icon: AlertTriangle }
 };
 
-export default function ProjectCard({ project, index, onDelete, onDuplicate, dragHandleProps }) {
+export default function ProjectCard({ project, index }) {
   const siteTypeConfig = SITE_TYPE_CONFIG[project.site_type];
   const techConfig = TECHNOLOGY_CONFIG[project.technology];
   const statusConfig = STATUS_CONFIG[project.status];
@@ -42,12 +41,9 @@ export default function ProjectCard({ project, index, onDelete, onDuplicate, dra
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="hover:shadow-lg transition-all duration-300 group relative">
+      <Card className="hover:shadow-lg transition-all duration-300 group">
         <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing pt-1">
-              <GripVertical className="h-5 w-5 text-slate-300 group-hover:text-slate-400" />
-            </div>
+          <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <div className={`w-2 h-2 rounded-full ${techConfig?.color || 'bg-slate-400'}`} />
@@ -59,31 +55,9 @@ export default function ProjectCard({ project, index, onDelete, onDuplicate, dra
                 {project.name}
               </CardTitle>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge className={`${statusConfig.color} border-0`}>
-                {statusConfig.label}
-              </Badge>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onDuplicate(project)}>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Duplicar proyecto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => onDelete(project.id)}
-                    className="text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Eliminar proyecto
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <Badge className={`${statusConfig.color} border-0`}>
+              {statusConfig.label}
+            </Badge>
           </div>
         </CardHeader>
         
@@ -118,7 +92,7 @@ export default function ProjectCard({ project, index, onDelete, onDuplicate, dra
           </div>
           
           {/* Fechas y equipo */}
-          <div className="flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
             <div className="flex items-center gap-4">
               {project.target_date && (
                 <div className="flex items-center gap-1">
@@ -150,7 +124,7 @@ export default function ProjectCard({ project, index, onDelete, onDuplicate, dra
             )}
           </div>
           
-          <Link to={createPageUrl(`ProjectChecklist?id=${project.id}`)}>
+          <Link to={createPageUrl(`ProjectChecklist?id=${project.id}`)} className="block mt-4">
             <Button className="w-full group-hover:bg-blue-600 transition-colors">
               Ver Checklist
               <ArrowRight className="h-4 w-4 ml-2" />
