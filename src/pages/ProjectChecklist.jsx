@@ -130,13 +130,23 @@ export default function ProjectChecklist() {
     onSuccess: async (data) => {
       console.log('Success! Items creados:', data?.length);
       
+      // Invalidar y remover el cache anterior
+      queryClient.removeQueries({ queryKey: ['checklist-items', projectId] });
+      
       // Esperar un momento para asegurar que la BD se actualice
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Forzar refetch manual
-      await queryClient.refetchQueries({ queryKey: ['checklist-items', projectId] });
+      // Forzar refetch manual con exact match
+      const newData = await queryClient.fetchQuery({
+        queryKey: ['checklist-items', projectId],
+        queryFn: async () => {
+          const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
+          console.log('Items refetch después de crear:', items.length);
+          return items;
+        }
+      });
       
-      console.log('Refetch completado');
+      console.log('Refetch completado, items obtenidos:', newData?.length);
       toast.success(`Checklist inicializado: ${data?.length || 0} items creados`);
     },
     onError: (error) => {
