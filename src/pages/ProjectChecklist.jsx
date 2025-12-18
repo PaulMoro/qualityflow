@@ -36,7 +36,7 @@ export default function ProjectChecklist() {
   const urlParams = new URLSearchParams(window.location.search);
   const projectId = urlParams.get('id');
   
-  const [expandedPhases, setExpandedPhases] = useState(['requirements']);
+  const [expandedPhases, setExpandedPhases] = useState(['documentation']);
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
   const [user, setUser] = useState(null);
   const [viewMode, setViewMode] = useState('all');
