@@ -9,15 +9,14 @@ import { WEIGHT_CONFIG, ROLE_CONFIG } from './checklistTemplates';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dragHandleProps }) {
+export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dragHandleProps, isDragging }) {
   const [showNotes, setShowNotes] = useState(false);
-  const itemData = item.data || item;
-  const [notes, setNotes] = useState(itemData.notes || '');
+  const [notes, setNotes] = useState(item.notes || '');
   
-  const weightConfig = WEIGHT_CONFIG[itemData.weight];
-  const isCompleted = itemData.status === 'completed';
-  const isConflict = itemData.status === 'conflict';
-  const isNotApplicable = itemData.status === 'not_applicable';
+  const weightConfig = WEIGHT_CONFIG[item.weight];
+  const isCompleted = item.status === 'completed';
+  const isConflict = item.status === 'conflict';
+  const isNotApplicable = item.status === 'not_applicable';
   
   const handleStatusChange = (checked) => {
     if (checked) {
@@ -46,50 +45,55 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
     setShowNotes(false);
   };
   
-  const roleConfig = itemData.completed_by_role ? ROLE_CONFIG[itemData.completed_by_role] : null;
+  const roleConfig = item.completed_by_role ? ROLE_CONFIG[item.completed_by_role] : null;
   
   return (
     <div className={`
-      group flex items-start gap-3 p-3 rounded-lg transition-all
+      flex items-start gap-3 p-3 rounded-lg transition-all group
       ${isCompleted ? 'bg-green-50/50' : ''}
       ${isConflict ? 'bg-orange-50 border border-orange-200' : ''}
       ${isNotApplicable ? 'bg-slate-50 opacity-60' : ''}
+      ${isDragging ? 'shadow-lg opacity-80 bg-slate-100' : ''}
       hover:bg-slate-50
     `}>
-      <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing pt-1 flex-shrink-0">
-        <GripVertical className="h-4 w-4 text-slate-300 group-hover:text-slate-400" />
+      <div 
+        {...dragHandleProps}
+        className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <GripVertical className="h-5 w-5 text-slate-400 mt-0.5" />
       </div>
+      
       <Checkbox
         checked={isCompleted}
         onCheckedChange={handleStatusChange}
         disabled={isNotApplicable}
-        className="mt-1 flex-shrink-0"
+        className="mt-1"
       />
       
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <p className={`text-sm font-medium ${isCompleted ? 'line-through text-slate-400' : 'text-slate-700'} ${isNotApplicable ? 'line-through' : ''}`}>
-              {itemData.title}
+              {item.title}
             </p>
-            {itemData.description && (
-              <p className="text-xs text-slate-500 mt-0.5">{itemData.description}</p>
+            {item.description && (
+              <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
             )}
             
             {/* Metadatos de completado */}
-            {isCompleted && itemData.completed_by && (
+            {isCompleted && item.completed_by && (
               <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
                 <User className="h-3 w-3" />
-                <span>{itemData.completed_by}</span>
+                <span>{item.completed_by}</span>
                 {roleConfig && (
                   <Badge variant="outline" className={`text-xs ${roleConfig.color} bg-opacity-10`}>
                     {roleConfig.name}
                   </Badge>
                 )}
-                {itemData.completed_at && (
+                {item.completed_at && (
                   <>
                     <Clock className="h-3 w-3 ml-2" />
-                    <span>{format(new Date(itemData.completed_at), "d MMM, HH:mm", { locale: es })}</span>
+                    <span>{format(new Date(item.completed_at), "d MMM, HH:mm", { locale: es })}</span>
                   </>
                 )}
               </div>
@@ -121,9 +125,9 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
                   </Button>
                 </div>
               </div>
-            ) : itemData.notes && (
+            ) : item.notes && (
               <p className="text-xs text-slate-500 mt-2 italic bg-slate-100 p-2 rounded">
-                💬 {itemData.notes}
+                💬 {item.notes}
               </p>
             )}
           </div>
