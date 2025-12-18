@@ -23,12 +23,12 @@ export const WEIGHT_CONFIG = {
 };
 
 export const SITE_TYPE_CONFIG = {
-  landing: { name: 'Landing Page', criticalPhases: ['design', 'responsive', 'performance'] },
-  ecommerce: { name: 'E-commerce', criticalPhases: ['performance', 'qa', 'security'] },
-  corporate: { name: 'Corporativo', criticalPhases: ['seo_accessibility', 'responsive', 'design'] },
-  blog: { name: 'Blog', criticalPhases: ['seo_accessibility', 'performance', 'responsive'] },
-  forms: { name: 'Formularios', criticalPhases: ['qa', 'security', 'development'] },
-  webapp: { name: 'Web App', criticalPhases: ['security', 'qa', 'performance'] }
+  landing: { name: 'Landing Page', criticalPhases: ['documentation', 'planning', 'ux_ui', 'content', 'responsive', 'performance'] },
+  ecommerce: { name: 'E-commerce', criticalPhases: ['documentation', 'planning', 'ux_ui', 'technical', 'performance', 'qa', 'security'] },
+  corporate: { name: 'Corporativo', criticalPhases: ['documentation', 'planning', 'ux_ui', 'content', 'seo_accessibility', 'responsive'] },
+  blog: { name: 'Blog', criticalPhases: ['documentation', 'planning', 'content', 'seo_accessibility', 'performance', 'responsive'] },
+  forms: { name: 'Formularios', criticalPhases: ['documentation', 'planning', 'technical', 'qa', 'security', 'development'] },
+  webapp: { name: 'Web App', criticalPhases: ['documentation', 'planning', 'technical', 'security', 'qa', 'performance'] }
 };
 
 export const TECHNOLOGY_CONFIG = {
