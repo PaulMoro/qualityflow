@@ -59,11 +59,10 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
         <GripVertical className="h-4 w-4 text-slate-300 group-hover:text-slate-400" />
       </div>
       <Checkbox
-        className="flex-shrink-0"
         checked={isCompleted}
         onCheckedChange={handleStatusChange}
         disabled={isNotApplicable}
-        className="mt-1"
+        className="mt-1 flex-shrink-0"
       />
       
       <div className="flex-1 min-w-0">
