@@ -83,6 +83,8 @@ export default function ProjectChecklist() {
   });
   
   // Generar checklist inicial si no existe
+  const [hasInitialized, setHasInitialized] = useState(false);
+  
   const initializeChecklistMutation = useMutation({
     mutationFn: async () => {
       const template = generateFilteredChecklist(project.site_type, project.technology);
@@ -97,18 +99,19 @@ export default function ProjectChecklist() {
         applicable_site_types: item.siteTypes
       }));
       
-      await base44.entities.ChecklistItem.bulkCreate(items);
+      return await base44.entities.ChecklistItem.bulkCreate(items);
     },
     onSuccess: () => {
+      setHasInitialized(true);
       queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
     }
   });
   
   useEffect(() => {
-    if (project && checklistItems.length === 0 && !itemsLoading) {
+    if (project && checklistItems.length === 0 && !itemsLoading && !hasInitialized && !initializeChecklistMutation.isPending) {
       initializeChecklistMutation.mutate();
     }
-  }, [project, checklistItems.length, itemsLoading]);
+  }, [project, checklistItems.length, itemsLoading, hasInitialized]);
   
   const updateItemMutation = useMutation({
     mutationFn: async ({ itemId, data }) => {
