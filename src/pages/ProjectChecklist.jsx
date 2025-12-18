@@ -441,48 +441,48 @@ export default function ProjectChecklist() {
               </div>
             ) : (
               <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="phases" type="PHASE">
-                {(provided) => (
-                  <div 
-                    {...provided.droppableProps} 
-                    ref={provided.innerRef}
-                    className="space-y-4"
-                  >
-                    {phaseOrder.map((phaseKey, index) => {
-                     const allItems = itemsByPhase[phaseKey] || [];
+                <Droppable droppableId="phases" type="PHASE">
+                  {(provided) => (
+                    <div 
+                      {...provided.droppableProps} 
+                      ref={provided.innerRef}
+                      className="space-y-4"
+                    >
+                      {phaseOrder.map((phaseKey, index) => {
+                       const allItems = itemsByPhase[phaseKey] || [];
 
-                     return (
-                       <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
-                         {(provided, snapshot) => (
-                           <div
-                             ref={provided.innerRef}
-                             {...provided.draggableProps}
-                             className={snapshot.isDragging ? 'opacity-50' : ''}
-                           >
-                             <PhaseCard
-                               phase={phaseKey}
-                               items={allItems}
-                               isExpanded={expandedPhases.includes(phaseKey)}
-                               onToggle={() => togglePhase(phaseKey)}
-                               onItemUpdate={handleItemUpdate}
-                               onItemEdit={handleItemEdit}
-                               onAddItem={handleAddItem}
-                               onEditPhase={handleEditPhase}
-                               userRole={userRole}
-                               isCriticalPhase={criticalPhases.includes(phaseKey)}
-                               customPhaseName={project?.custom_phase_names?.[phaseKey]}
-                               dragHandleProps={provided.dragHandleProps}
-                             />
-                           </div>
-                         )}
-                       </Draggable>
-                     );
-                    })}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                       return (
+                         <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
+                           {(provided, snapshot) => (
+                             <div
+                               ref={provided.innerRef}
+                               {...provided.draggableProps}
+                               className={snapshot.isDragging ? 'opacity-50' : ''}
+                             >
+                               <PhaseCard
+                                 phase={phaseKey}
+                                 items={allItems}
+                                 isExpanded={expandedPhases.includes(phaseKey)}
+                                 onToggle={() => togglePhase(phaseKey)}
+                                 onItemUpdate={handleItemUpdate}
+                                 onItemEdit={handleItemEdit}
+                                 onAddItem={handleAddItem}
+                                 onEditPhase={handleEditPhase}
+                                 userRole={userRole}
+                                 isCriticalPhase={criticalPhases.includes(phaseKey)}
+                                 customPhaseName={project?.custom_phase_names?.[phaseKey]}
+                                 dragHandleProps={provided.dragHandleProps}
+                               />
+                             </div>
+                           )}
+                         </Draggable>
+                       );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             )}
           </div>
           
