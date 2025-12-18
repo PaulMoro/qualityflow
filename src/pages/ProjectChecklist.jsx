@@ -443,8 +443,11 @@ export default function ProjectChecklist() {
                       className="space-y-4"
                     >
                       {phaseOrder.map((phaseKey, index) => {
+                        const allItems = itemsByPhase[phaseKey] || [];
                         const items = filteredItemsByPhase[phaseKey] || [];
-                        if (items.length === 0 && viewMode !== 'all') return null;
+                        
+                        // Solo ocultar si no hay items en absoluto para esa fase
+                        if (allItems.length === 0) return null;
 
                         return (
                           <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
