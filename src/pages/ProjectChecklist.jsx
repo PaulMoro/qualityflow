@@ -72,8 +72,16 @@ export default function ProjectChecklist() {
   
   const { data: checklistItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ['checklist-items', projectId],
-    queryFn: () => base44.entities.ChecklistItem.filter({ project_id: projectId }),
-    enabled: !!projectId
+    queryFn: async () => {
+      console.log('=== QUERY CHECKLIST ITEMS ===');
+      console.log('ProjectId:', projectId);
+      const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
+      console.log('Items obtenidos:', items.length, items);
+      return items;
+    },
+    enabled: !!projectId,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false
   });
   
   const { data: conflicts = [] } = useQuery({
