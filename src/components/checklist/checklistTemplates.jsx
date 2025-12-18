@@ -97,13 +97,13 @@ export const CHECKLIST_TEMPLATE = [
   { phase: 'technical', title: 'Requerimientos especiales – CMS', weight: 'high', order: 6, technologies: ['wordpress', 'webflow'], siteTypes: ['landing', 'corporate', 'ecommerce', 'blog'] },
   { phase: 'technical', title: 'Estructura de base de datos', weight: 'high', order: 7, technologies: ['wordpress', 'custom'], siteTypes: ['ecommerce'] },
   
-  // DESARROLLO
-  { phase: 'development', title: 'Código limpio y comentado', weight: 'medium', order: 1, technologies: ['custom'], siteTypes: ['all'] },
-  { phase: 'development', title: 'Plugins/extensiones actualizados', weight: 'high', order: 2, technologies: ['wordpress', 'shopify'], siteTypes: ['all'] },
-  { phase: 'development', title: 'Componentes reutilizables', weight: 'medium', order: 3, technologies: ['webflow', 'custom'], siteTypes: ['all'] },
-  { phase: 'development', title: 'Validaciones de formularios', weight: 'critical', order: 4, technologies: ['all'], siteTypes: ['forms', 'ecommerce', 'webapp'] },
-  { phase: 'development', title: 'Manejo de errores implementado', weight: 'high', order: 5, technologies: ['all'], siteTypes: ['forms', 'ecommerce', 'webapp'] },
-  { phase: 'development', title: 'Funcionalidades testeadas', weight: 'high', order: 6, technologies: ['all'], siteTypes: ['all'] },
+  // 6. DESARROLLO
+  { phase: 'development', title: 'Código limpio y comentado', weight: 'medium', order: 1, technologies: ['custom'], siteTypes: ['landing', 'corporate', 'ecommerce', 'blog'] },
+  { phase: 'development', title: 'Plugins/extensiones actualizados', weight: 'high', order: 2, technologies: ['wordpress', 'shopify'], siteTypes: ['landing', 'corporate', 'ecommerce', 'blog'] },
+  { phase: 'development', title: 'Componentes reutilizables', weight: 'medium', order: 3, technologies: ['webflow', 'custom'], siteTypes: ['landing', 'corporate', 'ecommerce', 'blog'] },
+  { phase: 'development', title: 'Validaciones de formularios', weight: 'critical', order: 4, technologies: ['all'], siteTypes: ['landing', 'ecommerce', 'corporate'] },
+  { phase: 'development', title: 'Manejo de errores implementado', weight: 'high', order: 5, technologies: ['all'], siteTypes: ['landing', 'ecommerce', 'corporate'] },
+  { phase: 'development', title: 'Funcionalidades testeadas', weight: 'high', order: 6, technologies: ['all'], siteTypes: ['landing', 'corporate', 'ecommerce', 'blog'] },
   
   // PERFORMANCE
   { phase: 'performance', title: 'Imágenes optimizadas', weight: 'critical', order: 1, technologies: ['all'], siteTypes: ['all'] },
