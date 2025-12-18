@@ -492,36 +492,36 @@ export default function ProjectChecklist() {
                       className="space-y-4"
                     >
                       {phaseOrder.map((phaseKey, index) => {
-                        const items = itemsByPhase[phaseKey] || [];
+                        const items = filteredItemsByPhase[phaseKey] || [];
                         if (items.length === 0 && viewMode !== 'all') return null;
-                      
-                      return (
-                        <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={snapshot.isDragging ? 'opacity-50' : ''}
-                            >
-                              <PhaseCard
-                                phase={phaseKey}
-                                items={itemsByPhase[phaseKey] || []}
-                                isExpanded={expandedPhases.includes(phaseKey)}
-                                onToggle={() => togglePhase(phaseKey)}
-                                onItemUpdate={handleItemUpdate}
-                                onItemEdit={handleItemEdit}
-                                onAddItem={handleAddItem}
-                                onEditPhase={handleEditPhase}
-                                userRole={userRole}
-                                isCriticalPhase={criticalPhases.includes(phaseKey)}
-                                customPhaseName={project?.custom_phase_names?.[phaseKey]}
-                                dragHandleProps={provided.dragHandleProps}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
+
+                        return (
+                          <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? 'opacity-50' : ''}
+                              >
+                                <PhaseCard
+                                  phase={phaseKey}
+                                  items={items}
+                                  isExpanded={expandedPhases.includes(phaseKey)}
+                                  onToggle={() => togglePhase(phaseKey)}
+                                  onItemUpdate={handleItemUpdate}
+                                  onItemEdit={handleItemEdit}
+                                  onAddItem={handleAddItem}
+                                  onEditPhase={handleEditPhase}
+                                  userRole={userRole}
+                                  isCriticalPhase={criticalPhases.includes(phaseKey)}
+                                  customPhaseName={project?.custom_phase_names?.[phaseKey]}
+                                  dragHandleProps={provided.dragHandleProps}
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
                       {provided.placeholder}
                     </div>
                   )}
