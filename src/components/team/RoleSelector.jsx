@@ -1,14 +1,15 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Code, CheckSquare, Crown, Briefcase } from 'lucide-react';
+import { User, Code, CheckSquare, Crown, Briefcase, Palette } from 'lucide-react';
 import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 
 const roleIcons = {
   developer: Code,
   qa: CheckSquare,
   web_leader: Crown,
-  product_owner: Briefcase
+  product_owner: Briefcase,
+  ux_ui: Palette
 };
 
 export default function RoleSelector({ value, onChange, showLabel = true }) {
