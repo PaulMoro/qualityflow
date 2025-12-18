@@ -424,19 +424,23 @@ export default function ProjectChecklist() {
             )}
             
             {/* Fases del checklist */}
-            {checklistItems.length === 0 && !itemsLoading && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
-                <p className="text-slate-700 mb-4">Este proyecto no tiene checklist inicializado</p>
+            {checklistItems.length === 0 && !itemsLoading ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 text-center">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Inicializar Checklist de Calidad</h3>
+                <p className="text-slate-600 mb-6">
+                  Este proyecto no tiene checklist. Haz clic para crear automáticamente todas las fases y tareas 
+                  según el tipo de sitio ({siteTypeConfig?.name}) y tecnología ({techConfig?.name}).
+                </p>
                 <Button 
                   onClick={() => initializeChecklistMutation.mutate()}
                   disabled={initializeChecklistMutation.isPending}
+                  size="lg"
                 >
-                  {initializeChecklistMutation.isPending ? 'Inicializando...' : 'Inicializar Checklist'}
+                  {initializeChecklistMutation.isPending ? 'Inicializando...' : 'Crear Checklist Completo'}
                 </Button>
               </div>
-            )}
-            
-            <DragDropContext onDragEnd={handleDragEnd}>
+            ) : (
+              <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="phases" type="PHASE">
                 {(provided) => (
                   <div 
