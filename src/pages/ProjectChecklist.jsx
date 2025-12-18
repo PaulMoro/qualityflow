@@ -258,7 +258,7 @@ export default function ProjectChecklist() {
     
     const grouped = {};
     Object.keys(PHASES).forEach(phase => {
-      grouped[phase] = checklistItems.filter(item => item.phase === phase);
+      grouped[phase] = checklistItems.filter(item => (item.data?.phase || item.phase) === phase);
       console.log(`Fase ${phase}:`, grouped[phase].length, 'items');
     });
     return grouped;
