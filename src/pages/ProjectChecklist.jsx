@@ -126,7 +126,7 @@ export default function ProjectChecklist() {
   });
   
   useEffect(() => {
-    if (project && checklistItems.length === 0 && !itemsLoading) {
+    if (project && checklistItems.length === 0 && !itemsLoading && !initializeChecklistMutation.isPending) {
       initializeChecklistMutation.mutate();
     }
   }, [project, checklistItems.length, itemsLoading]);
