@@ -432,6 +432,18 @@ export default function ProjectChecklist() {
             )}
             
             {/* Fases del checklist */}
+            {checklistItems.length === 0 && !itemsLoading && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+                <p className="text-slate-700 mb-4">Este proyecto no tiene checklist inicializado</p>
+                <Button 
+                  onClick={() => initializeChecklistMutation.mutate()}
+                  disabled={initializeChecklistMutation.isPending}
+                >
+                  {initializeChecklistMutation.isPending ? 'Inicializando...' : 'Inicializar Checklist'}
+                </Button>
+              </div>
+            )}
+            
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="phases" type="PHASE">
                 {(provided) => (
