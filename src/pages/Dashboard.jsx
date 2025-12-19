@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, LayoutGrid, List, Filter, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List, Filter, AlertTriangle, CheckCircle2, Clock, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectCard from '../components/project/ProjectCard';
 import CreateProjectModal from '../components/project/CreateProjectModal';
+import EditProjectModal from '../components/project/EditProjectModal';
+import AdminPanel from '../components/admin/AdminPanel';
 import RoleSelector from '../components/team/RoleSelector';
 
 export default function Dashboard() {
@@ -40,6 +42,7 @@ export default function Dashboard() {
   });
   
   const [editingProject, setEditingProject] = useState(null);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Project.create(data),
@@ -86,6 +89,29 @@ export default function Dashboard() {
     }
   });
   
+  const deleteMutation = useMutation({
+    mutationFn: async (projectId) => {
+      // Eliminar checklist items primero
+      const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
+      for (const item of items) {
+        await base44.entities.ChecklistItem.delete(item.id);
+      }
+      
+      // Eliminar conflictos
+      const conflicts = await base44.entities.Conflict.filter({ project_id: projectId });
+      for (const conflict of conflicts) {
+        await base44.entities.Conflict.delete(conflict.id);
+      }
+      
+      // Eliminar proyecto
+      await base44.entities.Project.delete(projectId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setEditingProject(null);
+    }
+  });
+  
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          p.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -114,6 +140,12 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-3">
               <RoleSelector value={userRole} onChange={setUserRole} />
+              {user?.role === 'admin' && (
+                <Button variant="outline" onClick={() => setShowAdminPanel(true)}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Admin
+                </Button>
+              )}
               <Button onClick={() => setIsCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Proyecto
@@ -248,6 +280,11 @@ export default function Dashboard() {
                   index={index}
                   onEdit={setEditingProject}
                   onDuplicate={(p) => duplicateMutation.mutate(p)}
+                  onDelete={(p) => {
+                    if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                      deleteMutation.mutate(p.id);
+                    }
+                  }}
                 />
               ))}
             </AnimatePresence>
@@ -263,15 +300,24 @@ export default function Dashboard() {
       />
       
       {editingProject && (
-        <CreateProjectModal
+        <EditProjectModal
           isOpen={!!editingProject}
           onClose={() => setEditingProject(null)}
-          onCreate={(data) => updateMutation.mutate({ id: editingProject.id, data })}
-          isLoading={updateMutation.isPending}
-          initialData={editingProject}
-          isEditing
+          onSave={(data) => updateMutation.mutate({ id: editingProject.id, data })}
+          onDelete={(id) => {
+            if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
+              deleteMutation.mutate(id);
+            }
+          }}
+          project={editingProject}
+          isLoading={updateMutation.isPending || deleteMutation.isPending}
         />
       )}
+      
+      <AdminPanel
+        isOpen={showAdminPanel}
+        onClose={() => setShowAdminPanel(false)}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, ArrowRight, AlertTriangle, CheckCircle2, Clock, Copy, Pencil, MoreVertical } from 'lucide-react';
+import { Calendar, Users, ArrowRight, AlertTriangle, CheckCircle2, Clock, Copy, Pencil, MoreVertical, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -26,7 +26,7 @@ const RISK_CONFIG = {
   high: { color: 'bg-red-500', icon: AlertTriangle }
 };
 
-export default function ProjectCard({ project, index, onEdit, onDuplicate }) {
+export default function ProjectCard({ project, index, onEdit, onDuplicate, onDelete }) {
   const siteTypeConfig = SITE_TYPE_CONFIG[project.site_type];
   const techConfig = TECHNOLOGY_CONFIG[project.technology];
   const statusConfig = STATUS_CONFIG[project.status];
@@ -74,6 +74,13 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate }) {
                   <DropdownMenuItem onClick={(e) => { e.preventDefault(); onDuplicate(project); }}>
                     <Copy className="h-4 w-4 mr-2" />
                     Duplicar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={(e) => { e.preventDefault(); onDelete(project); }}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Eliminar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

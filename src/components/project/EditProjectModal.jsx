@@ -5,18 +5,33 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from 'lucide-react';
-import { SITE_TYPE_CONFIG, TECHNOLOGY_CONFIG } from '../checklist/checklistTemplates';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon, Loader2, Trash2, UserPlus, X } from 'lucide-react';
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { SITE_TYPE_CONFIG, TECHNOLOGY_CONFIG, PHASES, ROLE_CONFIG } from '../checklist/checklistTemplates';
 
-export default function EditProjectModal({ project, isOpen, onClose, onSave, isLoading }) {
+export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, project, isLoading }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     site_type: '',
     technology: '',
     impact_level: 'medium',
-    status: 'draft',
-    target_date: ''
+    status: 'in_progress',
+    target_date: null,
+    phase_responsibles: {}
+  });
+  
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => base44.entities.TeamMember.filter({ is_active: true }),
+    enabled: isOpen
   });
   
   useEffect(() => {
@@ -27,162 +42,254 @@ export default function EditProjectModal({ project, isOpen, onClose, onSave, isL
         site_type: project.site_type || '',
         technology: project.technology || '',
         impact_level: project.impact_level || 'medium',
-        status: project.status || 'draft',
-        target_date: project.target_date || ''
+        status: project.status || 'in_progress',
+        target_date: project.target_date ? new Date(project.target_date) : null,
+        phase_responsibles: project.phase_responsibles || {}
       });
     }
   }, [project]);
   
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
-  };
-  
-  const handleClose = () => {
-    setFormData({
-      name: '',
-      description: '',
-      site_type: '',
-      technology: '',
-      impact_level: 'medium',
-      status: 'draft',
-      target_date: ''
+    onSave({
+      ...formData,
+      target_date: formData.target_date ? format(formData.target_date, 'yyyy-MM-dd') : null
     });
-    onClose();
   };
   
-  const isValid = formData.name.trim() && formData.site_type && formData.technology;
+  const handleAddResponsible = (phase, email) => {
+    setFormData(prev => ({
+      ...prev,
+      phase_responsibles: {
+        ...prev.phase_responsibles,
+        [phase]: [...(prev.phase_responsibles[phase] || []), email]
+      }
+    }));
+  };
+  
+  const handleRemoveResponsible = (phase, email) => {
+    setFormData(prev => ({
+      ...prev,
+      phase_responsibles: {
+        ...prev.phase_responsibles,
+        [phase]: (prev.phase_responsibles[phase] || []).filter(e => e !== email)
+      }
+    }));
+  };
+  
+  const isValid = formData.name && formData.site_type && formData.technology;
+  const visiblePhases = Object.entries(PHASES).filter(([key]) => !(project?.hidden_phases || []).includes(key));
   
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Editar Proyecto</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nombre del proyecto *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej: Sitio Web Corporativo"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Descripción breve del proyecto..."
-              className="h-20"
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+          {/* Información básica */}
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Tipo de sitio *</Label>
-              <Select
-                value={formData.site_type}
-                onValueChange={(value) => setFormData({ ...formData, site_type: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(SITE_TYPE_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="name">Nombre del proyecto *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Ej: Landing Campaña Verano"
+              />
             </div>
             
             <div className="space-y-2">
-              <Label>Tecnología *</Label>
-              <Select
-                value={formData.technology}
-                onValueChange={(value) => setFormData({ ...formData, technology: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(TECHNOLOGY_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Nivel de impacto</Label>
-              <Select
-                value={formData.impact_level}
-                onValueChange={(value) => setFormData({ ...formData, impact_level: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Bajo</SelectItem>
-                  <SelectItem value="medium">Medio</SelectItem>
-                  <SelectItem value="high">Alto</SelectItem>
-                  <SelectItem value="critical">Crítico</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Breve descripción del proyecto..."
+                className="h-20"
+              />
             </div>
             
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Borrador</SelectItem>
-                  <SelectItem value="in_progress">En Progreso</SelectItem>
-                  <SelectItem value="review">En Revisión</SelectItem>
-                  <SelectItem value="blocked">Bloqueado</SelectItem>
-                  <SelectItem value="completed">Completado</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Tipo de sitio *</Label>
+                <Select
+                  value={formData.site_type}
+                  onValueChange={(value) => setFormData({ ...formData, site_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SITE_TYPE_CONFIG).map(([key, config]) => (
+                      <SelectItem key={key} value={key}>{config.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Tecnología *</Label>
+                <Select
+                  value={formData.technology}
+                  onValueChange={(value) => setFormData({ ...formData, technology: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(TECHNOLOGY_CONFIG).map(([key, config]) => (
+                      <SelectItem key={key} value={key}>{config.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Estado</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Borrador</SelectItem>
+                    <SelectItem value="in_progress">En Progreso</SelectItem>
+                    <SelectItem value="review">En Revisión</SelectItem>
+                    <SelectItem value="blocked">Bloqueado</SelectItem>
+                    <SelectItem value="completed">Completado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Nivel de impacto</Label>
+                <Select
+                  value={formData.impact_level}
+                  onValueChange={(value) => setFormData({ ...formData, impact_level: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Bajo</SelectItem>
+                    <SelectItem value="medium">Medio</SelectItem>
+                    <SelectItem value="high">Alto</SelectItem>
+                    <SelectItem value="critical">Crítico</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Fecha objetivo</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.target_date 
+                        ? format(formData.target_date, "d MMM yyyy", { locale: es })
+                        : "Seleccionar"
+                      }
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.target_date}
+                      onSelect={(date) => setFormData({ ...formData, target_date: date })}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="target_date">Fecha de entrega</Label>
-            <Input
-              id="target_date"
-              type="date"
-              value={formData.target_date}
-              onChange={(e) => setFormData({ ...formData, target_date: e.target.value })}
-            />
+          <Separator />
+          
+          {/* Responsables por fase */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">Responsables por Fase</h3>
+              <p className="text-xs text-slate-500">Asigna responsables para cada fase del proyecto</p>
+            </div>
+            
+            <div className="space-y-3">
+              {visiblePhases.map(([phaseKey, phaseConfig]) => {
+                const displayName = project?.custom_phase_names?.[phaseKey] || phaseConfig.name;
+                const responsibles = formData.phase_responsibles[phaseKey] || [];
+                
+                return (
+                  <div key={phaseKey} className="bg-slate-50 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">{displayName}</Label>
+                      <Select
+                        onValueChange={(email) => handleAddResponsible(phaseKey, email)}
+                      >
+                        <SelectTrigger className="w-48 h-8 text-xs">
+                          <SelectValue placeholder="+ Agregar responsable" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {teamMembers
+                            .filter(m => !responsibles.includes(m.user_email))
+                            .map((member) => (
+                              <SelectItem key={member.id} value={member.user_email}>
+                                {member.display_name || member.user_email}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {responsibles.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {responsibles.map((email) => {
+                          const member = teamMembers.find(m => m.user_email === email);
+                          return (
+                            <Badge key={email} variant="secondary" className="pl-2 pr-1 py-1">
+                              <span className="text-xs">{member?.display_name || email}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveResponsible(phaseKey, email)}
+                                className="ml-1 hover:text-red-600"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
           
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-            <strong>⚠️ Importante:</strong> Si cambias el tipo de sitio o la tecnología, el checklist se recalculará automáticamente en la próxima actualización.
-          </div>
-          
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Cancelar
+          <DialogFooter className="flex justify-between items-center">
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={() => onDelete(project.id)}
+              disabled={isLoading}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar Proyecto
             </Button>
-            <Button type="submit" disabled={!isValid || isLoading}>
-              {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Guardar Cambios
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={!isValid || isLoading}>
+                {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Guardar Cambios
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
