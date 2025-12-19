@@ -28,8 +28,9 @@ const RISK_CONFIG = {
 };
 
 export default function ProjectCard({ project, index, onEdit, onDuplicate, onDelete }) {
+  const technologies = useTechnologies();
   const siteTypeConfig = SITE_TYPE_CONFIG[project.site_type];
-  const techConfig = TECHNOLOGY_CONFIG[project.technology];
+  const techConfig = technologies[project.technology];
   const statusConfig = STATUS_CONFIG[project.status];
   const riskConfig = project.risk_level ? RISK_CONFIG[project.risk_level] : null;
   
