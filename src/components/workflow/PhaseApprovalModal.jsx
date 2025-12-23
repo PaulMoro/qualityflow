@@ -9,8 +9,16 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Reset loading state when modal opens/closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setIsLoading(false);
+      setNotes('');
+    }
+  }, [isOpen]);
+
   const handleApprove = async () => {
-    if (!phaseKey) return;
+    if (!phaseKey || isLoading) return;
     
     setIsLoading(true);
     try {
@@ -19,6 +27,7 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
       onClose();
     } catch (error) {
       console.error('Error in modal:', error);
+    } finally {
       setIsLoading(false);
     }
   };
