@@ -46,32 +46,32 @@ export default function PhaseCard({
   };
 
   return (
-    <Card className={`overflow-hidden transition-all duration-300 ${isCriticalPhase ? 'ring-2 ring-amber-200' : ''} ${isDragging ? 'shadow-lg opacity-80' : ''}`}>
+    <Card className={`bg-[#1a1a1a] border-[#2a2a2a] overflow-hidden transition-all duration-300 ${isCriticalPhase ? 'ring-2 ring-[#FF1B7E]/40' : ''} ${isDragging ? 'shadow-lg opacity-80' : ''}`}>
       <CardHeader 
-        className="hover:bg-slate-50 transition-colors py-4"
+        className="hover:bg-[#2a2a2a]/50 transition-colors py-4"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
             <div 
               {...dragHandleProps}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-slate-200 rounded transition-colors"
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-[#2a2a2a] rounded transition-colors"
             >
-              <GripVertical className="h-5 w-5 text-slate-400" />
+              <GripVertical className="h-5 w-5 text-gray-400" />
             </div>
             <div className="cursor-pointer flex items-center gap-3 flex-1" onClick={onToggle}>
-              <div className={`p-2 rounded-lg ${isCriticalPhase ? 'bg-amber-100' : 'bg-slate-100'}`}>
-                <Icon className={`h-5 w-5 ${isCriticalPhase ? 'text-amber-600' : 'text-slate-600'}`} />
+              <div className={`p-2 rounded-lg ${isCriticalPhase ? 'bg-[#FF1B7E]/20' : 'bg-[#0a0a0a]'}`}>
+                <Icon className={`h-5 w-5 ${isCriticalPhase ? 'text-[#FF1B7E]' : 'text-gray-400'}`} />
               </div>
             <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <CardTitle className="text-base font-semibold flex items-center gap-2 text-white">
                 {displayName}
                 {isCriticalPhase && (
-                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                  <Badge variant="outline" className="text-xs bg-[#FF1B7E]/20 text-[#FF1B7E] border-[#FF1B7E]/40">
                     Crítico para este proyecto
                   </Badge>
                 )}
               </CardTitle>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-gray-400 mt-0.5">
                 {completed} de {total} completados
               </p>
             </div>
@@ -82,35 +82,35 @@ export default function PhaseCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 hover:bg-[#2a2a2a]"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditPhase(phase);
               }}
             >
-              <Edit2 className="h-4 w-4 text-slate-400" />
+              <Edit2 className="h-4 w-4 text-gray-400" />
             </Button>
             {hasCritical && (
-              <Badge className="bg-red-100 text-red-700 border-0">
+              <Badge className="bg-red-500/20 text-red-400 border-red-500/40 border">
                 Críticos pendientes
               </Badge>
             )}
             {hasConflicts && (
-              <Badge className="bg-orange-100 text-orange-700 border-0">
+              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 border">
                 Conflictos
               </Badge>
             )}
             <div className="w-24">
-              <Progress value={progress} className="h-2" />
+              <Progress value={progress} className="h-2 bg-white/20 [&>div]:bg-[#FF1B7E]" />
             </div>
-            <span className="text-sm font-medium text-slate-600 w-12">
+            <span className="text-sm font-medium text-white w-12">
               {progress.toFixed(0)}%
             </span>
             <div className="cursor-pointer" onClick={onToggle}>
               {isExpanded ? (
-                <ChevronDown className="h-5 w-5 text-slate-400" />
+                <ChevronDown className="h-5 w-5 text-gray-400" />
               ) : (
-                <ChevronRight className="h-5 w-5 text-slate-400" />
+                <ChevronRight className="h-5 w-5 text-gray-400" />
               )}
             </div>
           </div>
@@ -160,11 +160,11 @@ export default function PhaseCard({
               </DragDropContext>
               
               {/* Botón para agregar nuevo ítem */}
-              <div className="mt-3 pt-3 border-t">
+              <div className="mt-3 pt-3 border-t border-[#2a2a2a]">
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="w-full text-slate-600 hover:text-slate-900 hover:border-slate-400"
+                  className="w-full text-gray-300 border-[#2a2a2a] hover:bg-[#2a2a2a] hover:text-white"
                   onClick={() => onAddItem(phase)}
                 >
                   <Plus className="h-4 w-4 mr-2" />

@@ -92,11 +92,11 @@ export default function ProjectDocuments({ projectId }) {
   }, {});
 
   return (
-    <Card>
+    <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+          <CardTitle className="text-base flex items-center gap-2 text-white">
+            <FileText className="h-5 w-5 text-[#FF1B7E]" />
             Documentación del Proyecto
           </CardTitle>
           <Button size="sm" onClick={() => setIsUploadOpen(true)}>
@@ -111,29 +111,29 @@ export default function ProjectDocuments({ projectId }) {
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
           </div>
         ) : documents.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            <FileText className="h-12 w-12 mx-auto mb-2 text-slate-300" />
+          <div className="text-center py-8 text-gray-400">
+            <FileText className="h-12 w-12 mx-auto mb-2 text-gray-600" />
             <p className="text-sm">No hay documentos subidos</p>
           </div>
         ) : (
           <div className="space-y-4">
             {Object.entries(groupedDocs).map(([type, docs]) => (
               <div key={type}>
-                <h4 className="text-sm font-medium text-slate-700 mb-2">
+                <h4 className="text-sm font-medium text-white mb-2">
                   {DOCUMENT_TYPES[type]?.label}
                 </h4>
                 <div className="space-y-2">
                   {docs.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                    <div key={doc.id} className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg hover:bg-[#2a2a2a]/50 transition-colors">
                       <div className="flex items-center gap-3 flex-1">
-                        <FileText className="h-5 w-5 text-slate-400" />
+                        <FileText className="h-5 w-5 text-gray-400" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-slate-900 truncate">{doc.name}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="font-medium text-sm text-white truncate">{doc.name}</p>
+                          <p className="text-xs text-gray-400">
                             Subido por {doc.uploaded_by} • {format(new Date(doc.created_date), "d MMM yyyy", { locale: es })}
                           </p>
                           {doc.notes && (
-                            <p className="text-xs text-slate-600 mt-1">{doc.notes}</p>
+                            <p className="text-xs text-gray-300 mt-1">{doc.notes}</p>
                           )}
                         </div>
                       </div>

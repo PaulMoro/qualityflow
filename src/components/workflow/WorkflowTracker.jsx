@@ -248,11 +248,11 @@ export default function WorkflowTracker({ project, userRole }) {
   const currentPhaseIndex = orderedPhases.findIndex(([key]) => key === project.current_workflow_phase);
 
   return (
-    <Card>
+    <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
       <CardHeader>
-        <CardTitle className="text-base flex items-center justify-between">
+        <CardTitle className="text-base flex items-center justify-between text-white">
           <span>Flujo de Trabajo</span>
-          <Badge variant="outline">
+          <Badge variant="outline" className="border-gray-600 text-gray-300">
             {orderedPhases.filter(([key]) => {
               const phase = getPhaseData(key);
               return phase?.status === 'completed';
@@ -266,7 +266,7 @@ export default function WorkflowTracker({ project, userRole }) {
             const phase = getPhaseData(key);
             return phase?.status === 'completed';
           }).length / orderedPhases.length) * 100} 
-          className="h-2"
+          className="h-2 bg-white/20 [&>div]:bg-[#FF1B7E]"
         />
 
         <div className="space-y-2">
@@ -284,11 +284,11 @@ export default function WorkflowTracker({ project, userRole }) {
 
             return (
               <div key={phaseKey} className={cn(
-                "border rounded-lg p-3 transition-all",
-                isCompleted && "bg-green-50 border-green-200",
-                isInProgress && "bg-blue-50 border-blue-200",
-                isCurrent && !isCompleted && "ring-2 ring-blue-400",
-                isBlocked && "bg-slate-50 border-slate-200 opacity-60"
+                "border rounded-lg p-3 transition-all bg-[#0a0a0a]",
+                isCompleted && "border-green-500/40 bg-green-500/10",
+                isInProgress && "border-blue-500/40 bg-blue-500/10",
+                isCurrent && !isCompleted && "ring-2 ring-[#FF1B7E]/40",
+                isBlocked && "border-[#2a2a2a] opacity-60"
               )}>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-start gap-3">
@@ -306,14 +306,14 @@ export default function WorkflowTracker({ project, userRole }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h4 className="font-medium text-sm text-slate-900 break-words">
+                        <h4 className="font-medium text-sm text-white break-words">
                           {phaseConfig.name}
                         </h4>
                         {isInProgress && (
-                          <Badge className="bg-blue-100 text-blue-700 text-xs whitespace-nowrap">En progreso</Badge>
+                          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/40 border text-xs whitespace-nowrap">En progreso</Badge>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 break-words">
+                      <p className="text-xs text-gray-400 break-words">
                         Aprobador: {phaseConfig.approverLabel}
                       </p>
                       
@@ -333,7 +333,7 @@ export default function WorkflowTracker({ project, userRole }) {
                       )}
 
                       {phaseData?.completed_at && (
-                        <p className="text-xs text-slate-500 mt-1 break-words">
+                        <p className="text-xs text-gray-400 mt-1 break-words">
                           Completado: {format(new Date(phaseData.completed_at), "d MMM yyyy HH:mm", { locale: es })}
                         </p>
                       )}

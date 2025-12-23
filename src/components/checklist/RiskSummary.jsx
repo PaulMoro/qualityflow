@@ -37,11 +37,11 @@ export default function RiskSummary({ risk, project }) {
   const Icon = riskConfig.icon;
   
   return (
-    <Card className={`${riskConfig.bgColor} border ${riskConfig.borderColor}`}>
+    <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Icon className={`h-5 w-5 ${riskConfig.textColor}`} />
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
+            <Icon className={`h-5 w-5 text-[#FF1B7E]`} />
             Resumen del Proyecto
           </CardTitle>
           <Badge className={`${riskConfig.color} text-white border-0`}>
@@ -53,53 +53,53 @@ export default function RiskSummary({ risk, project }) {
         {/* Progreso general */}
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-slate-600">Progreso General</span>
-            <span className="font-semibold">{risk.completionRate.toFixed(0)}%</span>
+            <span className="text-gray-300">Progreso General</span>
+            <span className="font-semibold text-white">{risk.completionRate.toFixed(0)}%</span>
           </div>
-          <Progress value={risk.completionRate} className="h-3" />
+          <Progress value={risk.completionRate} className="h-3 bg-white/20 [&>div]:bg-[#FF1B7E]" />
         </div>
         
         {/* Métricas rápidas */}
         <div className="grid grid-cols-3 gap-3">
           <motion.div 
-            className="bg-white rounded-lg p-3 text-center shadow-sm"
+            className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-center"
             whileHover={{ scale: 1.02 }}
           >
-            <p className="text-2xl font-bold text-red-600">{risk.criticalPending}</p>
-            <p className="text-xs text-slate-500">Críticos pendientes</p>
+            <p className="text-2xl font-bold text-red-400">{risk.criticalPending}</p>
+            <p className="text-xs text-gray-400">Críticos pendientes</p>
           </motion.div>
           <motion.div 
-            className="bg-white rounded-lg p-3 text-center shadow-sm"
+            className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-center"
             whileHover={{ scale: 1.02 }}
           >
-            <p className="text-2xl font-bold text-amber-600">{risk.highPending}</p>
-            <p className="text-xs text-slate-500">Alta prioridad</p>
+            <p className="text-2xl font-bold text-amber-400">{risk.highPending}</p>
+            <p className="text-xs text-gray-400">Alta prioridad</p>
           </motion.div>
           <motion.div 
-            className="bg-white rounded-lg p-3 text-center shadow-sm"
+            className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 text-center"
             whileHover={{ scale: 1.02 }}
           >
-            <p className="text-2xl font-bold text-orange-600">{risk.conflicts}</p>
-            <p className="text-xs text-slate-500">Conflictos</p>
+            <p className="text-2xl font-bold text-orange-400">{risk.conflicts}</p>
+            <p className="text-xs text-gray-400">Conflictos</p>
           </motion.div>
         </div>
         
         {/* Estado de entrega */}
-        <div className={`flex items-center gap-3 p-3 rounded-lg ${risk.canDeliver ? 'bg-green-100' : 'bg-red-100'}`}>
+        <div className={`flex items-center gap-3 p-3 rounded-lg border ${risk.canDeliver ? 'bg-green-500/10 border-green-500/40' : 'bg-red-500/10 border-red-500/40'}`}>
           {risk.canDeliver ? (
             <>
-              <Unlock className="h-5 w-5 text-green-600" />
+              <Unlock className="h-5 w-5 text-green-400" />
               <div>
-                <p className="font-medium text-green-700">Entrega habilitada</p>
-                <p className="text-xs text-green-600">Todos los ítems críticos completados</p>
+                <p className="font-medium text-green-400">Entrega habilitada</p>
+                <p className="text-xs text-green-300">Todos los ítems críticos completados</p>
               </div>
             </>
           ) : (
             <>
-              <Lock className="h-5 w-5 text-red-600" />
+              <Lock className="h-5 w-5 text-red-400" />
               <div>
-                <p className="font-medium text-red-700">Entrega bloqueada</p>
-                <p className="text-xs text-red-600">Completar ítems críticos para desbloquear</p>
+                <p className="font-medium text-red-400">Entrega bloqueada</p>
+                <p className="text-xs text-red-300">Completar ítems críticos para desbloquear</p>
               </div>
             </>
           )}
@@ -108,14 +108,14 @@ export default function RiskSummary({ risk, project }) {
         {/* Motivos del riesgo */}
         {risk.reasons.length > 0 && (
           <div>
-            <p className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+            <p className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-[#FF1B7E]" />
               Motivos del riesgo
             </p>
             <ul className="space-y-1">
               {risk.reasons.map((reason, idx) => (
-                <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
-                  <span className="text-slate-400">•</span>
+                <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
+                  <span className="text-gray-500">•</span>
                   {reason}
                 </li>
               ))}
@@ -125,15 +125,15 @@ export default function RiskSummary({ risk, project }) {
         
         {/* Recomendaciones */}
         {risk.recommendations.length > 0 && (
-          <div className="bg-white rounded-lg p-3">
-            <p className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-amber-500" />
+          <div className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3">
+            <p className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-[#FF1B7E]" />
               Recomendaciones
             </p>
             <ul className="space-y-1">
               {risk.recommendations.map((rec, idx) => (
-                <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
-                  <TrendingUp className="h-3 w-3 text-green-500 mt-1 flex-shrink-0" />
+                <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
+                  <TrendingUp className="h-3 w-3 text-green-400 mt-1 flex-shrink-0" />
                   {rec}
                 </li>
               ))}
