@@ -649,7 +649,6 @@ export default function ProjectChecklist() {
               </Button>
             </div>
           </div>
-        </div>
         )}
       </main>
       
