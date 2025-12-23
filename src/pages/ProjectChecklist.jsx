@@ -458,27 +458,27 @@ export default function ProjectChecklist() {
   const techConfig = TECHNOLOGY_CONFIG[project.technology];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-[#1a1a1a] border-b border-[#2a2a2a] sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-start gap-4">
               <Link to={createPageUrl('Dashboard')}>
-                <Button variant="ghost" size="icon" className="mt-1">
+                <Button variant="ghost" size="icon" className="mt-1 text-gray-400 hover:text-white hover:bg-[#2a2a2a]">
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-2 h-2 rounded-full ${techConfig?.color || 'bg-slate-400'}`} />
-                  <span className="text-xs text-slate-500 uppercase tracking-wide">
+                  <div className={`w-2 h-2 rounded-full ${techConfig?.color || 'bg-gray-400'}`} />
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">
                     {techConfig?.name} • {siteTypeConfig?.name}
                   </span>
                 </div>
-                <h1 className="text-xl font-bold text-slate-900">{project.name}</h1>
+                <h1 className="text-xl font-bold text-white">{project.name}</h1>
                 {project.target_date && (
-                  <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
                     <Calendar className="h-4 w-4" />
                     <span>Entrega: {format(new Date(project.target_date), "d MMMM yyyy", { locale: es })}</span>
                   </div>
@@ -492,14 +492,15 @@ export default function ProjectChecklist() {
                 variant="outline" 
                 size="sm" 
                 onClick={() => setIsEditingProject(true)}
+                className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white"
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Editar Proyecto
               </Button>
-              <Button variant="outline" size="sm" onClick={expandAll}>
+              <Button variant="outline" size="sm" onClick={expandAll} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
                 Expandir todo
               </Button>
-              <Button variant="outline" size="sm" onClick={collapseAll}>
+              <Button variant="outline" size="sm" onClick={collapseAll} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
                 Colapsar todo
               </Button>
             </div>
@@ -534,16 +535,16 @@ export default function ProjectChecklist() {
             {/* Checklist */}
             <div className="lg:col-span-2 space-y-4">
               {/* Filtros de vista */}
-              <div className="bg-white rounded-xl p-4 shadow-sm border">
+              <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4">
                 <Tabs value={viewMode} onValueChange={setViewMode}>
-                  <TabsList>
-                    <TabsTrigger value="all">
+                  <TabsList className="bg-[#0a0a0a] border-[#2a2a2a]">
+                    <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
                       Todos los ítems
                     </TabsTrigger>
-                    <TabsTrigger value="pending">
+                    <TabsTrigger value="pending" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
                       Solo pendientes
                     </TabsTrigger>
-                    <TabsTrigger value="critical">
+                    <TabsTrigger value="critical" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
                       Solo críticos
                     </TabsTrigger>
                   </TabsList>
@@ -551,9 +552,9 @@ export default function ProjectChecklist() {
               </div>
 
               {/* Permisos de edición */}
-              <div className="bg-blue-50 rounded-xl p-4 shadow-sm border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <strong>Rol:</strong> {ROLE_CONFIG[userRole]?.name || 'No definido'}
+              <div className="bg-[#1a1a1a] border border-[#FF1B7E]/20 rounded-xl p-4">
+                <p className="text-sm text-gray-300">
+                  <strong className="text-[#FF1B7E]">Rol:</strong> {ROLE_CONFIG[userRole]?.name || 'No definido'}
                   {userRole === 'web_leader' ? 
                     ' - Puedes editar y reordenar todas las fases' : 
                     ROLE_CONFIG[userRole]?.isLeader ?
