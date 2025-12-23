@@ -125,20 +125,6 @@ export default function WorkflowTracker({ project, userRole }) {
       if (!prevPhase || prevPhase.status !== 'completed') {
         return { canAdvance: false, reason: `La fase "${WORKFLOW_PHASES[prevKey].name}" debe completarse primero` };
       }
-
-      // Validar criterios de entrada obligatorios de fases anteriores
-      if (WORKFLOW_PHASES[prevKey].hasEntryCriteria) {
-        const criteria = getEntryCriteriaForPhase(prevKey);
-        const mandatoryCriteria = criteria.filter(c => c.is_mandatory);
-        const completedMandatory = mandatoryCriteria.filter(c => c.is_completed);
-        
-        if (mandatoryCriteria.length > 0 && completedMandatory.length < mandatoryCriteria.length) {
-          return { 
-            canAdvance: false, 
-            reason: `Debe completar todos los criterios de "${WORKFLOW_PHASES[prevKey].name}" (${completedMandatory.length}/${mandatoryCriteria.length})` 
-          };
-        }
-      }
     }
     
     return { canAdvance: true };
