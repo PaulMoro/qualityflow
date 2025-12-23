@@ -127,26 +127,28 @@ export default function Dashboard() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-[#1a1a1a] border-b border-[#2a2a2a] sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Control de Calidad Web</h1>
-              <p className="text-sm text-slate-500 mt-1">
-                Gestiona los checklists de tus proyectos digitales
+              <h1 className="text-3xl font-bold text-white tracking-tight">
+                CONTROL DE <span className="text-[#FF1B7E]">CALIDAD</span>
+              </h1>
+              <p className="text-sm text-gray-400 mt-1">
+                Gestiona los checklists de tus proyectos digitales con el mejor craft
               </p>
             </div>
             <div className="flex items-center gap-3">
               <RoleSelector value={userRole} onChange={setUserRole} />
               {user?.role === 'admin' && (
-                <Button variant="outline" onClick={() => setShowAdminPanel(true)}>
+                <Button variant="outline" onClick={() => setShowAdminPanel(true)} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
                   <Settings className="h-4 w-4 mr-2" />
                   Admin
                 </Button>
               )}
-              <Button onClick={() => setIsCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Proyecto
               </Button>
@@ -159,85 +161,85 @@ export default function Dashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <motion.div 
-            className="bg-white rounded-xl p-4 shadow-sm border"
-            whileHover={{ y: -2 }}
+            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-[#FF1B7E]/30 transition-all"
+            whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-100 rounded-lg">
-                <LayoutGrid className="h-5 w-5 text-slate-600" />
+              <div className="p-2 bg-[#2a2a2a] rounded-lg">
+                <LayoutGrid className="h-5 w-5 text-gray-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-                <p className="text-xs text-slate-500">Total proyectos</p>
+                <p className="text-3xl font-bold text-white">{stats.total}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider">Total proyectos</p>
               </div>
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-white rounded-xl p-4 shadow-sm border"
-            whileHover={{ y: -2 }}
+            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-[#FF1B7E]/30 transition-all"
+            whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Clock className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-[#FF1B7E]/10 rounded-lg">
+                <Clock className="h-5 w-5 text-[#FF1B7E]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{stats.inProgress}</p>
-                <p className="text-xs text-slate-500">En progreso</p>
+                <p className="text-3xl font-bold text-[#FF1B7E]">{stats.inProgress}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider">En progreso</p>
               </div>
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-white rounded-xl p-4 shadow-sm border"
-            whileHover={{ y: -2 }}
+            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-red-500/30 transition-all"
+            whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div className="p-2 bg-red-500/10 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-600">{stats.blocked}</p>
-                <p className="text-xs text-slate-500">Con alertas</p>
+                <p className="text-3xl font-bold text-red-500">{stats.blocked}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider">Con alertas</p>
               </div>
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-white rounded-xl p-4 shadow-sm border"
-            whileHover={{ y: -2 }}
+            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-green-500/30 transition-all"
+            whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-                <p className="text-xs text-slate-500">Completados</p>
+                <p className="text-3xl font-bold text-green-500">{stats.completed}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider">Completados</p>
               </div>
             </div>
           </motion.div>
         </div>
         
         {/* Filters */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border mb-6">
+        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Buscar proyectos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E] focus:ring-[#FF1B7E]/20"
               />
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <TabsList>
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="in_progress">En Progreso</TabsTrigger>
-                <TabsTrigger value="review">En Revisión</TabsTrigger>
-                <TabsTrigger value="blocked">Bloqueados</TabsTrigger>
-                <TabsTrigger value="completed">Completados</TabsTrigger>
+              <TabsList className="bg-[#0a0a0a] border-[#2a2a2a]">
+                <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Todos</TabsTrigger>
+                <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Progreso</TabsTrigger>
+                <TabsTrigger value="review" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Revisión</TabsTrigger>
+                <TabsTrigger value="blocked" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Bloqueados</TabsTrigger>
+                <TabsTrigger value="completed" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Completados</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -247,24 +249,24 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl h-64 animate-pulse" />
+              <div key={i} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl h-64 animate-pulse" />
             ))}
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="bg-slate-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <LayoutGrid className="h-8 w-8 text-slate-400" />
+          <div className="text-center py-20">
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+              <LayoutGrid className="h-10 w-10 text-gray-500" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">
+            <h3 className="text-2xl font-bold text-white mb-2">
               {searchQuery || statusFilter !== 'all' ? 'No se encontraron proyectos' : 'Sin proyectos'}
             </h3>
-            <p className="text-slate-500 mb-4">
+            <p className="text-gray-400 mb-6">
               {searchQuery || statusFilter !== 'all' 
                 ? 'Intenta con otros filtros de búsqueda' 
                 : 'Crea tu primer proyecto para comenzar'}
             </p>
             {!searchQuery && statusFilter === 'all' && (
-              <Button onClick={() => setIsCreateOpen(true)}>
+              <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Proyecto
               </Button>
