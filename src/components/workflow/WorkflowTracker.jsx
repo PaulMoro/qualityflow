@@ -24,8 +24,8 @@ const WORKFLOW_PHASES = {
   },
   design: {
     name: 'Diseño',
-    approver: ['web_leader', 'product_owner'],
-    approverLabel: 'Líder Web / PO',
+    approver: 'creativity_leader',
+    approverLabel: 'Líder de Creatividad',
     hasEntryCriteria: true,
     order: 2
   },
