@@ -24,8 +24,10 @@ export const DEFAULT_ENTRY_CRITERIA = {
       title: 'Listado de Entregables',
       description: 'Entregables tácticos definidos y documentados',
       is_mandatory: true
-    },
-    
+    }
+  ],
+  
+  design: [
     // Creatividad y Diseño
     {
       area: 'Creatividad y Diseño',

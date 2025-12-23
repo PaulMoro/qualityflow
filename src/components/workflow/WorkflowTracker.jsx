@@ -22,47 +22,54 @@ const WORKFLOW_PHASES = {
     hasEntryCriteria: true,
     order: 1
   },
+  design: {
+    name: 'Diseño',
+    approver: ['web_leader', 'product_owner'],
+    approverLabel: 'Líder Web / PO',
+    hasEntryCriteria: true,
+    order: 2
+  },
   planning: {
     name: 'Planeación y Cronograma',
     approver: 'product_owner',
     approverLabel: 'Product Owner',
     hasEntryCriteria: true,
-    order: 2
+    order: 3
   },
   development: {
     name: 'Desarrollo + QA Intermedio',
     approver: ['developer', 'qa'],
     approverLabel: 'DEV / QA',
     hasEntryCriteria: false,
-    order: 3
+    order: 4
   },
   qa_complete: {
     name: 'QA Completo',
     approver: 'qa',
     approverLabel: 'QA',
     hasEntryCriteria: false,
-    order: 4
+    order: 5
   },
   content_upload: {
     name: 'Carga Final de Contenido',
     approver: ['developer', 'product_owner'],
     approverLabel: 'DEV / Producto',
     hasEntryCriteria: false,
-    order: 5
+    order: 6
   },
   final_approval: {
     name: 'Aprobación Final y Despliegue',
     approver: 'web_leader',
     approverLabel: 'Líder Web',
     hasEntryCriteria: true,
-    order: 6
+    order: 7
   },
   stabilization: {
     name: 'Estabilización / QA Post Producción',
     approver: 'qa',
     approverLabel: 'QA',
     hasEntryCriteria: false,
-    order: 7
+    order: 8
   }
 };
 
