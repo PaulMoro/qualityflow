@@ -39,9 +39,9 @@ export default function AddChecklistItemModal({ phase, projectId, isOpen, onClos
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-xl font-semibold text-white">
             Agregar ítem a {PHASES[phase]?.name}
           </DialogTitle>
         </DialogHeader>
@@ -103,15 +103,15 @@ export default function AddChecklistItemModal({ phase, projectId, isOpen, onClos
             </div>
           </div>
           
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+          <div className="bg-[#FF1B7E]/10 border border-[#FF1B7E]/30 rounded-lg p-3 text-sm text-[#FF1B7E]">
             💡 Este ítem se agregará solo a este proyecto. Los nuevos proyectos usarán la plantilla estándar.
           </div>
           
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
               Cancelar
             </Button>
-            <Button type="submit" disabled={!isValid || isLoading}>
+            <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
               {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Agregar Ítem
             </Button>

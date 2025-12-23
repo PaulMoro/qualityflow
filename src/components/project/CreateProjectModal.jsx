@@ -97,30 +97,31 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">{isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-white">{isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre del proyecto *</Label>
+            <Label htmlFor="name" className="text-gray-300">Nombre del proyecto *</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Ej: Landing Campaña Verano"
+              className="bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description" className="text-gray-300">Descripción</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Breve descripción del proyecto..."
-              className="h-20"
+              className="h-20 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
             />
           </div>
           
@@ -279,10 +280,10 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           </div>
           
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
               Cancelar
             </Button>
-            <Button type="submit" disabled={!isValid || isLoading}>
+            <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
               {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isEditing ? 'Guardar Cambios' : 'Crear Proyecto'}
             </Button>

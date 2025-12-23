@@ -35,9 +35,9 @@ export default function EditPhaseModal({ phase, currentName, isOpen, onClose, on
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Editar nombre de fase</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-white">Editar nombre de fase</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
@@ -67,11 +67,11 @@ export default function EditPhaseModal({ phase, currentName, isOpen, onClose, on
             </Button>
           )}
           
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+          <div className="bg-[#FF1B7E]/10 border border-[#FF1B7E]/30 rounded-lg p-3 text-sm text-[#FF1B7E]">
             💡 Este cambio solo afecta a este proyecto. Otros proyectos mantendrán el nombre por defecto.
           </div>
           
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-sm text-amber-400">
             <strong>⚠️ Eliminar fase:</strong> Al eliminar una fase, esta se ocultará pero los ítems del checklist se conservarán y podrás restaurarla más tarde.
           </div>
           

@@ -36,40 +36,40 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <DialogTitle className="flex items-center gap-2 text-white">
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
             Aprobar Fase
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-gray-400">
               Estás aprobando la fase:
             </p>
-            <p className="font-semibold text-slate-900 mt-1">
+            <p className="font-semibold text-white mt-1">
               {phase.name}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Notas de Aprobación (Opcional)</Label>
+            <Label className="text-gray-300">Notas de Aprobación (Opcional)</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Agrega comentarios sobre esta aprobación..."
-              className="h-24"
+              className="h-24 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
             />
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+          <Button variant="outline" onClick={onClose} disabled={isLoading} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
             Cancelar
           </Button>
-          <Button onClick={handleApprove} disabled={isLoading}>
+          <Button onClick={handleApprove} disabled={isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
             {isLoading ? 'Aprobando...' : 'Aprobar Fase'}
           </Button>
         </DialogFooter>

@@ -107,9 +107,9 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Editar Proyecto</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-white">Editar Proyecto</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">

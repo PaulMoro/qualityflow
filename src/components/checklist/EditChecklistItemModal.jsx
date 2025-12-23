@@ -54,30 +54,31 @@ export default function EditChecklistItemModal({ item, isOpen, onClose, onSave, 
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Editar ítem del checklist</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-white">Editar ítem del checklist</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Título *</Label>
+            <Label htmlFor="title" className="text-gray-300">Título *</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Ej: Imágenes optimizadas"
+              className="bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description" className="text-gray-300">Descripción</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Descripción detallada del ítem..."
-              className="h-20"
+              className="h-20 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
             />
           </div>
           
@@ -127,10 +128,10 @@ export default function EditChecklistItemModal({ item, isOpen, onClose, onSave, 
               Eliminar
             </Button>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={!isValid || isLoading}>
+              <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
                 {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Guardar Cambios
               </Button>
