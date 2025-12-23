@@ -170,18 +170,19 @@ export default function WorkflowTracker({ project, userRole }) {
   };
 
   const handleApprovePhase = async (phaseKey, notes) => {
-    try {
-      // Validar criterios de entrada obligatorios antes de aprobar
-      if (WORKFLOW_PHASES[phaseKey].hasEntryCriteria) {
-        const criteria = getEntryCriteriaForPhase(phaseKey);
-        const mandatoryCriteria = criteria.filter(c => c.is_mandatory);
-        const completedMandatory = mandatoryCriteria.filter(c => c.is_completed);
-        
-        if (mandatoryCriteria.length > 0 && completedMandatory.length < mandatoryCriteria.length) {
-          toast.error(`Debe completar todos los criterios obligatorios (${completedMandatory.length}/${mandatoryCriteria.length})`);
-          return;
-        }
+    // Validar criterios de entrada obligatorios antes de aprobar
+    if (WORKFLOW_PHASES[phaseKey].hasEntryCriteria) {
+      const criteria = getEntryCriteriaForPhase(phaseKey);
+      const mandatoryCriteria = criteria.filter(c => c.is_mandatory);
+      const completedMandatory = mandatoryCriteria.filter(c => c.is_completed);
+      
+      if (mandatoryCriteria.length > 0 && completedMandatory.length < mandatoryCriteria.length) {
+        toast.error(`No puedes aprobar esta fase. Debes completar todos los criterios obligatorios: ${completedMandatory.length}/${mandatoryCriteria.length} completados`);
+        throw new Error('Criterios obligatorios incompletos');
       }
+    }
+
+    try {
 
       const user = await base44.auth.me();
       const phaseData = getPhaseData(phaseKey);
@@ -310,16 +311,18 @@ export default function WorkflowTracker({ project, userRole }) {
                       </p>
                       
                       {phaseConfig.hasEntryCriteria && (
-                        <button
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => setShowEntryCriteria(phaseKey)}
-                          className="text-xs text-blue-600 hover:underline mt-1 flex items-center gap-1 break-words"
+                          className="mt-2 h-7 text-xs"
                         >
                           {mandatoryCriteria.length > 0 ? (
-                            <span>Criterios: {completedMandatory.length}/{mandatoryCriteria.length}</span>
+                            <span>Ver Criterios ({completedMandatory.length}/{mandatoryCriteria.length})</span>
                           ) : (
-                            <span>Definir criterios de entrada</span>
+                            <span>Definir Criterios de Entrada</span>
                           )}
-                        </button>
+                        </Button>
                       )}
 
                       {phaseData?.completed_at && (
