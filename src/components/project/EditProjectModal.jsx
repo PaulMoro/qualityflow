@@ -315,8 +315,8 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
           {/* Responsables por fase */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-1">Responsables por Fase</h3>
-              <p className="text-xs text-slate-500">Asigna responsables para cada fase del proyecto</p>
+              <h3 className="text-sm font-semibold text-white mb-1">Responsables por Fase</h3>
+              <p className="text-xs text-gray-400">Asigna responsables para cada fase del proyecto</p>
             </div>
             
             <div className="space-y-3">
@@ -325,9 +325,9 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
                 const responsibles = formData.phase_responsibles[phaseKey] || [];
                 
                 return (
-                  <div key={phaseKey} className="bg-slate-50 rounded-lg p-3 space-y-2">
+                  <div key={phaseKey} className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">{displayName}</Label>
+                      <Label className="text-sm font-medium text-gray-300">{displayName}</Label>
                       <Select
                         onValueChange={(email) => handleAddResponsible(phaseKey, email)}
                       >
@@ -351,12 +351,12 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
                         {responsibles.map((email) => {
                           const member = teamMembers.find(m => m.user_email === email);
                           return (
-                            <Badge key={email} variant="secondary" className="pl-2 pr-1 py-1">
+                            <Badge key={email} className="bg-[#FF1B7E]/20 border-[#FF1B7E]/40 text-[#FF1B7E] pl-2 pr-1 py-1 hover:bg-[#FF1B7E]/30">
                               <span className="text-xs">{member?.display_name || email}</span>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveResponsible(phaseKey, email)}
-                                className="ml-1 hover:text-red-600"
+                                className="ml-1 hover:text-white"
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -382,10 +382,10 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
               Eliminar Proyecto
             </Button>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={!isValid || isLoading}>
+              <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
                 {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Guardar Cambios
               </Button>
