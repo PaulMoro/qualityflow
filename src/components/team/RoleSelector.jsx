@@ -1,20 +1,31 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Code, CheckSquare, Crown, Briefcase, Palette } from 'lucide-react';
+import { User, Code, CheckSquare, Crown, Briefcase, Palette, Package, Megaphone, Target, Users, Search, Laptop } from 'lucide-react';
 import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 
 const roleIcons = {
-  developer: Code,
-  qa: CheckSquare,
   web_leader: Crown,
-  product_owner: Briefcase,
-  ux_ui: Palette
+  leader_product: Briefcase,
+  product_owner: Package,
+  leader_creativity: Palette,
+  creativity: Palette,
+  leader_marketing: Megaphone,
+  marketing: Megaphone,
+  leader_paid: Target,
+  paid: Target,
+  leader_social: Users,
+  social: Users,
+  leader_seo: Search,
+  seo: Search,
+  leader_software: Laptop,
+  software: Code,
+  qa: CheckSquare
 };
 
 export default function RoleSelector({ value, onChange, showLabel = true }) {
   const selectedConfig = value ? ROLE_CONFIG[value] : null;
-  const Icon = value ? roleIcons[value] : User;
+  const Icon = value && roleIcons[value] ? roleIcons[value] : User;
   
   return (
     <div className="flex items-center gap-2">
@@ -32,7 +43,7 @@ export default function RoleSelector({ value, onChange, showLabel = true }) {
         </SelectTrigger>
         <SelectContent>
           {Object.entries(ROLE_CONFIG).map(([key, config]) => {
-            const RoleIcon = roleIcons[key];
+            const RoleIcon = roleIcons[key] || User;
             return (
               <SelectItem key={key} value={key}>
                 <div className="flex items-center gap-2">
