@@ -1,28 +1,45 @@
 export const DEFAULT_ENTRY_CRITERIA = {
   activation: [
-    // Criterios Generales
     {
       area: 'Criterios Generales',
-      title: 'Brief del Proyecto',
+      title: 'Objetivos de negocio y generalidades del proyecto',
       description: 'Objetivos claros y problema que resuelve el proyecto',
       is_mandatory: true
     },
     {
       area: 'Criterios Generales',
-      title: 'Equipo y Roles Definidos',
+      title: 'Equipo y roles: Quién aprueba, quién ejecuta por área, clientes',
       description: 'Quién aprueba, quién ejecuta, responsabilidades claras',
       is_mandatory: true
     },
     {
       area: 'Criterios Generales',
-      title: 'Cronograma Definido',
+      title: 'Cronograma',
       description: 'Fecha de inicio, hitos principales y entrega final',
       is_mandatory: true
     },
     {
       area: 'Criterios Generales',
-      title: 'Listado de Entregables',
+      title: 'Contexto y Antecedentes',
+      description: 'Contexto del proyecto y antecedentes relevantes',
+      is_mandatory: true
+    },
+    {
+      area: 'Criterios Generales',
+      title: 'Entregables: Listado táctico de qué se va a recibir',
       description: 'Entregables tácticos definidos y documentados',
+      is_mandatory: true
+    },
+    {
+      area: 'Criterios Generales',
+      title: 'Hoja de vida del proyecto',
+      description: 'Documento de hoja de vida del proyecto',
+      is_mandatory: true
+    },
+    {
+      area: 'Criterios Generales',
+      title: 'Insumos base',
+      description: 'Insumos base recopilados y organizados',
       is_mandatory: true
     }
   ],
