@@ -16,9 +16,9 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
     try {
       await onApprove(phaseKey, notes);
       setNotes('');
+      onClose();
     } catch (error) {
       console.error('Error in modal:', error);
-    } finally {
       setIsLoading(false);
     }
   };
