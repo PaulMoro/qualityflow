@@ -26,10 +26,12 @@ import EditProjectModal from '../components/project/EditProjectModal';
 import EditPhaseModal from '../components/checklist/EditPhaseModal';
 import ProjectDocuments from '../components/project/ProjectDocuments';
 import WorkflowTracker from '../components/workflow/WorkflowTracker';
+import ProjectCalendar from '../components/calendar/ProjectCalendar';
 import { 
   PHASES, 
   SITE_TYPE_CONFIG, 
   TECHNOLOGY_CONFIG,
+  ROLE_CONFIG,
   generateFilteredChecklist,
   calculateProjectRisk
 } from '../components/checklist/checklistTemplates';
@@ -46,6 +48,7 @@ export default function ProjectChecklist() {
   const [addingToPhase, setAddingToPhase] = useState(null);
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editingPhase, setEditingPhase] = useState(null);
+  const [activeTab, setActiveTab] = useState('checklist');
   
   const queryClient = useQueryClient();
   
@@ -231,6 +234,24 @@ export default function ProjectChecklist() {
   };
   
   const handleItemEdit = (item) => {
+    // Verificar permisos: solo el líder del área puede editar
+    if (userRole === 'web_leader') {
+      setEditingItem(item);
+      return;
+    }
+    
+    const roleConfig = ROLE_CONFIG[userRole];
+    if (!roleConfig) {
+      toast.error('Rol no válido');
+      return;
+    }
+    
+    const canEditPhase = roleConfig.canComplete.includes('all') || roleConfig.canComplete.includes(item.phase);
+    if (!canEditPhase) {
+      toast.error('No tienes permisos para editar ítems de esta fase');
+      return;
+    }
+    
     setEditingItem(item);
   };
   
@@ -248,10 +269,41 @@ export default function ProjectChecklist() {
   };
   
   const handleDeleteItem = (itemId) => {
+    // Verificar permisos
+    const item = checklistItems.find(i => i.id === itemId);
+    if (!item) return;
+    
+    if (userRole !== 'web_leader') {
+      const roleConfig = ROLE_CONFIG[userRole];
+      const canEditPhase = roleConfig?.canComplete.includes('all') || roleConfig?.canComplete.includes(item.phase);
+      if (!canEditPhase) {
+        toast.error('No tienes permisos para eliminar ítems de esta fase');
+        return;
+      }
+    }
+    
     deleteItemMutation.mutate(itemId);
   };
   
   const handleAddItem = (phase) => {
+    // Verificar permisos: solo el líder del área puede agregar
+    if (userRole === 'web_leader') {
+      setAddingToPhase(phase);
+      return;
+    }
+    
+    const roleConfig = ROLE_CONFIG[userRole];
+    if (!roleConfig) {
+      toast.error('Rol no válido');
+      return;
+    }
+    
+    const canEditPhase = roleConfig.canComplete.includes('all') || roleConfig.canComplete.includes(phase);
+    if (!canEditPhase) {
+      toast.error('No tienes permisos para agregar ítems en esta fase');
+      return;
+    }
+    
     setAddingToPhase(phase);
   };
   
@@ -284,6 +336,12 @@ export default function ProjectChecklist() {
   const handlePhaseReorder = async (result) => {
     if (!result.destination) return;
     
+    // Solo web_leader puede reordenar fases
+    if (userRole !== 'web_leader') {
+      toast.error('Solo el Líder Web puede reordenar las fases');
+      return;
+    }
+    
     const sourceIndex = result.source.index;
     const destIndex = result.destination.index;
     
@@ -300,6 +358,16 @@ export default function ProjectChecklist() {
   
   const handleItemReorder = async (phase, result) => {
     if (!result.destination) return;
+    
+    // Verificar permisos
+    if (userRole !== 'web_leader') {
+      const roleConfig = ROLE_CONFIG[userRole];
+      const canEditPhase = roleConfig?.canComplete.includes('all') || roleConfig?.canComplete.includes(phase);
+      if (!canEditPhase) {
+        toast.error('No tienes permisos para reordenar ítems de esta fase');
+        return;
+      }
+    }
     
     const sourceIndex = result.source.index;
     const destIndex = result.destination.index;
@@ -413,27 +481,56 @@ export default function ProjectChecklist() {
       </header>
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Checklist */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Filtros de vista */}
-            <div className="bg-white rounded-xl p-4 shadow-sm border">
-              <Tabs value={viewMode} onValueChange={setViewMode}>
-                <TabsList>
-                  <TabsTrigger value="all">
-                    Todos los ítems
-                  </TabsTrigger>
-                  <TabsTrigger value="pending">
-                    Solo pendientes
-                  </TabsTrigger>
-                  <TabsTrigger value="critical">
-                    Solo críticos
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-            
-            {/* Conflictos */}
+        {/* Pestañas principales */}
+        <div className="mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="checklist">Checklist</TabsTrigger>
+              <TabsTrigger value="calendar">Calendario</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {activeTab === 'calendar' ? (
+          <ProjectCalendar 
+            project={project} 
+            onUpdatePhaseDurations={(durations) => {
+              updateProjectMutation.mutate({ phase_durations: durations });
+            }}
+          />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Checklist */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Filtros de vista */}
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <Tabs value={viewMode} onValueChange={setViewMode}>
+                  <TabsList>
+                    <TabsTrigger value="all">
+                      Todos los ítems
+                    </TabsTrigger>
+                    <TabsTrigger value="pending">
+                      Solo pendientes
+                    </TabsTrigger>
+                    <TabsTrigger value="critical">
+                      Solo críticos
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {/* Permisos de edición */}
+              <div className="bg-blue-50 rounded-xl p-4 shadow-sm border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  <strong>Permisos de edición:</strong> {ROLE_CONFIG[userRole]?.name || 'No definido'}
+                  {userRole === 'web_leader' ? 
+                    ' - Puedes editar y reordenar todas las fases' : 
+                    ` - Solo puedes editar ítems de: ${ROLE_CONFIG[userRole]?.canComplete.join(', ')}`
+                  }
+                </p>
+              </div>
+
+              {/* Conflictos */}
             {conflicts.length > 0 && (
               <div className="space-y-2">
                 {conflicts.map(conflict => (
