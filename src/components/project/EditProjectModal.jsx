@@ -37,11 +37,33 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
     enabled: isOpen
   });
   
+  const { data: projectTypes = [] } = useQuery({
+    queryKey: ['project-types'],
+    queryFn: () => base44.entities.ProjectType.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
+  const { data: feeTypes = [] } = useQuery({
+    queryKey: ['fee-types'],
+    queryFn: () => base44.entities.FeeType.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => base44.entities.Client.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
   useEffect(() => {
     if (project) {
       setFormData({
         name: project.name || '',
         description: project.description || '',
+        project_type: project.project_type || '',
+        fee_type: project.fee_type || '',
+        product_owner_email: project.product_owner_email || '',
+        client_id: project.client_id || '',
         site_type: project.site_type || '',
         technology: project.technology || '',
         impact_level: project.impact_level || 'medium',
@@ -112,6 +134,81 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
                 placeholder="Breve descripción del proyecto..."
                 className="h-20"
               />
+            </div>
+            
+            {/* Clasificación */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Tipo de Proyecto</Label>
+                <Select
+                  value={formData.project_type}
+                  onValueChange={(value) => setFormData({ ...formData, project_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projectTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.key}>{type.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Tipo de Fee</Label>
+                <Select
+                  value={formData.fee_type}
+                  onValueChange={(value) => setFormData({ ...formData, fee_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {feeTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.key}>{type.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Product Owner</Label>
+                <Select
+                  value={formData.product_owner_email}
+                  onValueChange={(value) => setFormData({ ...formData, product_owner_email: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamMembers.filter(m => m.role === 'product_owner').map((member) => (
+                      <SelectItem key={member.id} value={member.user_email}>
+                        {member.display_name || member.user_email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Cliente / Sociedad</Label>
+                <Select
+                  value={formData.client_id}
+                  onValueChange={(value) => setFormData({ ...formData, client_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">

@@ -12,13 +12,43 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { SITE_TYPE_CONFIG } from '../checklist/checklistTemplates';
 import { useTechnologies } from '../checklist/useTechnologies';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoading, initialData, isEditing }) {
   const technologies = useTechnologies();
   
+  const { data: projectTypes = [] } = useQuery({
+    queryKey: ['project-types'],
+    queryFn: () => base44.entities.ProjectType.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
+  const { data: feeTypes = [] } = useQuery({
+    queryKey: ['fee-types'],
+    queryFn: () => base44.entities.FeeType.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => base44.entities.Client.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => base44.entities.TeamMember.filter({ is_active: true }),
+    enabled: isOpen
+  });
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    project_type: '',
+    fee_type: '',
+    product_owner_email: '',
+    client_id: '',
     site_type: '',
     technology: '',
     impact_level: 'medium',
@@ -39,6 +69,10 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
       setFormData({
         name: '',
         description: '',
+        project_type: '',
+        fee_type: '',
+        product_owner_email: '',
+        client_id: '',
         site_type: '',
         technology: '',
         impact_level: 'medium',
@@ -63,7 +97,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle>
         </DialogHeader>
@@ -88,6 +122,81 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
               placeholder="Breve descripción del proyecto..."
               className="h-20"
             />
+          </div>
+          
+          {/* Clasificación */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Tipo de Proyecto</Label>
+              <Select
+                value={formData.project_type}
+                onValueChange={(value) => setFormData({ ...formData, project_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {projectTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.key}>{type.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Tipo de Fee</Label>
+              <Select
+                value={formData.fee_type}
+                onValueChange={(value) => setFormData({ ...formData, fee_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {feeTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.key}>{type.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Product Owner</Label>
+              <Select
+                value={formData.product_owner_email}
+                onValueChange={(value) => setFormData({ ...formData, product_owner_email: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamMembers.filter(m => m.role === 'product_owner').map((member) => (
+                    <SelectItem key={member.id} value={member.user_email}>
+                      {member.display_name || member.user_email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Cliente / Sociedad</Label>
+              <Select
+                value={formData.client_id}
+                onValueChange={(value) => setFormData({ ...formData, client_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">

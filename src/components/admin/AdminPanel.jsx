@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ConfigurationPanel from './ConfigurationPanel';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Users, UserPlus, Pencil, Trash2, Shield, Wrench, Plus } from 'lucide-react';
+import { Users, UserPlus, Pencil, Trash2, Shield, Wrench, Plus, Settings } from 'lucide-react';
 import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 
 export default function AdminPanel({ isOpen, onClose }) {
@@ -116,7 +117,7 @@ export default function AdminPanel({ isOpen, onClose }) {
         </DialogHeader>
         
         <Tabs defaultValue="members" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="members">
               <Users className="h-4 w-4 mr-2" />
               Miembros del Equipo
@@ -124,6 +125,10 @@ export default function AdminPanel({ isOpen, onClose }) {
             <TabsTrigger value="technologies">
               <Wrench className="h-4 w-4 mr-2" />
               Tecnologías
+            </TabsTrigger>
+            <TabsTrigger value="configuration">
+              <Settings className="h-4 w-4 mr-2" />
+              Configuración
             </TabsTrigger>
             <TabsTrigger value="roles">
               <Shield className="h-4 w-4 mr-2" />
@@ -522,6 +527,10 @@ export default function AdminPanel({ isOpen, onClose }) {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
               <strong>ℹ️ Nota:</strong> Las tecnologías personalizadas se sumarán a las tecnologías predeterminadas (WordPress, Webflow, Custom, Shopify).
             </div>
+          </TabsContent>
+          
+          <TabsContent value="configuration" className="space-y-4 mt-6">
+            <ConfigurationPanel />
           </TabsContent>
           
           <TabsContent value="roles" className="space-y-4 mt-6">
