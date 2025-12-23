@@ -182,5 +182,38 @@ export const DEFAULT_ENTRY_CRITERIA = {
       description: 'Dependencias entre tareas y áreas documentadas',
       is_mandatory: true
     }
+  ],
+  
+  final_approval: [
+    {
+      area: 'Checklist de Cierre',
+      title: 'QA Completo y Finalizado',
+      description: 'Todas las pruebas de QA completadas y documentadas',
+      is_mandatory: true
+    },
+    {
+      area: 'Checklist de Cierre',
+      title: 'Checklist General de Cada Área Completado',
+      description: 'Verificar que todos los checklists por área estén al 100%',
+      is_mandatory: true
+    },
+    {
+      area: 'Checklist de Cierre',
+      title: 'Aprobación de Líder Web',
+      description: 'Líder Web ha revisado y aprobado el proyecto',
+      is_mandatory: true
+    },
+    {
+      area: 'Checklist de Cierre',
+      title: 'Aprobación de QA Designado',
+      description: 'QA designado ha aprobado el estado final del proyecto',
+      is_mandatory: true
+    },
+    {
+      area: 'Checklist de Cierre',
+      title: 'Plan de Migración (WEB) Documentado',
+      description: 'Documento con plan de migración a producción adjunto',
+      is_mandatory: true
+    }
   ]
 };
