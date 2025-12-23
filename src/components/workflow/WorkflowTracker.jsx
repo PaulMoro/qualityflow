@@ -282,9 +282,9 @@ export default function WorkflowTracker({ project, userRole }) {
                 isCurrent && !isCompleted && "ring-2 ring-blue-400",
                 isBlocked && "bg-slate-50 border-slate-200 opacity-60"
               )}>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className="mt-1">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 flex-shrink-0">
                       {isCompleted ? (
                         <CheckCircle2 className="h-5 w-5 text-green-600" />
                       ) : isBlocked ? (
@@ -297,22 +297,22 @@ export default function WorkflowTracker({ project, userRole }) {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-sm text-slate-900">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h4 className="font-medium text-sm text-slate-900 break-words">
                           {phaseConfig.name}
                         </h4>
                         {isInProgress && (
-                          <Badge className="bg-blue-100 text-blue-700 text-xs">En progreso</Badge>
+                          <Badge className="bg-blue-100 text-blue-700 text-xs whitespace-nowrap">En progreso</Badge>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 break-words">
                         Aprobador: {phaseConfig.approverLabel}
                       </p>
                       
                       {phaseConfig.hasEntryCriteria && (
                         <button
                           onClick={() => setShowEntryCriteria(phaseKey)}
-                          className="text-xs text-blue-600 hover:underline mt-1 flex items-center gap-1"
+                          className="text-xs text-blue-600 hover:underline mt-1 flex items-center gap-1 break-words"
                         >
                           {mandatoryCriteria.length > 0 ? (
                             <span>Criterios: {completedMandatory.length}/{mandatoryCriteria.length}</span>
@@ -323,38 +323,42 @@ export default function WorkflowTracker({ project, userRole }) {
                       )}
 
                       {phaseData?.completed_at && (
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-slate-500 mt-1 break-words">
                           Completado: {format(new Date(phaseData.completed_at), "d MMM yyyy HH:mm", { locale: es })}
                         </p>
                       )}
 
                       {isBlocked && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-amber-600">
-                          <AlertTriangle className="h-3 w-3" />
-                          <span>{validation.reason}</span>
+                        <div className="flex items-start gap-1 mt-1 text-xs text-amber-600">
+                          <AlertTriangle className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                          <span className="break-words">{validation.reason}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    {isPending && !isBlocked && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleStartPhase(phaseKey)}
-                      >
-                        Iniciar
-                      </Button>
-                    )}
-                    {isInProgress && canUserApprove(phaseKey) && (
-                      <Button
-                        size="sm"
-                        onClick={() => setApprovingPhase(phaseKey)}
-                      >
-                        Aprobar
-                      </Button>
-                    )}
-                  </div>
+                  {(isPending && !isBlocked || (isInProgress && canUserApprove(phaseKey))) && (
+                    <div className="flex gap-2 ml-8">
+                      {isPending && !isBlocked && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleStartPhase(phaseKey)}
+                          className="w-full sm:w-auto"
+                        >
+                          Iniciar
+                        </Button>
+                      )}
+                      {isInProgress && canUserApprove(phaseKey) && (
+                        <Button
+                          size="sm"
+                          onClick={() => setApprovingPhase(phaseKey)}
+                          className="w-full sm:w-auto"
+                        >
+                          Aprobar
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );
