@@ -231,7 +231,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
     });
   };
   
-  const isValid = formData.name && formData.project_type && formData.product_owner_email && formData.applicable_areas.length > 0;
+  const isValid = formData.name && formData.project_type && formData.product_owner_email && formData.applicable_areas.length > 0 && formData.site_type && formData.technology;
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
