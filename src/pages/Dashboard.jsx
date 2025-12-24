@@ -12,6 +12,7 @@ import CreateProjectModal from '../components/project/CreateProjectModal';
 import EditProjectModal from '../components/project/EditProjectModal';
 import AdminPanel from '../components/admin/AdminPanel';
 import RoleSelector from '../components/team/RoleSelector';
+import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 
 export default function Dashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
   const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('projects');
   
   const queryClient = useQueryClient();
   
@@ -158,8 +160,24 @@ export default function Dashboard() {
       </header>
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* Tabs principales */}
+        <div className="mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-[#0a0a0a] border-[#2a2a2a]">
+              <TabsTrigger value="projects" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
+                Proyectos
+              </TabsTrigger>
+              <TabsTrigger value="occupancy" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
+                Ocupación de Recursos
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {activeTab === 'projects' ? (
+          <>
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <motion.div 
             className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-[#FF1B7E]/30 transition-all"
             whileHover={{ y: -4, scale: 1.02 }}
@@ -291,6 +309,10 @@ export default function Dashboard() {
               ))}
             </AnimatePresence>
           </div>
+        )}
+          </>
+        ) : (
+          <ResourceOccupancy />
         )}
       </main>
       

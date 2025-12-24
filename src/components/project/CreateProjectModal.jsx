@@ -242,7 +242,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-gray-300">Nombre del proyecto *</Label>
+            <Label htmlFor="name" className="text-white">Nombre del proyecto *</Label>
             <Input
               id="name"
               value={formData.name}
@@ -253,7 +253,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-gray-300">Descripción</Label>
+            <Label htmlFor="description" className="text-white">Descripción</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -266,7 +266,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           {/* Clasificación */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tipo de Proyecto *</Label>
+              <Label className="text-white">Tipo de Proyecto *</Label>
               {showAddProjectType ? (
                 <div className="flex gap-2">
                   <Input
@@ -330,7 +330,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             </div>
             
             <div className="space-y-2">
-              <Label>Tipo de Fee</Label>
+              <Label className="text-white">Tipo de Fee</Label>
               {showAddFeeType ? (
                 <div className="flex gap-2">
                   <Input
@@ -396,7 +396,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Product Owner *</Label>
+              <Label className="text-white">Product Owner *</Label>
               {showAddProductOwner ? (
                 <div className="space-y-2">
                   <div className="flex gap-2">
@@ -474,7 +474,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             </div>
             
             <div className="space-y-2">
-              <Label>Cliente / Sociedad</Label>
+              <Label className="text-white">Cliente / Sociedad</Label>
               {showAddClient ? (
                 <div className="flex gap-2">
                   <Input
@@ -540,7 +540,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tipo de sitio</Label>
+              <Label className="text-white">Tipo de sitio</Label>
               {showAddSiteType ? (
                 <div className="flex gap-2">
                   <Input
@@ -604,7 +604,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             </div>
             
             <div className="space-y-2">
-              <Label>Tecnología</Label>
+              <Label className="text-white">Tecnología</Label>
               {showAddTechnology ? (
                 <div className="flex gap-2">
                   <Input
@@ -670,7 +670,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Nivel de impacto</Label>
+              <Label className="text-white">Nivel de impacto</Label>
               <Select
                 value={formData.impact_level}
                 onValueChange={(value) => setFormData({ ...formData, impact_level: value })}
@@ -688,7 +688,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             </div>
             
             <div className="space-y-2">
-              <Label>Fecha objetivo</Label>
+              <Label className="text-white">Fecha objetivo</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start font-normal">
@@ -712,7 +712,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           </div>
           
           <div className="space-y-3">
-            <Label className="text-gray-300">Áreas que aplican para este proyecto *</Label>
+            <Label className="text-white">Áreas que aplican para este proyecto *</Label>
             <p className="text-xs text-gray-400">Selecciona las áreas que participarán en el proyecto. Solo se mostrarán los checklist de estas áreas.</p>
             <div className="grid grid-cols-2 gap-3 p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
               {[
@@ -759,7 +759,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           
           {formData.applicable_areas.length > 0 && (
             <div className="space-y-3">
-              <Label className="text-gray-300">Responsables por área</Label>
+              <Label className="text-white">Responsables por área</Label>
               <p className="text-xs text-gray-400">Asigna un responsable para cada área seleccionada</p>
               <div className="space-y-3 p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
                 {[
@@ -803,7 +803,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           
           {(currentUserRole === 'product_owner' || currentUserRole?.startsWith('leader_') || currentUserRole === 'ceo_antpack' || currentUserRole === 'web_leader') && (
             <div className="space-y-2">
-              <Label className="text-gray-300">Valor del Proyecto</Label>
+              <Label className="text-white">Valor del Proyecto</Label>
               <p className="text-xs text-gray-400">Este campo solo es visible para Product Owners y Líderes</p>
               <Input
                 type="number"
