@@ -13,6 +13,7 @@ import EditProjectModal from '../components/project/EditProjectModal';
 import AdminPanel from '../components/admin/AdminPanel';
 import RoleSelector from '../components/team/RoleSelector';
 import ResourceOccupancy from '../components/resources/ResourceOccupancy';
+import GeneralSchedules from '../components/schedule/GeneralSchedules';
 
 export default function Dashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -170,11 +171,16 @@ export default function Dashboard() {
               <TabsTrigger value="occupancy" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
                 Ocupación de Recursos
               </TabsTrigger>
+              <TabsTrigger value="schedules" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
+                Cronogramas Generales
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        {activeTab === 'projects' ? (
+        {activeTab === 'schedules' ? (
+          <GeneralSchedules />
+        ) : activeTab === 'projects' ? (
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
