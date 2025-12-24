@@ -20,63 +20,72 @@ const WORKFLOW_PHASES = {
     approver: 'leader_product',
     approverLabel: 'Líder Producto',
     hasEntryCriteria: true,
-    order: 1
+    order: 1,
+    area: 'product'
   },
   planning: {
     name: 'Planeación y Cronograma',
     approver: 'product_owner',
     approverLabel: 'Product Owner',
     hasEntryCriteria: true,
-    order: 2
+    order: 2,
+    area: 'product'
   },
   design: {
     name: 'Diseño',
     approver: 'leader_creativity',
     approverLabel: 'Líder de Creatividad',
     hasEntryCriteria: true,
-    order: 3
+    order: 3,
+    area: 'creativity'
   },
   web_development: {
     name: 'Desarrollo Web',
     approver: 'web_leader',
     approverLabel: 'Líder Web',
     hasEntryCriteria: true,
-    order: 4
+    order: 4,
+    area: 'software'
   },
   development: {
     name: 'Desarrollo + QA Intermedio',
     approver: ['leader_software', 'qa'],
     approverLabel: 'DEV / QA',
     hasEntryCriteria: true,
-    order: 5
+    order: 5,
+    area: 'software'
   },
   qa_complete: {
     name: 'QA Completo',
     approver: 'qa',
     approverLabel: 'QA',
     hasEntryCriteria: false,
-    order: 6
+    order: 6,
+    area: 'qa'
   },
   content_upload: {
     name: 'Carga Final de Contenido',
     approver: ['leader_software', 'product_owner'],
     approverLabel: 'DEV / Producto',
     hasEntryCriteria: false,
-    order: 7
+    order: 7,
+    area: 'product'
   },
   final_approval: {
     name: 'Aprobación Final y Despliegue',
     approver: 'web_leader',
     approverLabel: 'Líder Web',
     hasEntryCriteria: true,
-    order: 8
+    order: 8,
+    area: 'qa'
   },
   stabilization: {
     name: 'Estabilización / QA Post Producción',
     approver: 'qa',
     approverLabel: 'QA',
     hasEntryCriteria: false,
-    order: 9
+    order: 9,
+    area: 'qa'
   }
 };
 
@@ -251,7 +260,16 @@ export default function WorkflowTracker({ project, userRole }) {
     return phaseConfig.approver === userRole;
   };
 
-  const orderedPhases = Object.entries(WORKFLOW_PHASES).sort((a, b) => a[1].order - b[1].order);
+  // Filtrar fases según áreas aplicables del proyecto
+  const filteredPhases = Object.entries(WORKFLOW_PHASES).filter(([phaseKey, phaseConfig]) => {
+    const phaseArea = phaseConfig.area;
+    // Siempre mostrar fases de producto, QA y las áreas aplicables
+    return phaseArea === 'product' || 
+           phaseArea === 'qa' || 
+           (project.applicable_areas || []).includes(phaseArea);
+  });
+
+  const orderedPhases = filteredPhases.sort((a, b) => a[1].order - b[1].order);
   const currentPhaseIndex = orderedPhases.findIndex(([key]) => key === project.current_workflow_phase);
 
   return (
@@ -329,7 +347,7 @@ export default function WorkflowTracker({ project, userRole }) {
                           size="sm"
                           variant="outline"
                           onClick={() => setShowEntryCriteria(phaseKey)}
-                          className="mt-2 h-7 text-xs"
+                          className="mt-2 h-7 text-xs bg-white text-black hover:bg-gray-100 border-white"
                         >
                           {mandatoryCriteria.length > 0 ? (
                             <span>Ver Criterios ({completedMandatory.length}/{mandatoryCriteria.length})</span>
@@ -366,13 +384,13 @@ export default function WorkflowTracker({ project, userRole }) {
                         </Button>
                       )}
                       {isInProgress && canUserApprove(phaseKey) && (
-                        <Button
-                          size="sm"
-                          onClick={() => setApprovingPhase(phaseKey)}
-                          className="w-full sm:w-auto bg-[#FF1B7E] hover:bg-[#e6156e] text-white"
-                        >
-                          Aprobar Fase
-                        </Button>
+                       <Button
+                         size="sm"
+                         onClick={() => setApprovingPhase(phaseKey)}
+                         className="w-full sm:w-auto bg-white hover:bg-gray-100 text-black"
+                       >
+                         Aprobar Fase
+                       </Button>
                       )}
                     </div>
                   )}
