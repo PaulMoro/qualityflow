@@ -114,6 +114,25 @@ export default function ProjectChecklist() {
     }
   }, [project, checklistItems.length, itemsLoading]);
   
+  // Ordenar fases según phase_order personalizado o por defecto, filtrando ocultas
+  const orderedPhases = useMemo(() => {
+    const phases = Object.entries(PHASES);
+    const hiddenPhases = project?.hidden_phases || [];
+    
+    // Filtrar fases ocultas
+    const visiblePhasesBase = phases.filter(([phaseKey]) => !hiddenPhases.includes(phaseKey));
+    
+    if (project?.phase_order && project.phase_order.length > 0) {
+      // Usar orden personalizado
+      return project.phase_order
+        .map(phaseKey => visiblePhasesBase.find(p => p[0] === phaseKey))
+        .filter(Boolean);
+    }
+    
+    // Usar orden por defecto
+    return visiblePhasesBase.sort((a, b) => a[1].order - b[1].order);
+  }, [project?.phase_order, project?.hidden_phases]);
+  
   // Filtrar fases según áreas aplicables
   const visiblePhases = useMemo(() => {
     if (!project?.applicable_areas || project.applicable_areas.length === 0) {
@@ -441,25 +460,6 @@ export default function ProjectChecklist() {
   
   const expandAll = () => setExpandedPhases(Object.keys(PHASES));
   const collapseAll = () => setExpandedPhases([]);
-  
-  // Ordenar fases según phase_order personalizado o por defecto, filtrando ocultas
-  const orderedPhases = useMemo(() => {
-    const phases = Object.entries(PHASES);
-    const hiddenPhases = project?.hidden_phases || [];
-    
-    // Filtrar fases ocultas
-    const visiblePhases = phases.filter(([phaseKey]) => !hiddenPhases.includes(phaseKey));
-    
-    if (project?.phase_order && project.phase_order.length > 0) {
-      // Usar orden personalizado
-      return project.phase_order
-        .map(phaseKey => visiblePhases.find(p => p[0] === phaseKey))
-        .filter(Boolean);
-    }
-    
-    // Usar orden por defecto
-    return visiblePhases.sort((a, b) => a[1].order - b[1].order);
-  }, [project?.phase_order, project?.hidden_phases]);
   
   if (projectLoading || !project) {
     return (
