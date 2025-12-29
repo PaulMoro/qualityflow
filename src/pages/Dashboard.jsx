@@ -15,6 +15,7 @@ import RoleSelector from '../components/team/RoleSelector';
 import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
+import LoginScreen from '../components/auth/LoginScreen';
 
 export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -36,13 +37,13 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const u = await base44.auth.me();
-        setUser(u);
-      } catch (error) {
-        // Si el usuario no está autenticado, redirigir al login
-        if (error.message?.includes('not authenticated')) {
-          window.location.href = createPageUrl('Login');
+        const isAuth = await base44.auth.isAuthenticated();
+        if (isAuth) {
+          const u = await base44.auth.me();
+          setUser(u);
         }
+      } catch (error) {
+        console.error('Error loading user:', error);
       }
     };
     loadUser();
@@ -56,11 +57,17 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list('-created_date')
+    queryFn: () => base44.entities.Project.list('-created_date'),
+    enabled: !!user
   });
   
   const [editingProject, setEditingProject] = useState(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  
+  // Mostrar pantalla de login si no hay usuario
+  if (user === null) {
+    return <LoginScreen />;
+  }
   
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Project.create(data),
