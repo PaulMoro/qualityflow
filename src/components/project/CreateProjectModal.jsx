@@ -721,12 +721,14 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             <p className="text-xs text-gray-400">Selecciona las áreas que participarán en el proyecto. Solo se mostrarán los checklist de estas áreas.</p>
             <div className="grid grid-cols-2 gap-3 p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
               {[
-                { id: 'creativity', label: 'Creatividad', rolePrefix: 'leader_creativity' },
-                { id: 'software', label: 'Software/Desarrollo', rolePrefix: 'leader_software' },
-                { id: 'seo', label: 'SEO', rolePrefix: 'leader_seo' },
-                { id: 'marketing', label: 'Marketing', rolePrefix: 'leader_marketing' },
-                { id: 'paid', label: 'Paid Media', rolePrefix: 'leader_paid' },
-                { id: 'social', label: 'Social Media', rolePrefix: 'leader_social' }
+                { id: 'ux', label: 'UX', rolePrefix: 'ux' },
+                { id: 'ui', label: 'UI', rolePrefix: 'ui' },
+                { id: 'seo', label: 'SEO', rolePrefix: 'seo' },
+                { id: 'paid', label: 'Paid Media', rolePrefix: 'paid' },
+                { id: 'software', label: 'Software/Desarrollo', rolePrefix: 'software' },
+                { id: 'web_dev', label: 'Desarrollo web', rolePrefix: 'web_dev' },
+                { id: 'marketing', label: 'Marketing', rolePrefix: 'marketing' },
+                { id: 'social', label: 'Social Media', rolePrefix: 'social' }
               ].map(area => (
                 <div key={area.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -768,11 +770,13 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
               <p className="text-xs text-gray-400">Asigna un responsable para cada área seleccionada</p>
               <div className="space-y-3 p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
                 {[
-                  { id: 'creativity', label: 'Creatividad', rolePrefix: 'creativity' },
-                  { id: 'software', label: 'Software/Desarrollo', rolePrefix: 'software' },
+                  { id: 'ux', label: 'UX', rolePrefix: 'ux' },
+                  { id: 'ui', label: 'UI', rolePrefix: 'ui' },
                   { id: 'seo', label: 'SEO', rolePrefix: 'seo' },
-                  { id: 'marketing', label: 'Marketing', rolePrefix: 'marketing' },
                   { id: 'paid', label: 'Paid Media', rolePrefix: 'paid' },
+                  { id: 'software', label: 'Software/Desarrollo', rolePrefix: 'software' },
+                  { id: 'web_dev', label: 'Desarrollo web', rolePrefix: 'web_dev' },
+                  { id: 'marketing', label: 'Marketing', rolePrefix: 'marketing' },
                   { id: 'social', label: 'Social Media', rolePrefix: 'social' }
                 ].filter(area => formData.applicable_areas.includes(area.id)).map(area => (
                   <div key={area.id} className="flex items-center gap-3">
