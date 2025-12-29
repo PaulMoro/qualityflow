@@ -180,10 +180,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       
       <div>
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">(
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <motion.div 
             className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-[#FF1B7E]/30 transition-all"
             whileHover={{ y: -4, scale: 1.02 }}
@@ -316,7 +313,6 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </AnimatePresence>
           </div>
         )}
-      </div>
       
       <CreateProjectModal
         isOpen={isCreateOpen}
