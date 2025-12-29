@@ -190,7 +190,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                   <Button 
                     type="submit" 
                     disabled={!newMember.user_email || !newMember.role || createMemberMutation.isPending}
-                    className="bg-white hover:bg-gray-100 text-black"
                   >
                     <UserPlus className="h-4 w-4 mr-2" />
                     Agregar Miembro
@@ -236,7 +235,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                                   size="sm"
                                   onClick={() => handleUpdateMember(member, editingMember)}
                                   disabled={updateMemberMutation.isPending}
-                                  className="bg-white hover:bg-gray-100 text-black"
                                 >
                                   Guardar
                                 </Button>
@@ -244,7 +242,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => setEditingMember(null)}
-                                  className="border-white hover:bg-gray-100 text-white hover:text-black"
                                 >
                                   Cancelar
                                 </Button>
@@ -318,7 +315,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                             size="sm"
                             variant="outline"
                             onClick={() => handleUpdateMember(member, { is_active: true })}
-                            className="border-white hover:bg-gray-100 text-white hover:text-black"
                           >
                             Reactivar
                           </Button>
@@ -390,7 +386,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                   <Button 
                     type="submit" 
                     disabled={!newTechnology.name || !newTechnology.key || createTechnologyMutation.isPending}
-                    className="bg-white hover:bg-gray-100 text-black"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Agregar Tecnología
@@ -446,7 +441,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                                   size="sm"
                                   onClick={() => handleUpdateTechnology(tech, editingTechnology)}
                                   disabled={updateTechnologyMutation.isPending}
-                                  className="bg-white hover:bg-gray-100 text-black"
                                 >
                                   Guardar
                                 </Button>
@@ -454,7 +448,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => setEditingTechnology(null)}
-                                  className="border-white hover:bg-gray-100 text-white hover:text-black"
                                 >
                                   Cancelar
                                 </Button>
@@ -520,7 +513,6 @@ export default function AdminPanel({ isOpen, onClose }) {
                             size="sm"
                             variant="outline"
                             onClick={() => handleUpdateTechnology(tech, { is_active: true })}
-                            className="border-white hover:bg-gray-100 text-white hover:text-black"
                           >
                             Reactivar
                           </Button>

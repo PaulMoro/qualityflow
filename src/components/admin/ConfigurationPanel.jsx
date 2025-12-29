@@ -128,7 +128,7 @@ export default function ConfigurationPanel() {
                   placeholder="Descripción breve"
                 />
               </div>
-              <Button type="submit" disabled={!newProjectType.name || !newProjectType.key} className="bg-white hover:bg-gray-100 text-black">
+              <Button type="submit" disabled={!newProjectType.name || !newProjectType.key}>
                 <Plus className="h-4 w-4 mr-2" />
                 Agregar
               </Button>
@@ -183,7 +183,7 @@ export default function ConfigurationPanel() {
                   />
                 </div>
               </div>
-              <Button type="submit" disabled={!newFeeType.name || !newFeeType.key} className="bg-white hover:bg-gray-100 text-black">
+              <Button type="submit" disabled={!newFeeType.name || !newFeeType.key}>
                 <Plus className="h-4 w-4 mr-2" />
                 Agregar
               </Button>
@@ -253,7 +253,7 @@ export default function ConfigurationPanel() {
                   className="h-20"
                 />
               </div>
-              <Button type="submit" disabled={!newClient.name} className="bg-white hover:bg-gray-100 text-black">
+              <Button type="submit" disabled={!newClient.name}>
                 <Plus className="h-4 w-4 mr-2" />
                 Agregar
               </Button>
