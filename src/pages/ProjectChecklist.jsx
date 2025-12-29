@@ -690,7 +690,7 @@ export default function ProjectChecklist() {
                 <Send className="h-4 w-4 mr-2" />
                 {risk?.canDeliver ? 'Marcar como Entregado' : 'Entrega Bloqueada'}
               </Button>
-              <Button variant="outline" className="w-full bg-white border-white hover:bg-gray-100 text-black hover:text-black">
+              <Button className="w-full bg-white hover:bg-gray-100 text-black border-white">
                 <Download className="h-4 w-4 mr-2" />
                 Exportar Reporte
               </Button>
