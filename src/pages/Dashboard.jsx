@@ -313,6 +313,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </AnimatePresence>
           </div>
         )}
+      </div>
       
       <CreateProjectModal
         isOpen={isCreateOpen}
