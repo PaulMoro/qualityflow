@@ -4,6 +4,7 @@ import UserProfileMenu from './components/navigation/UserProfileMenu';
 
 export default function Layout({ children, currentPageName }) {
   const [currentSection, setCurrentSection] = React.useState('dashboard');
+  const [sidebarAction, setSidebarAction] = React.useState(null);
   
   // Si estamos en una página específica (no Dashboard), no mostrar el layout de navegación
   const isProjectPage = currentPageName === 'ProjectChecklist';
@@ -130,8 +131,12 @@ export default function Layout({ children, currentPageName }) {
       <div className="particle-bg" />
       
       <div className="flex min-h-screen">
-        <Sidebar currentSection={currentSection} onSectionChange={setCurrentSection} />
-        
+        <Sidebar 
+          currentSection={currentSection} 
+          onSectionChange={setCurrentSection}
+          onAction={setSidebarAction}
+        />
+
         <div className="flex-1 flex flex-col">
           {/* Top Bar */}
           <header className="bg-[#1a1a1a] border-b border-[#2a2a2a] sticky top-0 z-10">
@@ -139,10 +144,15 @@ export default function Layout({ children, currentPageName }) {
               <UserProfileMenu />
             </div>
           </header>
-          
+
           {/* Main Content */}
           <main className="flex-1 p-8 overflow-auto">
-            {React.cloneElement(children, { currentSection, onSectionChange: setCurrentSection })}
+            {React.cloneElement(children, { 
+              currentSection, 
+              onSectionChange: setCurrentSection,
+              sidebarAction,
+              onActionHandled: () => setSidebarAction(null)
+            })}
           </main>
         </div>
       </div>

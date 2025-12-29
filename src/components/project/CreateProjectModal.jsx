@@ -22,6 +22,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
   const technologies = useTechnologies();
   const queryClient = useQueryClient();
   
+  const [currentStep, setCurrentStep] = useState(1);
   const [showAddProjectType, setShowAddProjectType] = useState(false);
   const [showAddFeeType, setShowAddFeeType] = useState(false);
   const [showAddClient, setShowAddClient] = useState(false);
@@ -216,6 +217,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
         area_responsibles: {},
         project_value: ''
       });
+      setCurrentStep(1);
     }
   }, [initialData, isOpen]);
   
@@ -240,18 +242,64 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
     onCreate(data);
   };
   
-  const isValid = formData.name && formData.project_type && formData.product_owner_email && formData.applicable_areas.length > 0;
+  const isStep1Valid = formData.name && formData.project_type && formData.product_owner_email;
+  const isStep2Valid = formData.applicable_areas.length > 0;
+  const isValid = isStep1Valid && isStep2Valid;
+  
+  const handleNext = () => {
+    if (currentStep === 1 && isStep1Valid) {
+      setCurrentStep(2);
+    }
+  };
+  
+  const handleBack = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    }
+  };
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-[#2a2a2a] text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white">{isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl font-semibold text-white">
+              {isEditing ? 'Editar Proyecto' : 'Nuevo Proyecto'}
+            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                currentStep === 1 ? "bg-[#FF1B7E] text-white" : "bg-[#2a2a2a] text-gray-400"
+              )}>
+                1
+              </div>
+              <div className="w-8 h-0.5 bg-[#2a2a2a]" />
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                currentStep === 2 ? "bg-[#FF1B7E] text-white" : "bg-[#2a2a2a] text-gray-400"
+              )}>
+                2
+              </div>
+            </div>
+          </div>
+          {currentStep === 1 && (
+            <p className="text-sm text-gray-400 mt-2">
+              Paso 1: Completa los datos básicos del proyecto
+            </p>
+          )}
+          {currentStep === 2 && (
+            <p className="text-sm text-gray-400 mt-2">
+              Paso 2: Asigna las áreas y selecciona los responsables
+            </p>
+          )}
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-white">Nombre del proyecto *</Label>
+          {/* PASO 1: Datos Básicos */}
+          {currentStep === 1 && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-white">Nombre del proyecto *</Label>
             <Input
               id="name"
               value={formData.name}
@@ -824,19 +872,36 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
                 onChange={(e) => setFormData({ ...formData, project_value: e.target.value })}
                 placeholder="Ej: 5000"
                 className="bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
-              />
-            </div>
-          )}
-          
-          <DialogFooter className="mt-6">
-            <Button type="button" onClick={onClose} className="bg-white hover:bg-gray-100 text-black border-white">
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
-              {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isEditing ? 'Guardar Cambios' : 'Crear Proyecto'}
-            </Button>
-          </DialogFooter>
+                />
+                </div>
+                )}
+                </>
+                )}
+
+                <DialogFooter className="mt-6 flex justify-between">
+                <div>
+                {currentStep === 2 && (
+                <Button type="button" onClick={handleBack} className="bg-white hover:bg-gray-100 text-black border-white">
+                  Atrás
+                </Button>
+                )}
+                </div>
+                <div className="flex gap-2">
+                <Button type="button" onClick={onClose} className="bg-white hover:bg-gray-100 text-black border-white">
+                Cancelar
+                </Button>
+                {currentStep === 1 ? (
+                <Button type="button" onClick={handleNext} disabled={!isStep1Valid} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
+                  Siguiente
+                </Button>
+                ) : (
+                <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
+                  {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {isEditing ? 'Guardar Cambios' : 'Crear Proyecto'}
+                </Button>
+                )}
+                </div>
+                </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

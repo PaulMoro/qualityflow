@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { 
@@ -8,7 +8,11 @@ import {
   Calendar,
   Settings,
   UserCircle,
-  BarChart3
+  BarChart3,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Tag
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +28,21 @@ const MENU_ITEMS = [
     label: 'Proyectos',
     icon: FolderKanban,
     page: 'Dashboard',
-    section: 'projects'
+    section: 'projects',
+    subMenu: [
+      {
+        id: 'new-project',
+        label: 'Nuevo Proyecto',
+        icon: Plus,
+        action: 'create-project'
+      },
+      {
+        id: 'categories',
+        label: 'Categorías',
+        icon: Tag,
+        section: 'categories'
+      }
+    ]
   },
   {
     id: 'resources',
@@ -56,8 +74,16 @@ const MENU_ITEMS = [
   }
 ];
 
-export default function Sidebar({ currentSection, onSectionChange }) {
+export default function Sidebar({ currentSection, onSectionChange, onAction }) {
   const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState({});
+  
+  const toggleMenu = (itemId) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
   
   return (
     <div className="w-64 bg-[#1a1a1a] border-r border-[#2a2a2a] min-h-screen flex flex-col">
@@ -76,21 +102,68 @@ export default function Sidebar({ currentSection, onSectionChange }) {
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = item.section ? currentSection === item.section : currentSection === 'dashboard';
+          const isExpanded = expandedMenus[item.id];
+          const hasSubMenu = item.subMenu && item.subMenu.length > 0;
           
           return (
-            <button
-              key={item.id}
-              onClick={() => onSectionChange(item.section || 'dashboard')}
-              className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                isActive 
-                  ? "bg-[#FF1B7E] text-white shadow-lg shadow-[#FF1B7E]/20" 
-                  : "text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+            <div key={item.id}>
+              <button
+                onClick={() => {
+                  if (hasSubMenu) {
+                    toggleMenu(item.id);
+                  }
+                  onSectionChange(item.section || 'dashboard');
+                }}
+                className={cn(
+                  "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                  isActive 
+                    ? "bg-[#FF1B7E] text-white shadow-lg shadow-[#FF1B7E]/20" 
+                    : "text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </div>
+                {hasSubMenu && (
+                  isExpanded ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+              
+              {/* Submenu */}
+              {hasSubMenu && isExpanded && (
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#2a2a2a] pl-2">
+                  {item.subMenu.map((subItem) => {
+                    const SubIcon = subItem.icon;
+                    const isSubActive = subItem.section && currentSection === subItem.section;
+                    
+                    return (
+                      <button
+                        key={subItem.id}
+                        onClick={() => {
+                          if (subItem.action) {
+                            onAction?.(subItem.action);
+                          } else if (subItem.section) {
+                            onSectionChange(subItem.section);
+                          }
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
+                          isSubActive
+                            ? "bg-[#FF1B7E]/20 text-[#FF1B7E]"
+                            : "text-gray-500 hover:text-white hover:bg-[#2a2a2a]"
+                        )}
+                      >
+                        <SubIcon className="h-4 w-4" />
+                        <span>{subItem.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </button>
+            </div>
           );
         })}
       </nav>

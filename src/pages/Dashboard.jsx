@@ -16,7 +16,7 @@ import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
 
-export default function Dashboard({ currentSection = 'dashboard', onSectionChange }) {
+export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -24,6 +24,14 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   const [user, setUser] = useState(null);
   
   const queryClient = useQueryClient();
+  
+  // Handle sidebar actions
+  useEffect(() => {
+    if (sidebarAction === 'create-project') {
+      setIsCreateOpen(true);
+      onActionHandled?.();
+    }
+  }, [sidebarAction, onActionHandled]);
   
   useEffect(() => {
     const loadUser = async () => {
@@ -132,6 +140,18 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   // Home Dashboard
   if (currentSection === 'dashboard') {
     return <DashboardHome onNavigate={onSectionChange} />;
+  }
+  
+  // Vista de Categorías
+  if (currentSection === 'categories') {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">Gestión de Categorías</h2>
+        </div>
+        <AdminPanel isOpen={true} onClose={() => onSectionChange('projects')} defaultTab="technologies" />
+      </div>
+    );
   }
 
   // Vista de Cronogramas
