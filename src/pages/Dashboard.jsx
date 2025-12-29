@@ -146,11 +146,6 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     completed: projects.filter(p => p.status === 'completed').length
   };
   
-  // Mostrar pantalla de login si no hay usuario
-  if (user === null) {
-    return <LoginScreen />;
-  }
-  
   // Home Dashboard
   if (currentSection === 'dashboard') {
     return <DashboardHome onNavigate={onSectionChange} />;

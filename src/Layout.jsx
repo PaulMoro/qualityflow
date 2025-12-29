@@ -1,10 +1,40 @@
 import React from 'react';
 import Sidebar from './components/navigation/Sidebar';
 import UserProfileMenu from './components/navigation/UserProfileMenu';
+import LoginScreen from './components/auth/LoginScreen';
+import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
   const [currentSection, setCurrentSection] = React.useState('dashboard');
   const [sidebarAction, setSidebarAction] = React.useState(null);
+  const [user, setUser] = React.useState(undefined);
+  
+  React.useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (isAuth) {
+          const u = await base44.auth.me();
+          setUser(u);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        setUser(null);
+      }
+    };
+    loadUser();
+  }, []);
+  
+  // Mostrar pantalla de login si no hay usuario
+  if (user === null) {
+    return <LoginScreen />;
+  }
+  
+  // Mostrar loading mientras verificamos autenticación
+  if (user === undefined) {
+    return null;
+  }
   
   // Si estamos en una página específica (no Dashboard), no mostrar el layout de navegación
   const isProjectPage = currentPageName === 'ProjectChecklist';
