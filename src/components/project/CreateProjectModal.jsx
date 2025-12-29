@@ -829,7 +829,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           )}
           
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose} className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white">
+            <Button type="button" onClick={onClose} className="bg-white hover:bg-gray-100 text-black border-white">
               Cancelar
             </Button>
             <Button type="submit" disabled={!isValid || isLoading} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
