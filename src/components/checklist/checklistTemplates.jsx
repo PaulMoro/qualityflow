@@ -3,19 +3,21 @@
 export const PHASES = {
   documentation: { name: 'Brief del Proyecto', icon: 'FileText', order: 1, area: 'product' },
   planning: { name: 'Equipo y Cronograma', icon: 'Calendar', order: 2, area: 'product' },
-  ux_ui: { name: 'Creatividad - Brand y Look & Feel', icon: 'Palette', order: 3, area: 'creativity' },
-  content: { name: 'Creatividad - Copy y Contenido', icon: 'FileText', order: 4, area: 'creativity' },
-  technical: { name: 'Software - Stack y Requerimientos', icon: 'Settings', order: 5, area: 'software' },
-  development: { name: 'Software - Desarrollo', icon: 'Code', order: 6, area: 'software' },
-  performance: { name: 'Software - Performance', icon: 'Zap', order: 7, area: 'software' },
-  seo_accessibility: { name: 'SEO - Keywords y Arquitectura', icon: 'Search', order: 8, area: 'seo' },
-  responsive: { name: 'QA - Responsive', icon: 'Smartphone', order: 9, area: 'qa' },
-  qa: { name: 'QA - Testing', icon: 'CheckSquare', order: 10, area: 'qa' },
-  security: { name: 'Software - Seguridad', icon: 'Shield', order: 11, area: 'software' },
+  ux_design: { name: 'UX - Experiencia de Usuario', icon: 'Users', order: 3, area: 'ux' },
+  ui_design: { name: 'UI - Interfaz Visual', icon: 'Palette', order: 4, area: 'ui' },
+  content: { name: 'Contenido - Copy y Multimedia', icon: 'FileText', order: 5, area: 'ui' },
+  seo_accessibility: { name: 'SEO - Keywords y Arquitectura', icon: 'Search', order: 6, area: 'seo' },
+  paid: { name: 'Paid Media', icon: 'DollarSign', order: 7, area: 'paid' },
+  technical: { name: 'Software - Stack y Requerimientos', icon: 'Settings', order: 8, area: 'software' },
+  development: { name: 'Software - Desarrollo', icon: 'Code', order: 9, area: 'software' },
+  web_dev: { name: 'Desarrollo Web', icon: 'Layout', order: 10, area: 'web_dev' },
+  performance: { name: 'Performance', icon: 'Zap', order: 11, area: 'web_dev' },
   marketing: { name: 'Marketing', icon: 'TrendingUp', order: 12, area: 'marketing' },
-  paid: { name: 'Paid Media', icon: 'DollarSign', order: 13, area: 'paid' },
-  social: { name: 'Social Media', icon: 'MessageCircle', order: 14, area: 'social' },
-  delivery: { name: 'Entrega Final', icon: 'Rocket', order: 15, area: 'product' }
+  social: { name: 'Social Media', icon: 'MessageCircle', order: 13, area: 'social' },
+  responsive: { name: 'QA - Responsive', icon: 'Smartphone', order: 14, area: 'qa' },
+  qa: { name: 'QA - Testing', icon: 'CheckSquare', order: 15, area: 'qa' },
+  security: { name: 'Seguridad', icon: 'Shield', order: 16, area: 'software' },
+  delivery: { name: 'Entrega Final', icon: 'Rocket', order: 17, area: 'product' }
 };
 
 export const WEIGHT_CONFIG = {
@@ -48,20 +50,26 @@ export const ROLE_CONFIG = {
   leader_product: { name: 'Líder Producto', color: 'bg-amber-600', canComplete: ['documentation', 'planning', 'delivery'], isLeader: true },
   product_owner: { name: 'Product Owner', color: 'bg-amber-500', canComplete: ['documentation', 'planning'], isLeader: false },
   
-  leader_creativity: { name: 'Líder Creatividad', color: 'bg-pink-600', canComplete: ['ux_ui', 'content'], isLeader: true },
-  creativity: { name: 'Creatividad', color: 'bg-pink-500', canComplete: ['ux_ui', 'content'], isLeader: false },
+  leader_ux: { name: 'Líder UX', color: 'bg-teal-600', canComplete: ['ux_design'], isLeader: true },
+  ux: { name: 'UX', color: 'bg-teal-500', canComplete: ['ux_design'], isLeader: false },
   
-  leader_software: { name: 'Líder Software', color: 'bg-purple-600', canComplete: ['technical', 'development', 'performance', 'security'], isLeader: true },
-  software: { name: 'Software', color: 'bg-purple-500', canComplete: ['technical', 'development', 'performance', 'security'], isLeader: false },
+  leader_ui: { name: 'Líder UI', color: 'bg-pink-600', canComplete: ['ui_design', 'content'], isLeader: true },
+  ui: { name: 'UI', color: 'bg-pink-500', canComplete: ['ui_design', 'content'], isLeader: false },
   
   leader_seo: { name: 'Líder SEO', color: 'bg-green-600', canComplete: ['seo_accessibility'], isLeader: true },
   seo: { name: 'SEO', color: 'bg-green-500', canComplete: ['seo_accessibility'], isLeader: false },
   
+  leader_paid: { name: 'Líder Paid Media', color: 'bg-violet-600', canComplete: ['paid'], isLeader: true },
+  paid: { name: 'Paid Media', color: 'bg-violet-500', canComplete: ['paid'], isLeader: false },
+  
+  leader_software: { name: 'Líder Software/Desarrollo', color: 'bg-purple-600', canComplete: ['technical', 'development', 'security'], isLeader: true },
+  software: { name: 'Software/Desarrollo', color: 'bg-purple-500', canComplete: ['technical', 'development', 'security'], isLeader: false },
+  
+  leader_web_dev: { name: 'Líder Desarrollo Web', color: 'bg-cyan-600', canComplete: ['web_dev', 'performance'], isLeader: true },
+  web_dev: { name: 'Desarrollo Web', color: 'bg-cyan-500', canComplete: ['web_dev', 'performance'], isLeader: false },
+  
   leader_marketing: { name: 'Líder Marketing', color: 'bg-indigo-600', canComplete: ['marketing'], isLeader: true },
   marketing: { name: 'Marketing', color: 'bg-indigo-500', canComplete: ['marketing'], isLeader: false },
-  
-  leader_paid: { name: 'Líder Paid', color: 'bg-violet-600', canComplete: ['paid'], isLeader: true },
-  paid: { name: 'Paid', color: 'bg-violet-500', canComplete: ['paid'], isLeader: false },
   
   leader_social: { name: 'Líder Social Media', color: 'bg-sky-600', canComplete: ['social'], isLeader: true },
   social: { name: 'Social Media', color: 'bg-sky-500', canComplete: ['social'], isLeader: false },
