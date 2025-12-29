@@ -771,6 +771,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
                 </PopoverContent>
               </Popover>
             </div>
+          </div>
           </>
           )}
           
