@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { FileText, Upload, Trash2, Download, Loader2, Plus } from 'lucide-react';
+import { FileText, Upload, Trash2, Download, Loader2, Plus, ExternalLink } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
+import GoogleDrivePicker from '../googledrive/GoogleDrivePicker';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -25,6 +26,7 @@ const DOCUMENT_TYPES = {
 
 export default function ProjectDocuments({ projectId }) {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [showGoogleDrivePicker, setShowGoogleDrivePicker] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -99,10 +101,16 @@ export default function ProjectDocuments({ projectId }) {
             <FileText className="h-5 w-5 text-[#FF1B7E]" />
             Documentación del Proyecto
           </CardTitle>
-          <Button size="sm" onClick={() => setIsUploadOpen(true)} className="bg-white hover:bg-gray-100 text-black">
-            <Plus className="h-4 w-4 mr-2" />
-            Subir Documento
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => setShowGoogleDrivePicker(true)} className="bg-white hover:bg-gray-100 text-black">
+              <FileText className="h-4 w-4 mr-2" />
+              Google Drive
+            </Button>
+            <Button size="sm" onClick={() => setIsUploadOpen(true)} className="bg-white hover:bg-gray-100 text-black">
+              <Plus className="h-4 w-4 mr-2" />
+              Subir Archivo
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -143,8 +151,13 @@ export default function ProjectDocuments({ projectId }) {
                           variant="ghost"
                           className="h-8 w-8"
                           onClick={() => window.open(doc.file_url, '_blank')}
+                          title={doc.file_url.includes('drive.google.com') ? 'Ver en Google Drive' : 'Descargar'}
                         >
-                          <Download className="h-4 w-4" />
+                          {doc.file_url.includes('drive.google.com') ? (
+                            <ExternalLink className="h-4 w-4" />
+                          ) : (
+                            <Download className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button
                           size="icon"
@@ -235,6 +248,29 @@ export default function ProjectDocuments({ projectId }) {
             </form>
           </DialogContent>
         </Dialog>
+
+        <GoogleDrivePicker
+          isOpen={showGoogleDrivePicker}
+          onClose={() => setShowGoogleDrivePicker(false)}
+          onSelect={async (file) => {
+            try {
+              const user = await base44.auth.me();
+              await base44.entities.ProjectDocument.create({
+                project_id: projectId,
+                name: file.name,
+                document_type: 'otro',
+                file_url: file.url,
+                uploaded_by: user.email,
+                notes: 'Vinculado desde Google Drive'
+              });
+              queryClient.invalidateQueries({ queryKey: ['project-documents', projectId] });
+              toast.success('Archivo vinculado correctamente');
+              setShowGoogleDrivePicker(false);
+            } catch (error) {
+              toast.error('Error al vincular archivo');
+            }
+          }}
+        />
       </CardContent>
     </Card>
   );

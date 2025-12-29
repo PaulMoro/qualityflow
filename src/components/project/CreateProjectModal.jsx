@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, CheckSquare, Plus } from 'lucide-react';
+import { CalendarIcon, Loader2, CheckSquare, Plus, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from "@/components/ui/checkbox";
+import GoogleDrivePicker from '../googledrive/GoogleDrivePicker';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -24,6 +25,8 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
   const queryClient = useQueryClient();
   
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedBrief, setSelectedBrief] = useState(null);
+  const [showGoogleDrivePicker, setShowGoogleDrivePicker] = useState(false);
   const [showAddProjectType, setShowAddProjectType] = useState(false);
   const [showAddFeeType, setShowAddFeeType] = useState(false);
   const [showAddClient, setShowAddClient] = useState(false);
@@ -222,7 +225,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
     }
   }, [initialData, isOpen]);
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const data = {
       ...formData,
@@ -240,21 +243,44 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
       data.project_value = parseFloat(formData.project_value);
     }
     
-    onCreate(data);
+    // Crear el proyecto
+    await onCreate(data);
+    
+    // Si hay un brief seleccionado, guardarlo después de crear el proyecto
+    if (selectedBrief && data.id) {
+      try {
+        const user = await base44.auth.me();
+        await base44.entities.ProjectDocument.create({
+          project_id: data.id,
+          name: selectedBrief.name,
+          document_type: 'brief',
+          file_url: selectedBrief.url,
+          uploaded_by: user.email,
+          notes: 'Brief del proyecto vinculado desde Google Drive'
+        });
+      } catch (error) {
+        console.error('Error guardando brief:', error);
+      }
+    }
   };
   
   const isStep1Valid = formData.name && formData.project_type && formData.product_owner_email;
   const isStep2Valid = formData.applicable_areas.length > 0;
-  const isValid = isStep1Valid && isStep2Valid;
+  const isStep3Valid = true; // El brief es opcional
+  const isValid = isStep1Valid && isStep2Valid && isStep3Valid;
   
   const handleNext = () => {
     if (currentStep === 1 && isStep1Valid) {
       setCurrentStep(2);
+    } else if (currentStep === 2 && isStep2Valid) {
+      setCurrentStep(3);
     }
   };
   
   const handleBack = () => {
-    if (currentStep === 2) {
+    if (currentStep === 3) {
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
       setCurrentStep(1);
     }
   };
@@ -281,6 +307,13 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
               )}>
                 2
               </div>
+              <div className="w-8 h-0.5 bg-[#2a2a2a]" />
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
+                currentStep === 3 ? "bg-[#FF1B7E] text-white" : "bg-[#2a2a2a] text-gray-400"
+              )}>
+                3
+              </div>
             </div>
           </div>
           {currentStep === 1 && (
@@ -291,6 +324,11 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
           {currentStep === 2 && (
             <p className="text-sm text-gray-400 mt-2">
               Paso 2: Asigna las áreas y selecciona los responsables
+            </p>
+          )}
+          {currentStep === 3 && (
+            <p className="text-sm text-gray-400 mt-2">
+              Paso 3: Adjunta el brief del proyecto (opcional)
             </p>
           )}
         </DialogHeader>
@@ -826,9 +864,73 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             </>
           )}
           
+          {/* PASO 3: Brief del Proyecto */}
+          {currentStep === 3 && (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <Label className="text-white">Brief del Proyecto</Label>
+                <p className="text-xs text-gray-400">
+                  Selecciona el brief del proyecto desde tu Google Drive
+                </p>
+                
+                {selectedBrief ? (
+                  <div className="p-4 bg-[#0a0a0a] border border-[#FF1B7E]/40 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <FileText className="h-5 w-5 text-[#FF1B7E] flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {selectedBrief.name}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Archivo seleccionado de Google Drive
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelectedBrief(null)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        Cambiar
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => setShowGoogleDrivePicker(true)}
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] hover:border-[#FF1B7E] text-white h-24"
+                    variant="outline"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <FileText className="h-8 w-8 text-gray-400" />
+                      <span className="text-sm">Seleccionar desde Google Drive</span>
+                    </div>
+                  </Button>
+                )}
+              </div>
+              
+              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <p className="text-xs text-blue-300">
+                  💡 Puedes omitir este paso y agregar el brief más tarde desde la sección de documentos del proyecto
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <GoogleDrivePicker
+            isOpen={showGoogleDrivePicker}
+            onClose={() => setShowGoogleDrivePicker(false)}
+            onSelect={(file) => {
+              setSelectedBrief(file);
+              setShowGoogleDrivePicker(false);
+            }}
+          />
+          
           <DialogFooter className="mt-6 flex justify-between">
             <div>
-              {currentStep === 2 && (
+              {(currentStep === 2 || currentStep === 3) && (
                 <Button type="button" onClick={handleBack} className="bg-white hover:bg-gray-100 text-black border-white">
                   Atrás
                 </Button>
@@ -840,6 +942,10 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
               </Button>
               {currentStep === 1 ? (
                 <Button type="button" onClick={handleNext} disabled={!isStep1Valid} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
+                  Siguiente
+                </Button>
+              ) : currentStep === 2 ? (
+                <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
                   Siguiente
                 </Button>
               ) : (
