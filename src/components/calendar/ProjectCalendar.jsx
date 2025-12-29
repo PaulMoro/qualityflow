@@ -153,23 +153,21 @@ export default function ProjectCalendar({ project, onUpdatePhaseDurations }) {
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
                 size="icon"
                 onClick={() => setCurrentMonth(addDays(currentMonth, -30))}
-                className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white"
+                className="bg-white hover:bg-gray-100 text-black"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 text-black" />
               </Button>
               <span className="text-sm font-medium min-w-[150px] text-center text-white">
                 {format(currentMonth, 'MMMM yyyy', { locale: es })}
               </span>
               <Button
-                variant="outline"
                 size="icon"
                 onClick={() => setCurrentMonth(addDays(currentMonth, 30))}
-                className="border-[#2a2a2a] hover:bg-[#2a2a2a] text-white"
+                className="bg-white hover:bg-gray-100 text-black"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 text-black" />
               </Button>
             </div>
           </div>
