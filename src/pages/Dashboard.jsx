@@ -240,16 +240,16 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <motion.div 
-            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-[#FF1B7E]/30 transition-all"
+            className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-[#FF1B7E]/30 transition-all"
             whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#2a2a2a] rounded-lg">
-                <LayoutGrid className="h-5 w-5 text-gray-400" />
+              <div className="p-2 bg-[var(--bg-tertiary)] rounded-lg">
+                <LayoutGrid className="h-5 w-5 text-[var(--text-secondary)]" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{stats.total}</p>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">Total proyectos</p>
+                <p className="text-3xl font-bold text-[var(--text-primary)]">{stats.total}</p>
+                <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">Total proyectos</p>
               </div>
             </div>
           </motion.div>
@@ -301,19 +301,19 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         </div>
         
         {/* Filters */}
-        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] mb-8">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
               <Input
                 placeholder="Buscar proyectos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E] focus:ring-[#FF1B7E]/20"
+                className="pl-9 bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E] focus:ring-[var(--ring)]"
               />
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <TabsList className="bg-[#0a0a0a] border-[#2a2a2a]">
+              <TabsList className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
                 <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Todos</TabsTrigger>
                 <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Progreso</TabsTrigger>
                 <TabsTrigger value="review" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Revisión</TabsTrigger>
@@ -333,10 +333,10 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-20">
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-              <LayoutGrid className="h-10 w-10 text-gray-500" />
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+              <LayoutGrid className="h-10 w-10 text-[var(--text-tertiary)]" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">
+            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
               {searchQuery || statusFilter !== 'all' ? 'No se encontraron proyectos' : 'Sin proyectos'}
             </h3>
             <p className="text-gray-400 mb-6">

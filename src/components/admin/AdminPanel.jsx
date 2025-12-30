@@ -132,17 +132,17 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-[#2a2a2a] text-white">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2 text-white">
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2 text-[var(--text-primary)]">
             <Shield className="h-5 w-5 text-[#FF1B7E]" />
             Panel de Administración
           </DialogTitle>
         </DialogHeader>
         
         <Tabs defaultValue={defaultTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-5 bg-[#0a0a0a] border-[#2a2a2a]">
-            <TabsTrigger value="members" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-gray-400">
+          <TabsList className="grid w-full grid-cols-5 bg-[var(--bg-primary)] border-[var(--border-primary)]">
+            <TabsTrigger value="members" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
               <Users className="h-4 w-4 mr-2" />
               Miembros
             </TabsTrigger>

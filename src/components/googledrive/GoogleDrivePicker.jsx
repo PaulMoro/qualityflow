@@ -59,43 +59,43 @@ export default function GoogleDrivePicker({ isOpen, onClose, onSelect }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[#1a1a1a] border-[#2a2a2a] text-white">
+      <DialogContent className="sm:max-w-md bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-white flex items-center gap-3">
+          <DialogTitle className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4285F4] to-[#34A853] flex items-center justify-center shadow-lg">
               <FileText className="h-6 w-6 text-white" />
             </div>
             Vincular desde Google Drive
-          </DialogTitle>
-          <p className="text-sm text-gray-400 mt-2">Pega el enlace del archivo de Google Drive</p>
+            </DialogTitle>
+            <p className="text-sm text-[var(--text-secondary)] mt-2">Pega el enlace del archivo de Google Drive</p>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="drive-url" className="text-white">Enlace de Google Drive *</Label>
+            <Label htmlFor="drive-url" className="text-[var(--text-primary)]">Enlace de Google Drive *</Label>
             <div className="relative">
-              <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
               <Input
                 id="drive-url"
                 value={driveUrl}
                 onChange={(e) => setDriveUrl(e.target.value)}
                 placeholder="https://drive.google.com/file/d/..."
-                className="pl-9 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500"
+                className="pl-9 bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
               />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--text-tertiary)]">
               Copia el enlace compartible del archivo desde Google Drive
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file-name" className="text-white">Nombre del archivo (opcional)</Label>
+            <Label htmlFor="file-name" className="text-[var(--text-primary)]">Nombre del archivo (opcional)</Label>
             <Input
               id="file-name"
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
               placeholder="Ej: Propuesta del proyecto"
-              className="bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500"
+              className="bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
             />
           </div>
 

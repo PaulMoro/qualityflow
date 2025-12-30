@@ -94,10 +94,10 @@ export default function ProjectDocuments({ projectId }) {
   }, {});
 
   return (
-    <Card className="bg-gradient-to-br from-[#1a1a1a] to-[#141414] border-[#2a2a2a] shadow-xl">
+    <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)] shadow-xl">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-3 text-white">
+          <CardTitle className="text-base flex items-center gap-3 text-[var(--text-primary)]">
             <div className="w-10 h-10 rounded-xl bg-[#FF1B7E]/10 flex items-center justify-center">
               <FileText className="h-5 w-5 text-[#FF1B7E]" />
             </div>
@@ -128,35 +128,35 @@ export default function ProjectDocuments({ projectId }) {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-[#FF1B7E] mb-3" />
-            <p className="text-sm text-gray-400">Cargando documentos...</p>
+            <p className="text-sm text-[var(--text-secondary)]">Cargando documentos...</p>
           </div>
         ) : documents.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-[#2a2a2a] rounded-xl bg-[#0a0a0a]/50">
-            <div className="w-20 h-20 rounded-full bg-[#2a2a2a]/30 flex items-center justify-center mx-auto mb-4">
-              <FileText className="h-10 w-10 text-gray-600" />
+          <div className="text-center py-12 border-2 border-dashed border-[var(--border-primary)] rounded-xl bg-[var(--bg-primary)]/50">
+            <div className="w-20 h-20 rounded-full bg-[var(--bg-tertiary)]/30 flex items-center justify-center mx-auto mb-4">
+              <FileText className="h-10 w-10 text-[var(--text-tertiary)]" />
             </div>
-            <p className="text-sm font-medium text-gray-300 mb-1">No hay documentos subidos</p>
-            <p className="text-xs text-gray-500">Sube archivos o vincula desde Google Drive</p>
+            <p className="text-sm font-medium text-[var(--text-primary)] mb-1">No hay documentos subidos</p>
+            <p className="text-xs text-[var(--text-secondary)]">Sube archivos o vincula desde Google Drive</p>
           </div>
         ) : (
           <div className="space-y-4">
             {Object.entries(groupedDocs).map(([type, docs]) => (
               <div key={type}>
-                <h4 className="text-sm font-medium text-white mb-2">
+                <h4 className="text-sm font-medium text-[var(--text-primary)] mb-2">
                   {DOCUMENT_TYPES[type]?.label}
                 </h4>
                 <div className="space-y-2">
                   {docs.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg hover:bg-[#2a2a2a]/50 transition-colors">
+                    <div key={doc.id} className="flex items-center justify-between p-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-hover)] transition-colors">
                       <div className="flex items-center gap-3 flex-1">
-                        <FileText className="h-5 w-5 text-gray-400" />
+                        <FileText className="h-5 w-5 text-[var(--text-secondary)]" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-white truncate">{doc.name}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="font-medium text-sm text-[var(--text-primary)] truncate">{doc.name}</p>
+                          <p className="text-xs text-[var(--text-secondary)]">
                             Subido por {doc.uploaded_by} • {format(new Date(doc.created_date), "d MMM yyyy", { locale: es })}
                           </p>
                           {doc.notes && (
-                            <p className="text-xs text-gray-300 mt-1">{doc.notes}</p>
+                            <p className="text-xs text-[var(--text-primary)] mt-1">{doc.notes}</p>
                           )}
                         </div>
                       </div>
@@ -196,13 +196,13 @@ export default function ProjectDocuments({ projectId }) {
         )}
 
         <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-          <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+          <DialogContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]">
             <DialogHeader>
-              <DialogTitle className="text-white">Subir Documento</DialogTitle>
+              <DialogTitle className="text-[var(--text-primary)]">Subir Documento</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpload} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-white">Tipo de Documento *</Label>
+                <Label className="text-[var(--text-primary)]">Tipo de Documento *</Label>
                 <Select
                   value={formData.document_type}
                   onValueChange={(value) => setFormData({ ...formData, document_type: value })}
