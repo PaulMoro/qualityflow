@@ -151,7 +151,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
             Proyectos de {areaNames[areaKey]}
           </h2>
         </div>
@@ -159,18 +159,18 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl h-64 animate-pulse" />
+              <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl h-64 animate-pulse" />
             ))}
           </div>
         ) : areaProjects.length === 0 ? (
           <div className="text-center py-20">
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-              <FolderKanban className="h-10 w-10 text-gray-500" />
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+              <FolderKanban className="h-10 w-10 text-[var(--text-tertiary)]" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">
+            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
               No hay proyectos en {areaNames[areaKey]}
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-secondary)] mb-6">
               Los proyectos con esta área aparecerán aquí
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Cronogramas Generales</h2>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Cronogramas Generales</h2>
         </div>
         <GeneralSchedules />
       </div>
@@ -215,7 +215,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Ocupación de Recursos</h2>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Ocupación de Recursos</h2>
         </div>
         <ResourceOccupancy />
       </div>
@@ -226,7 +226,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">Gestión de Proyectos</h2>
+        <h2 className="text-2xl font-bold text-[var(--text-primary)]">Gestión de Proyectos</h2>
         <div className="flex items-center gap-3">
           <RoleSelector value={userRole} onChange={setUserRole} />
           <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
@@ -255,7 +255,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
           </motion.div>
           
           <motion.div 
-            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-[#FF1B7E]/30 transition-all"
+            className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-[#FF1B7E]/30 transition-all"
             whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
@@ -264,13 +264,13 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
               </div>
               <div>
                 <p className="text-3xl font-bold text-[#FF1B7E]">{stats.inProgress}</p>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">En progreso</p>
+                <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">En progreso</p>
               </div>
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-red-500/30 transition-all"
+            className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-red-500/30 transition-all"
             whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
@@ -279,13 +279,13 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
               </div>
               <div>
                 <p className="text-3xl font-bold text-red-500">{stats.blocked}</p>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">Con alertas</p>
+                <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">Con alertas</p>
               </div>
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] hover:border-green-500/30 transition-all"
+            className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-green-500/30 transition-all"
             whileHover={{ y: -4, scale: 1.02 }}
           >
             <div className="flex items-center gap-3">
@@ -294,7 +294,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
               </div>
               <div>
                 <p className="text-3xl font-bold text-green-500">{stats.completed}</p>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">Completados</p>
+                <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">Completados</p>
               </div>
             </div>
           </motion.div>
@@ -328,7 +328,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl h-64 animate-pulse" />
+              <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl h-64 animate-pulse" />
             ))}
           </div>
         ) : filteredProjects.length === 0 ? (
@@ -339,7 +339,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
               {searchQuery || statusFilter !== 'all' ? 'No se encontraron proyectos' : 'Sin proyectos'}
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-[var(--text-secondary)] mb-6">
               {searchQuery || statusFilter !== 'all' 
                 ? 'Intenta con otros filtros de búsqueda' 
                 : 'Crea tu primer proyecto para comenzar'}

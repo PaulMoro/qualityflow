@@ -121,10 +121,10 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
   };
   
   return (
-    <div className="w-64 bg-[#1a1a1a] border-r border-[#2a2a2a] min-h-screen flex flex-col">
+    <div className="w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] min-h-screen flex flex-col">
       {/* Logo */}
-      <div className="p-6 border-b border-[#2a2a2a]">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+      <div className="p-6 border-b border-[var(--border-primary)]">
+        <h1 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
           <div className="w-8 h-8 bg-[#FF1B7E] rounded-lg flex items-center justify-center">
             <LayoutDashboard className="h-5 w-5 text-white" />
           </div>
@@ -153,7 +153,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
                   "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
                   isActive 
                     ? "bg-[#FF1B7E] text-white shadow-lg shadow-[#FF1B7E]/20" 
-                    : "text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
                 )}
               >
                 <div className="flex items-center gap-3 text-left">
@@ -169,7 +169,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
               
               {/* Submenu */}
               {hasSubMenu && isExpanded && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#2a2a2a] pl-2">
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-[var(--border-primary)] pl-2">
                   {item.subMenu.map((subItem) => {
                     const SubIcon = subItem.icon;
                     const isSubActive = subItem.section && currentSection === subItem.section;
@@ -192,7 +192,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
                             "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all",
                             isSubActive
                               ? "bg-[#FF1B7E]/20 text-[#FF1B7E]"
-                              : "text-gray-500 hover:text-white hover:bg-[#2a2a2a]"
+                              : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
                           )}
                         >
                           <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
                         
                         {/* Nested submenu */}
                         {hasNestedMenu && isSubExpanded && (
-                          <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#2a2a2a] pl-2">
+                          <div className="ml-4 mt-1 space-y-1 border-l-2 border-[var(--border-primary)] pl-2">
                             {subItem.subItems.map((nestedItem) => {
                               const isNestedActive = nestedItem.section && currentSection === nestedItem.section;
                               
@@ -224,7 +224,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
                                     "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left",
                                     isNestedActive
                                       ? "bg-[#FF1B7E]/20 text-[#FF1B7E]"
-                                      : "text-gray-500 hover:text-white hover:bg-[#2a2a2a]"
+                                      : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
                                   )}
                                 >
                                   <span>{nestedItem.label}</span>
@@ -244,8 +244,8 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-[#2a2a2a] space-y-2">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-[#2a2a2a] transition-all">
+      <div className="p-4 border-t border-[var(--border-primary)] space-y-2">
+        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
           <Settings className="h-5 w-5" />
           <span>Configuración</span>
         </button>
@@ -254,7 +254,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
         {currentUser && (currentUser.role === 'admin' || currentUser.email === 'luis.restrepo@antpack.co' || currentUser.email === 'geraldine.hurtado@antpack.co') && (
           <button
             onClick={() => setShowAdminPanel(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-[#2a2a2a] text-white hover:bg-[#FF1B7E] hover:shadow-lg hover:shadow-[#FF1B7E]/20 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[#FF1B7E] hover:text-white hover:shadow-lg hover:shadow-[#FF1B7E]/20 transition-all"
           >
             <Shield className="h-5 w-5" />
             <span>Panel Admin</span>
