@@ -128,7 +128,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
           <div className="w-8 h-8 bg-[#FF1B7E] rounded-lg flex items-center justify-center">
             <LayoutDashboard className="h-5 w-5 text-white" />
           </div>
-          Control QA
+          Antpack
         </h1>
       </div>
 
