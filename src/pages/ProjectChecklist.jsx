@@ -5,7 +5,8 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import TasksView from '../components/tasks/TasksView';
 import { 
   ArrowLeft, Download, RefreshCw, Send, AlertTriangle, CheckCircle2, 
   ChevronDown, Settings, Users, Calendar, GripVertical 
@@ -523,28 +524,183 @@ export default function ProjectChecklist() {
       </header>
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Pestañas principales */}
-        <div className="mb-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full max-w-md grid-cols-2">
-              <TabsTrigger value="checklist">Checklist</TabsTrigger>
-              <TabsTrigger value="calendar">Calendario</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 bg-[var(--bg-secondary)] border-[var(--border-primary)]">
+            <TabsTrigger value="checklist" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Checklist</TabsTrigger>
+            <TabsTrigger value="tasks" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Tareas</TabsTrigger>
+            <TabsTrigger value="calendar" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Calendario</TabsTrigger>
+          </TabsList>
 
-        {activeTab === 'calendar' ? (
-          <ProjectCalendar 
-            project={project} 
-            onUpdatePhaseDurations={(data) => {
-              const { start_date, ...durations } = data;
-              updateProjectMutation.mutate({ 
-                phase_durations: durations,
-                start_date 
-              });
-            }}
-          />
-        ) : (
+          <TabsContent value="checklist" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Checklist y Workflow unificado */}
+              <div className="lg:col-span-2 space-y-4">
+                {/* Filtros de vista */}
+                <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-4">
+                  <Tabs value={viewMode} onValueChange={setViewMode}>
+                    <TabsList className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
+                      <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
+                        Todos los ítems
+                      </TabsTrigger>
+                      <TabsTrigger value="pending" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
+                        Solo pendientes
+                      </TabsTrigger>
+                      <TabsTrigger value="critical" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">
+                        Solo críticos
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+
+                {/* Permisos de edición */}
+                <div className="bg-[var(--bg-secondary)] border border-[#FF1B7E]/20 rounded-xl p-4">
+                  <p className="text-sm text-[var(--text-primary)]">
+                    <strong className="text-[#FF1B7E]">Rol:</strong> {ROLE_CONFIG[userRole]?.name || 'No definido'}
+                    {userRole === 'web_leader' ? 
+                      ' - Puedes editar y reordenar todas las fases' : 
+                      ROLE_CONFIG[userRole]?.isLeader ?
+                        ' - Líder: Puedes editar ítems de tu área' :
+                        ' - Puedes marcar ítems de tu área como completados (sin edición)'
+                    }
+                  </p>
+                </div>
+
+                {/* Conflictos */}
+              {conflicts.length > 0 && (
+                <div className="space-y-2">
+                  {conflicts.map(conflict => (
+                    <ConflictAlert 
+                      key={conflict.id} 
+                      conflict={conflict}
+                      isLeader={userRole === 'web_leader'}
+                      onResolve={(id, status, resolution) => 
+                        resolveConflictMutation.mutate({ conflictId: id, resolution })
+                      }
+                    />
+                  ))}
+                </div>
+              )}
+              
+              {/* Fases del checklist */}
+              <DragDropContext onDragEnd={handlePhaseReorder}>
+                <Droppable droppableId="phases">
+                  {(provided) => (
+                    <div 
+                      {...provided.droppableProps} 
+                      ref={provided.innerRef}
+                      className="space-y-4"
+                    >
+                      {visiblePhases.map(([phaseKey, phaseConfig], index) => {
+                        const items = filteredItemsByPhase[phaseKey] || [];
+                        if (items.length === 0 && viewMode !== 'all') return null;
+                        
+                        return (
+                          <Draggable key={phaseKey} draggableId={phaseKey} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                              >
+                                <PhaseCard
+                                  phase={phaseKey}
+                                  items={itemsByPhase[phaseKey] || []}
+                                  isExpanded={expandedPhases.includes(phaseKey)}
+                                  onToggle={() => togglePhase(phaseKey)}
+                                  onItemUpdate={handleItemUpdate}
+                                  onItemEdit={handleItemEdit}
+                                  onAddItem={handleAddItem}
+                                  onEditPhase={handleEditPhase}
+                                  onItemReorder={handleItemReorder}
+                                  userRole={userRole}
+                                  isCriticalPhase={criticalPhases.includes(phaseKey)}
+                                  customPhaseName={project?.custom_phase_names?.[phaseKey]}
+                                  dragHandleProps={provided.dragHandleProps}
+                                  isDragging={snapshot.isDragging}
+                                  project={project}
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
+            
+            {/* Panel lateral - Resumen */}
+            <div className="space-y-6">
+              {/* Documentación */}
+              <ProjectDocuments projectId={projectId} />
+
+              {risk && <RiskSummary risk={risk} project={project} />}
+              
+              {/* Fases críticas */}
+              <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-4">
+                <h3 className="font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-[#FF1B7E]" />
+                  Fases críticas para este proyecto
+                </h3>
+                <div className="space-y-2">
+                  {criticalPhases.map(phase => {
+                    const items = itemsByPhase[phase] || [];
+                    const completed = items.filter(i => i.status === 'completed').length;
+                    const progress = items.length > 0 ? (completed / items.length) * 100 : 0;
+
+                    return (
+                      <div key={phase} className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-[var(--text-primary)]">
+                            {PHASES[phase]?.name}
+                          </p>
+                          <Progress value={progress} className="h-1.5 mt-1 bg-[var(--bg-tertiary)] [&>div]:bg-[#FF1B7E]" />
+                        </div>
+                        <Badge variant="outline" className="text-xs border-[var(--border-secondary)] text-[var(--text-secondary)]">
+                          {completed}/{items.length}
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Acciones */}
+              <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-4 space-y-3">
+                <Button 
+                  className={`w-full ${risk?.canDeliver ? 'bg-[#FF1B7E] hover:bg-[#e6156e] text-white' : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]'}`}
+                  disabled={!risk?.canDeliver}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {risk?.canDeliver ? 'Marcar como Entregado' : 'Entrega Bloqueada'}
+                </Button>
+                <Button className="w-full bg-white hover:bg-gray-100 text-black border-white">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Reporte
+                </Button>
+              </div>
+            </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tasks" className="mt-6">
+            <TasksView projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-6">
+            <ProjectCalendar 
+              project={project} 
+              onUpdatePhaseDurations={(data) => {
+                const { start_date, ...durations } = data;
+                updateProjectMutation.mutate({ 
+                  phase_durations: durations,
+                  start_date 
+                });
+              }}
+            />
+          </TabsContent>
+        </Tabs>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Checklist y Workflow unificado */}
             <div className="lg:col-span-2 space-y-4">
@@ -693,9 +849,6 @@ export default function ProjectChecklist() {
                 Exportar Reporte
               </Button>
             </div>
-          </div>
-          </div>
-        )}
       </main>
       
       {/* Modales */}
