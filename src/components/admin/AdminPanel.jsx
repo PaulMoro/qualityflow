@@ -13,12 +13,14 @@ import { base44 } from '@/api/base44Client';
 import { Users, UserPlus, Pencil, Trash2, Shield, Wrench, Plus, Settings, TrendingUp, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 import { Progress } from "@/components/ui/progress";
+import RolePermissionsManager from './RolePermissionsManager';
 
-export default function AdminPanel({ isOpen, onClose }) {
+export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) {
   const [newMember, setNewMember] = useState({ user_email: '', display_name: '', role: 'developer' });
   const [editingMember, setEditingMember] = useState(null);
   const [newTechnology, setNewTechnology] = useState({ name: '', key: '', color: 'bg-slate-500' });
   const [editingTechnology, setEditingTechnology] = useState(null);
+  const [editingStatsRole, setEditingStatsRole] = useState(null);
   
   const queryClient = useQueryClient();
   
@@ -129,7 +131,7 @@ export default function AdminPanel({ isOpen, onClose }) {
           </DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="members" className="mt-4">
+        <Tabs defaultValue={defaultTab} className="mt-4">
           <TabsList className="grid w-full grid-cols-5 bg-[#0a0a0a] border-[#2a2a2a]">
             <TabsTrigger value="members" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-gray-400">
               <Users className="h-4 w-4 mr-2" />
@@ -388,13 +390,59 @@ export default function AdminPanel({ isOpen, onClose }) {
                           <div className="w-12 h-12 rounded-full bg-[#FF1B7E]/10 flex items-center justify-center">
                             <Users className="h-6 w-6 text-[#FF1B7E]" />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-semibold text-white text-lg">
                               {member.display_name || member.user_email}
                             </p>
-                            <Badge className={`${roleConfig?.color || 'bg-slate-600'} text-white border-0 mt-1`}>
-                              {roleConfig?.name || member.role}
-                            </Badge>
+                            {editingStatsRole?.id === member.id ? (
+                              <div className="flex items-center gap-2 mt-1">
+                                <Select
+                                  value={editingStatsRole.role}
+                                  onValueChange={(value) => setEditingStatsRole({ ...editingStatsRole, role: value })}
+                                >
+                                  <SelectTrigger className="w-48 h-8">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {Object.entries(ROLE_CONFIG).map(([key, config]) => (
+                                      <SelectItem key={key} value={key}>{config.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    handleUpdateMember(member, { role: editingStatsRole.role });
+                                    setEditingStatsRole(null);
+                                  }}
+                                  className="h-8 bg-white hover:bg-gray-100 text-black"
+                                >
+                                  Guardar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setEditingStatsRole(null)}
+                                  className="h-8"
+                                >
+                                  ✕
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge className={`${roleConfig?.color || 'bg-slate-600'} text-white border-0`}>
+                                  {roleConfig?.name || member.role}
+                                </Badge>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6"
+                                  onClick={() => setEditingStatsRole(member)}
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
@@ -695,35 +743,10 @@ export default function AdminPanel({ isOpen, onClose }) {
           
           <TabsContent value="roles" className="space-y-4 mt-6">
             <div className="bg-[#FF1B7E]/10 border border-[#FF1B7E]/30 rounded-lg p-4 text-sm text-[#FF1B7E]">
-              <strong>ℹ️ Información sobre roles:</strong> Los roles determinan qué acciones puede realizar cada miembro del equipo en los proyectos.
+              <strong>ℹ️ Información sobre roles:</strong> Configura los permisos y accesos de cada rol en el sistema.
             </div>
             
-            <div className="space-y-3">
-              {Object.entries(ROLE_CONFIG).map(([key, config]) => (
-                <Card key={key} className="bg-[#0a0a0a] border-[#2a2a2a]">
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Badge className={`${config.color} text-white border-0`}>
-                        {config.name}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-300">
-                        <strong>Permisos:</strong>
-                      </p>
-                      <ul className="text-sm text-gray-400 list-disc list-inside space-y-1">
-                        {config.canComplete && <li>Puede marcar ítems como completados</li>}
-                        {config.canReportConflicts && <li>Puede reportar conflictos</li>}
-                        {key === 'web_leader' && <li>Puede resolver conflictos</li>}
-                        {key === 'product_owner' && <li>Puede aprobar entregas</li>}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <RolePermissionsManager />
           </TabsContent>
         </Tabs>
       </DialogContent>
