@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import TasksView from '../components/tasks/TasksView';
+import TasksViewDynamic from '../components/tasks/TasksViewDynamic';
 import { 
   ArrowLeft, Download, RefreshCw, Send, AlertTriangle, CheckCircle2, 
   ChevronDown, Settings, Users, Calendar, GripVertical 
@@ -685,7 +685,7 @@ export default function ProjectChecklist() {
           </TabsContent>
 
           <TabsContent value="tasks" className="mt-6">
-            <TasksView projectId={projectId} />
+            <TasksViewDynamic projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="calendar" className="mt-6">

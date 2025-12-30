@@ -36,6 +36,7 @@ const DEFAULT_CONFIG = {
     { key: 'medium', label: 'Media', color: 'yellow' },
     { key: 'high', label: 'Alta', color: 'red' }
   ],
+  custom_fields: [],
   enabled_views: {
     list: true,
     table: false,
@@ -94,6 +95,8 @@ export default function TaskConfigurationPanel() {
   const [config, setConfig] = useState(null);
   const [newStatus, setNewStatus] = useState({ key: '', label: '', color: 'gray' });
   const [newPriority, setNewPriority] = useState({ key: '', label: '', color: 'gray' });
+  const [newCustomField, setNewCustomField] = useState({ key: '', label: '', type: 'text', required: false, options: [] });
+  const [newOption, setNewOption] = useState('');
   
   const queryClient = useQueryClient();
   
@@ -189,6 +192,35 @@ export default function TaskConfigurationPanel() {
     const priorities = [...config.custom_priorities];
     priorities.splice(index, 1);
     setConfig({ ...config, custom_priorities: priorities });
+  };
+  
+  const handleAddCustomField = () => {
+    if (!newCustomField.key || !newCustomField.label) {
+      toast.error('Completa todos los campos');
+      return;
+    }
+    
+    setConfig({
+      ...config,
+      custom_fields: [...(config.custom_fields || []), { ...newCustomField }]
+    });
+    setNewCustomField({ key: '', label: '', type: 'text', required: false, options: [] });
+  };
+  
+  const handleRemoveCustomField = (index) => {
+    const fields = [...config.custom_fields];
+    fields.splice(index, 1);
+    setConfig({ ...config, custom_fields: fields });
+  };
+  
+  const handleAddOption = (fieldIndex) => {
+    if (!newOption.trim()) return;
+    
+    const fields = [...config.custom_fields];
+    if (!fields[fieldIndex].options) fields[fieldIndex].options = [];
+    fields[fieldIndex].options.push(newOption);
+    setConfig({ ...config, custom_fields: fields });
+    setNewOption('');
   };
   
   const handleFieldReorder = (result) => {
@@ -363,7 +395,7 @@ export default function TaskConfigurationPanel() {
         <TabsContent value="fields" className="space-y-6 mt-6">
           <Card className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
             <CardHeader>
-              <CardTitle className="text-[var(--text-primary)]">Campos del Formulario</CardTitle>
+              <CardTitle className="text-[var(--text-primary)]">Campos Estándar</CardTitle>
             </CardHeader>
             <CardContent>
               <DragDropContext onDragEnd={handleFieldReorder}>
@@ -416,6 +448,109 @@ export default function TaskConfigurationPanel() {
                   )}
                 </Droppable>
               </DragDropContext>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
+            <CardHeader>
+              <CardTitle className="text-[var(--text-primary)]">Campos Personalizados</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-5 gap-3">
+                <Input
+                  placeholder="Clave (ej: budget)"
+                  value={newCustomField.key}
+                  onChange={(e) => setNewCustomField({ ...newCustomField, key: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                />
+                <Input
+                  placeholder="Etiqueta (ej: Presupuesto)"
+                  value={newCustomField.label}
+                  onChange={(e) => setNewCustomField({ ...newCustomField, label: e.target.value })}
+                />
+                <select
+                  value={newCustomField.type}
+                  onChange={(e) => setNewCustomField({ ...newCustomField, type: e.target.value, options: [] })}
+                  className="px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-primary)] rounded-md text-[var(--text-primary)]"
+                >
+                  <option value="text">Texto</option>
+                  <option value="number">Número</option>
+                  <option value="date">Fecha</option>
+                  <option value="select">Selección</option>
+                  <option value="multiselect">Multi-selección</option>
+                </select>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-[var(--text-secondary)]">Obligatorio</Label>
+                  <Switch
+                    checked={newCustomField.required}
+                    onCheckedChange={(checked) => setNewCustomField({ ...newCustomField, required: checked })}
+                  />
+                </div>
+                <Button onClick={handleAddCustomField} size="sm" className="bg-white hover:bg-gray-100 text-black">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Agregar
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {(config.custom_fields || []).map((field, index) => (
+                  <div key={index} className="p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-secondary)] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[var(--text-primary)] font-medium">{field.label}</span>
+                        <Badge variant="outline" className="text-xs">{field.key}</Badge>
+                        <Badge variant="outline" className="text-xs">{field.type}</Badge>
+                        {field.required && <Badge className="bg-red-500 text-white text-xs">Obligatorio</Badge>}
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveCustomField(index)}
+                        className="h-8 w-8 text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {(field.type === 'select' || field.type === 'multiselect') && (
+                      <div className="pl-4 space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Nueva opción"
+                            value={index === config.custom_fields.length - 1 ? newOption : ''}
+                            onChange={(e) => setNewOption(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                handleAddOption(index);
+                              }
+                            }}
+                            className="flex-1"
+                          />
+                          <Button size="sm" onClick={() => handleAddOption(index)} className="bg-white hover:bg-gray-100 text-black">
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {(field.options || []).map((option, optIndex) => (
+                            <Badge key={optIndex} variant="outline" className="text-xs">
+                              {option}
+                              <button
+                                onClick={() => {
+                                  const fields = [...config.custom_fields];
+                                  fields[index].options.splice(optIndex, 1);
+                                  setConfig({ ...config, custom_fields: fields });
+                                }}
+                                className="ml-1 text-red-500 hover:text-red-700"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
