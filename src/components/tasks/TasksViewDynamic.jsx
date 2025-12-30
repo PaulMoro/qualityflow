@@ -225,12 +225,12 @@ export default function TasksViewDynamic({ projectId }) {
     );
   }
 
-  const statusConfig = (config.custom_statuses || []).reduce((acc, s) => {
+  const statusConfig = (config?.custom_statuses || []).reduce((acc, s) => {
     acc[s.key] = { label: s.label, color: COLOR_MAP[s.color] || 'bg-gray-500' };
     return acc;
   }, {});
 
-  const priorityConfig = (config.custom_priorities || []).reduce((acc, p) => {
+  const priorityConfig = (config?.custom_priorities || []).reduce((acc, p) => {
     acc[p.key] = { label: p.label, color: COLOR_MAP[p.color] || 'bg-gray-500' };
     return acc;
   }, {});
@@ -286,12 +286,12 @@ export default function TasksViewDynamic({ projectId }) {
                   {enabledFields.status && (
                     <div>
                       <label className="text-xs text-[var(--text-secondary)] mb-1 block">Estado</label>
-                      <Select value={newTask.status || config.custom_statuses[0]?.key} onValueChange={(value) => setNewTask({ ...newTask, status: value })}>
+                      <Select value={newTask.status || config?.custom_statuses?.[0]?.key} onValueChange={(value) => setNewTask({ ...newTask, status: value })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {config.custom_statuses.map((s) => (
+                          {(config?.custom_statuses || []).map((s) => (
                             <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
                           ))}
                         </SelectContent>
@@ -302,12 +302,12 @@ export default function TasksViewDynamic({ projectId }) {
                   {enabledFields.priority && (
                     <div>
                       <label className="text-xs text-[var(--text-secondary)] mb-1 block">Prioridad</label>
-                      <Select value={newTask.priority || config.custom_priorities[0]?.key} onValueChange={(value) => setNewTask({ ...newTask, priority: value })}>
+                      <Select value={newTask.priority || config?.custom_priorities?.[0]?.key} onValueChange={(value) => setNewTask({ ...newTask, priority: value })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {config.custom_priorities.map((p) => (
+                          {(config?.custom_priorities || []).map((p) => (
                             <SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>
                           ))}
                         </SelectContent>
@@ -362,7 +362,7 @@ export default function TasksViewDynamic({ projectId }) {
                   )}
                 </div>
                 
-                {(config.custom_fields || []).map((field) => (
+                {(config?.custom_fields || []).map((field) => (
                   <div key={field.key}>
                     <label className="text-xs text-[var(--text-secondary)] mb-1 block">
                       {field.label} {field.required && '*'}
@@ -427,10 +427,10 @@ export default function TasksViewDynamic({ projectId }) {
                                 {taskStatus.label}
                               </Badge>
                             )}
-                            {task.assigned_to?.length > 0 && (
+                            {(task.assigned_to?.length ?? 0) > 0 && (
                               <Badge variant="outline" className="text-xs">
                                 <User className="h-3 w-3 mr-1" />
-                                {allUsers.find(u => u.email === task.assigned_to[0])?.full_name || task.assigned_to[0]}
+                                {allUsers.find(u => u.email === task.assigned_to?.[0])?.full_name || task.assigned_to?.[0]}
                               </Badge>
                             )}
                           </div>

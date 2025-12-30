@@ -208,7 +208,7 @@ export default function TaskConfigurationPanel() {
   };
   
   const handleRemoveCustomField = (index) => {
-    const fields = [...config.custom_fields];
+    const fields = [...(config?.custom_fields || [])];
     fields.splice(index, 1);
     setConfig({ ...config, custom_fields: fields });
   };
@@ -216,7 +216,7 @@ export default function TaskConfigurationPanel() {
   const handleAddOption = (fieldIndex) => {
     if (!newOption.trim()) return;
     
-    const fields = [...config.custom_fields];
+    const fields = [...(config?.custom_fields || [])];
     if (!fields[fieldIndex].options) fields[fieldIndex].options = [];
     fields[fieldIndex].options.push(newOption);
     setConfig({ ...config, custom_fields: fields });
