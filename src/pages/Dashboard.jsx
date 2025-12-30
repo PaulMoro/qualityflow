@@ -15,7 +15,6 @@ import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
 import AdminPanel from '../components/admin/AdminPanel';
-import ProjectsByArea from '../components/project/ProjectsByArea';
 
 
 export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled, currentUser }) {
@@ -135,14 +134,66 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return <DashboardHome onNavigate={onSectionChange} />;
   }
   
-  // Vista de Categorías (Proyectos por Área)
-  if (currentSection === 'categories') {
+  // Vista de Proyectos por Área
+  if (currentSection?.startsWith('area-')) {
+    const areaKey = currentSection.replace('area-', '');
+    const areaNames = {
+      'creativity': 'Creatividad',
+      'software': 'Software',
+      'seo': 'SEO',
+      'marketing': 'Marketing',
+      'paid': 'Paid Media',
+      'social': 'Social Media'
+    };
+    
+    const areaProjects = projects.filter(p => p.applicable_areas?.includes(areaKey));
+    
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Proyectos por Área</h2>
+          <h2 className="text-2xl font-bold text-white">
+            Proyectos de {areaNames[areaKey]}
+          </h2>
         </div>
-        <ProjectsByArea />
+        
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl h-64 animate-pulse" />
+            ))}
+          </div>
+        ) : areaProjects.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+              <FolderKanban className="h-10 w-10 text-gray-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              No hay proyectos en {areaNames[areaKey]}
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Los proyectos con esta área aparecerán aquí
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {areaProjects.map((project, index) => (
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  index={index}
+                  onEdit={setEditingProject}
+                  onDuplicate={(p) => duplicateMutation.mutate(p)}
+                  onDelete={(p) => {
+                    if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                      deleteMutation.mutate(p.id);
+                    }
+                  }}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     );
   }

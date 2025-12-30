@@ -19,6 +19,8 @@ import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import AdminPanel from '../admin/AdminPanel';
 
+import { Palette, Code, Search, TrendingUp, DollarSign, Share2 } from 'lucide-react';
+
 const MENU_ITEMS = [
   {
     id: 'dashboard',
@@ -41,9 +43,17 @@ const MENU_ITEMS = [
       },
       {
         id: 'categories',
-        label: 'Categorías',
+        label: 'Por Área',
         icon: Tag,
-        section: 'categories'
+        hasSubMenu: true,
+        subItems: [
+          { id: 'area-creativity', label: 'Creatividad', section: 'area-creativity' },
+          { id: 'area-software', label: 'Software', section: 'area-software' },
+          { id: 'area-seo', label: 'SEO', section: 'area-seo' },
+          { id: 'area-marketing', label: 'Marketing', section: 'area-marketing' },
+          { id: 'area-paid', label: 'Paid Media', section: 'area-paid' },
+          { id: 'area-social', label: 'Social Media', section: 'area-social' }
+        ]
       }
     ]
   },
@@ -80,6 +90,7 @@ const MENU_ITEMS = [
 export default function Sidebar({ currentSection, onSectionChange, onAction }) {
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState({});
+  const [expandedSubMenus, setExpandedSubMenus] = useState({});
   const [currentUser, setCurrentUser] = React.useState(null);
   const [showAdminPanel, setShowAdminPanel] = React.useState(false);
   
@@ -97,6 +108,13 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
   
   const toggleMenu = (itemId) => {
     setExpandedMenus(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
+  
+  const toggleSubMenu = (itemId) => {
+    setExpandedSubMenus(prev => ({
       ...prev,
       [itemId]: !prev[itemId]
     }));
@@ -155,27 +173,67 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
                   {item.subMenu.map((subItem) => {
                     const SubIcon = subItem.icon;
                     const isSubActive = subItem.section && currentSection === subItem.section;
+                    const isSubExpanded = expandedSubMenus[subItem.id];
+                    const hasNestedMenu = subItem.hasSubMenu && subItem.subItems;
                     
                     return (
-                      <button
-                        key={subItem.id}
-                        onClick={() => {
-                          if (subItem.action) {
-                            onAction?.(subItem.action);
-                          } else if (subItem.section) {
-                            onSectionChange(subItem.section);
-                          }
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
-                          isSubActive
-                            ? "bg-[#FF1B7E]/20 text-[#FF1B7E]"
-                            : "text-gray-500 hover:text-white hover:bg-[#2a2a2a]"
+                      <div key={subItem.id}>
+                        <button
+                          onClick={() => {
+                            if (hasNestedMenu) {
+                              toggleSubMenu(subItem.id);
+                            } else if (subItem.action) {
+                              onAction?.(subItem.action);
+                            } else if (subItem.section) {
+                              onSectionChange(subItem.section);
+                            }
+                          }}
+                          className={cn(
+                            "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all",
+                            isSubActive
+                              ? "bg-[#FF1B7E]/20 text-[#FF1B7E]"
+                              : "text-gray-500 hover:text-white hover:bg-[#2a2a2a]"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <SubIcon className="h-4 w-4" />
+                            <span>{subItem.label}</span>
+                          </div>
+                          {hasNestedMenu && (
+                            isSubExpanded ? 
+                              <ChevronDown className="h-3 w-3" /> : 
+                              <ChevronRight className="h-3 w-3" />
+                          )}
+                        </button>
+                        
+                        {/* Nested submenu */}
+                        {hasNestedMenu && isSubExpanded && (
+                          <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#2a2a2a] pl-2">
+                            {subItem.subItems.map((nestedItem) => {
+                              const isNestedActive = nestedItem.section && currentSection === nestedItem.section;
+                              
+                              return (
+                                <button
+                                  key={nestedItem.id}
+                                  onClick={() => {
+                                    if (nestedItem.section) {
+                                      onSectionChange(nestedItem.section);
+                                    }
+                                  }}
+                                  className={cn(
+                                    "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all text-left",
+                                    isNestedActive
+                                      ? "bg-[#FF1B7E]/20 text-[#FF1B7E]"
+                                      : "text-gray-500 hover:text-white hover:bg-[#2a2a2a]"
+                                  )}
+                                >
+                                  <span>{nestedItem.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         )}
-                      >
-                        <SubIcon className="h-4 w-4" />
-                        <span>{subItem.label}</span>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
