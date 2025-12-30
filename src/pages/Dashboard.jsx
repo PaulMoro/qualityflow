@@ -14,6 +14,7 @@ import RoleSelector from '../components/team/RoleSelector';
 import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
+import AdminPanel from '../components/admin/AdminPanel';
 
 
 export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled, currentUser }) {
