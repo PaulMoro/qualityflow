@@ -15,16 +15,16 @@ import RoleSelector from '../components/team/RoleSelector';
 import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
-import LoginScreen from '../components/auth/LoginScreen';
 
-export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled }) {
+
+export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled, currentUser }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
-  const [user, setUser] = useState(null);
   
   const queryClient = useQueryClient();
+  const user = currentUser;
   
   // Handle sidebar actions
   useEffect(() => {
@@ -35,21 +35,6 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   }, [sidebarAction, onActionHandled]);
   
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) {
-          const u = await base44.auth.me();
-          setUser(u);
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      }
-    };
-    loadUser();
-  }, []);
-  
-  useEffect(() => {
     if (userRole) {
       localStorage.setItem('userRole', userRole);
     }
@@ -57,8 +42,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list('-created_date'),
-    enabled: !!user
+    queryFn: () => base44.entities.Project.list('-created_date')
   });
   
   const [editingProject, setEditingProject] = useState(null);

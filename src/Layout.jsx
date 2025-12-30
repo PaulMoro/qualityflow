@@ -181,7 +181,8 @@ export default function Layout({ children, currentPageName }) {
               currentSection, 
               onSectionChange: setCurrentSection,
               sidebarAction,
-              onActionHandled: () => setSidebarAction(null)
+              onActionHandled: () => setSidebarAction(null),
+              currentUser: user
             })}
           </main>
         </div>
