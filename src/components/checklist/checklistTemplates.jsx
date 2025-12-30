@@ -44,7 +44,7 @@ export const TECHNOLOGY_CONFIG = {
 };
 
 export const ROLE_CONFIG = {
-  ceo_antpack: { name: 'CEO', color: 'bg-gradient-to-r from-yellow-500 to-orange-500', canComplete: ['all'], isLeader: true, isCEO: true },
+  ceo_antpack: { name: 'Admin', color: 'bg-gradient-to-r from-yellow-500 to-orange-500', canComplete: ['all'], isLeader: true, isCEO: true },
   web_leader: { name: 'Líder Web', color: 'bg-blue-500', canComplete: ['all'], isLeader: true },
   
   leader_product: { name: 'Líder Producto', color: 'bg-amber-600', canComplete: ['documentation', 'planning', 'delivery'], isLeader: true },
