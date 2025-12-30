@@ -36,9 +36,9 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+      <DialogContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
+          <DialogTitle className="flex items-center gap-2 text-[var(--text-primary)]">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             Aprobar Fase
           </DialogTitle>
@@ -46,21 +46,21 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
 
         <div className="space-y-4 py-4">
           <div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[var(--text-secondary)]">
               Estás aprobando la fase:
             </p>
-            <p className="font-semibold text-white mt-1">
+            <p className="font-semibold text-[var(--text-primary)] mt-1">
               {phase.name}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-gray-300">Notas de Aprobación (Opcional)</Label>
+            <Label className="text-[var(--text-secondary)]">Notas de Aprobación (Opcional)</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Agrega comentarios sobre esta aprobación..."
-              className="h-24 bg-[#0a0a0a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
+              className="h-24 bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E]"
             />
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function PhaseApprovalModal({ phase, phaseKey, isOpen, onClose, o
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading} 
-            className="bg-white border-white hover:bg-gray-100 text-black hover:text-black"
+            className="border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]"
           >
             Cancelar
           </Button>

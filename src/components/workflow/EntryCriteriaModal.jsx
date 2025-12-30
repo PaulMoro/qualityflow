@@ -106,9 +106,9 @@ export default function EntryCriteriaModal({ projectId, phaseKey, phaseName, isO
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-[#2a2a2a] text-white">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]">
         <DialogHeader>
-          <DialogTitle className="text-white">
+          <DialogTitle className="text-[var(--text-primary)]">
             Criterios de Entrada - {phaseName}
           </DialogTitle>
         </DialogHeader>
@@ -125,12 +125,12 @@ export default function EntryCriteriaModal({ projectId, phaseKey, phaseName, isO
           <div className="space-y-4">
             {Object.entries(criteriaByArea).map(([area, areaCriteria]) => (
               <div key={area} className="space-y-2">
-                <h3 className="font-semibold text-sm text-gray-300 bg-[#0a0a0a] px-3 py-1.5 rounded">
+                <h3 className="font-semibold text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] px-3 py-1.5 rounded">
                   {area}
                 </h3>
                 <div className="space-y-2">
                   {areaCriteria.map((criterion) => (
-                    <div key={criterion.id} className="border border-[#2a2a2a] rounded-lg p-3">
+                    <div key={criterion.id} className="border border-[var(--border-primary)] rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 flex-1">
                           <button
@@ -145,16 +145,16 @@ export default function EntryCriteriaModal({ projectId, phaseKey, phaseName, isO
                           </button>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium text-sm text-white">{criterion.title}</p>
+                              <p className="font-medium text-sm text-[var(--text-primary)]">{criterion.title}</p>
                               {criterion.is_mandatory && (
                                 <Badge className="bg-[#FF1B7E] text-white border-0 text-xs">Obligatorio</Badge>
                               )}
                             </div>
                             {criterion.description && (
-                              <p className="text-xs text-gray-400">{criterion.description}</p>
+                              <p className="text-xs text-[var(--text-secondary)]">{criterion.description}</p>
                             )}
                             {criterion.is_completed && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-[var(--text-tertiary)] mt-1">
                                 Completado por {criterion.completed_by} • {format(new Date(criterion.completed_at), "d MMM yyyy", { locale: es })}
                               </p>
                             )}
@@ -215,32 +215,32 @@ export default function EntryCriteriaModal({ projectId, phaseKey, phaseName, isO
           </div>
 
           {isAdding ? (
-            <div className="border border-[#2a2a2a] rounded-lg p-3 space-y-3 bg-[#0a0a0a]">
+            <div className="border border-[var(--border-primary)] rounded-lg p-3 space-y-3 bg-[var(--bg-primary)]">
               <div>
-                <Label className="text-gray-300">Título del Criterio *</Label>
+                <Label className="text-[var(--text-secondary)]">Título del Criterio *</Label>
                 <Input
                   value={newCriteria.title}
                   onChange={(e) => setNewCriteria({ ...newCriteria, title: e.target.value })}
                   placeholder="Ej: Brief de proyecto aprobado"
-                  className="bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
+                  className="bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E]"
                 />
               </div>
               <div>
-                <Label className="text-gray-300">Descripción</Label>
+                <Label className="text-[var(--text-secondary)]">Descripción</Label>
                 <Textarea
                   value={newCriteria.description}
                   onChange={(e) => setNewCriteria({ ...newCriteria, description: e.target.value })}
                   placeholder="Detalles del criterio..."
-                  className="h-20 bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
+                  className="h-20 bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E]"
                 />
               </div>
               <div>
-                <Label className="text-gray-300">Área Responsable</Label>
+                <Label className="text-[var(--text-secondary)]">Área Responsable</Label>
                 <Input
                   value={newCriteria.area}
                   onChange={(e) => setNewCriteria({ ...newCriteria, area: e.target.value })}
                   placeholder="Ej: DEV, QA, Producto"
-                  className="bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-gray-500 focus:border-[#FF1B7E]"
+                  className="bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E]"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -252,16 +252,16 @@ export default function EntryCriteriaModal({ projectId, phaseKey, phaseName, isO
                 <Label htmlFor="mandatory" className="text-sm">Criterio obligatorio</Label>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleCreate} disabled={!newCriteria.title} className="bg-white hover:bg-gray-100 text-black">
+                <Button onClick={handleCreate} disabled={!newCriteria.title} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
                   Agregar
                 </Button>
-                <Button variant="outline" onClick={() => setIsAdding(false)} className="border-white hover:bg-gray-100 text-white hover:text-black">
+                <Button variant="outline" onClick={() => setIsAdding(false)} className="border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]">
                   Cancelar
                 </Button>
               </div>
             </div>
           ) : (
-            <Button onClick={() => setIsAdding(true)} variant="outline" className="w-full border-white hover:bg-gray-100 text-white hover:text-black">
+            <Button onClick={() => setIsAdding(true)} variant="outline" className="w-full border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]">
               <Plus className="h-4 w-4 mr-2" />
               Agregar Criterio
             </Button>

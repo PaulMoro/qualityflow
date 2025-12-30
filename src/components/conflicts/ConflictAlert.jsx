@@ -11,18 +11,18 @@ export default function ConflictAlert({ conflict, onResolve, isLeader }) {
   const roleConfig = ROLE_CONFIG[conflict.reported_by_role];
   
   return (
-    <Alert className="bg-orange-50 border-orange-200">
-      <AlertTriangle className="h-4 w-4 text-orange-600" />
-      <AlertTitle className="text-orange-800 font-semibold">
+    <Alert className="bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50">
+      <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-500" />
+      <AlertTitle className="text-orange-800 dark:text-orange-400 font-semibold">
         Conflicto detectado
       </AlertTitle>
       <AlertDescription className="mt-2">
         <div className="space-y-2">
-          <p className="text-sm text-orange-700">
+          <p className="text-sm text-orange-700 dark:text-orange-300">
             <strong>{conflict.item_title}</strong>
           </p>
           
-          <div className="flex items-center gap-2 text-xs text-orange-600">
+          <div className="flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400">
             <span>Reportado por: {conflict.reported_by}</span>
             {roleConfig && (
               <Badge variant="outline" className="text-xs">
@@ -32,7 +32,7 @@ export default function ConflictAlert({ conflict, onResolve, isLeader }) {
           </div>
           
           {conflict.reason && (
-            <p className="text-sm text-slate-600 italic">"{conflict.reason}"</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 italic">"{conflict.reason}"</p>
           )}
           
           <div className="flex items-center gap-2 mt-3">
@@ -40,7 +40,7 @@ export default function ConflictAlert({ conflict, onResolve, isLeader }) {
               {conflict.original_status}
             </Badge>
             <ArrowRight className="h-3 w-3 text-slate-400" />
-            <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
+            <Badge variant="outline" className="text-xs bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400">
               {conflict.conflicting_status}
             </Badge>
           </div>
@@ -50,14 +50,14 @@ export default function ConflictAlert({ conflict, onResolve, isLeader }) {
               <Button 
                 size="sm" 
                 variant="outline"
-                className="text-red-600 border-red-200 hover:bg-red-50"
+                className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/30"
                 onClick={() => onResolve(conflict.id, 'rejected', 'Conflicto rechazado por el líder')}
               >
                 <XCircle className="h-3 w-3 mr-1" /> Rechazar
               </Button>
               <Button 
                 size="sm"
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => onResolve(conflict.id, 'resolved', 'Conflicto resuelto por el líder')}
               >
                 <CheckCircle className="h-3 w-3 mr-1" /> Resolver
@@ -66,7 +66,7 @@ export default function ConflictAlert({ conflict, onResolve, isLeader }) {
           )}
           
           {conflict.status === 'resolved' && (
-            <div className="flex items-center gap-2 mt-2 text-xs text-green-600">
+            <div className="flex items-center gap-2 mt-2 text-xs text-green-600 dark:text-green-400">
               <CheckCircle className="h-3 w-3" />
               <span>Resuelto por {conflict.resolved_by}</span>
               {conflict.resolved_at && (
