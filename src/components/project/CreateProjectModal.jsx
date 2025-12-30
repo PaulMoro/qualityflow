@@ -848,7 +848,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreate, isLoadin
             </div>
               )}
               
-              {(currentUserRole === 'product_owner' || currentUserRole?.startsWith('leader_') || currentUserRole === 'ceo_antpack' || currentUserRole === 'web_leader') && (
+              {(currentUserRole === 'product_owner' || currentUserRole?.startsWith('leader_') || currentUserRole === 'administrador' || currentUserRole === 'web_leader') && (
                 <div className="space-y-2">
                   <Label className="text-white">Valor del Proyecto</Label>
                   <p className="text-xs text-gray-400">Este campo solo es visible para Product Owners y Líderes</p>

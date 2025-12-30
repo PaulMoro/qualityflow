@@ -427,7 +427,7 @@ export default function EditProjectModal({ isOpen, onClose, onSave, onDelete, pr
               </div>
             )}
             
-            {(currentUserRole === 'product_owner' || currentUserRole?.startsWith('leader_') || currentUserRole === 'ceo_antpack' || currentUserRole === 'web_leader') && (
+            {(currentUserRole === 'product_owner' || currentUserRole?.startsWith('leader_') || currentUserRole === 'administrador' || currentUserRole === 'web_leader') && (
               <div className="space-y-2 mt-4">
                 <Label className="text-gray-300">
                   <DollarSign className="h-4 w-4 inline mr-1" />
