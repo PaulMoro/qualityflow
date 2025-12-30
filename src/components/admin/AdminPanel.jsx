@@ -14,6 +14,7 @@ import { Users, UserPlus, Pencil, Trash2, Shield, Wrench, Plus, Settings, Trendi
 import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 import { Progress } from "@/components/ui/progress";
 import RolePermissionsManager from './RolePermissionsManager';
+import TaskConfigurationPanel from '../tasks/TaskConfigurationPanel';
 
 export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) {
   const [newMember, setNewMember] = useState({ user_email: '', display_name: '', role: 'developer' });
@@ -141,7 +142,7 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
         </DialogHeader>
         
         <Tabs defaultValue={defaultTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-5 bg-[var(--bg-primary)] border-[var(--border-primary)]">
+          <TabsList className="grid w-full grid-cols-6 bg-[var(--bg-primary)] border-[var(--border-primary)]">
             <TabsTrigger value="members" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
               <Users className="h-4 w-4 mr-2" />
               Miembros
@@ -153,6 +154,9 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
             <TabsTrigger value="technologies" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
               <Wrench className="h-4 w-4 mr-2" />
               Tecnologías
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
+              Tareas
             </TabsTrigger>
             <TabsTrigger value="configuration" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
               <Settings className="h-4 w-4 mr-2" />
@@ -762,14 +766,18 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
             <ConfigurationPanel />
           </TabsContent>
           
+          <TabsContent value="tasks" className="space-y-4 mt-6">
+            <TaskConfigurationPanel />
+          </TabsContent>
+
           <TabsContent value="roles" className="space-y-4 mt-6">
             <div className="bg-[#FF1B7E]/10 border border-[#FF1B7E]/30 rounded-lg p-4 text-sm text-[#FF1B7E]">
               <strong>ℹ️ Información sobre roles:</strong> Configura los permisos y accesos de cada rol en el sistema.
             </div>
-            
+
             <RolePermissionsManager />
           </TabsContent>
-        </Tabs>
+          </Tabs>
       </DialogContent>
     </Dialog>
   );
