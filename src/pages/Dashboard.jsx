@@ -15,6 +15,7 @@ import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
 import AdminPanel from '../components/admin/AdminPanel';
+import ProjectsByArea from '../components/project/ProjectsByArea';
 
 
 export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled, currentUser }) {
@@ -134,14 +135,14 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return <DashboardHome onNavigate={onSectionChange} />;
   }
   
-  // Vista de Categorías
+  // Vista de Categorías (Proyectos por Área)
   if (currentSection === 'categories') {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Gestión de Categorías</h2>
+          <h2 className="text-2xl font-bold text-white">Proyectos por Área</h2>
         </div>
-        <AdminPanel isOpen={true} onClose={() => onSectionChange('projects')} defaultTab="technologies" />
+        <ProjectsByArea />
       </div>
     );
   }
