@@ -106,7 +106,7 @@ export default function ResourceOccupancy() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="by-area" className="w-full">
-        <TabsList className="bg-[#0a0a0a] border-[#2a2a2a] mb-6">
+        <TabsList className="bg-[var(--bg-primary)] border-[var(--border-primary)] mb-6">
           <TabsTrigger 
             value="by-area" 
             className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white"
@@ -127,9 +127,9 @@ export default function ResourceOccupancy() {
         <TabsContent value="by-area" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {areaOccupancy.map((data) => (
-              <Card key={data.area} className="bg-[#1a1a1a] border-[#2a2a2a]">
+              <Card key={data.area} className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center justify-between text-white">
+                  <CardTitle className="text-base flex items-center justify-between text-[var(--text-primary)]">
                     <span>{data.label}</span>
                     <Badge className="bg-[#FF1B7E]/20 text-[#FF1B7E] border-[#FF1B7E]/40">
                       {data.projects.length} proyectos
@@ -139,27 +139,27 @@ export default function ResourceOccupancy() {
                 <CardContent className="space-y-4">
                   {/* Responsables */}
                   <div>
-                    <p className="text-xs text-gray-400 mb-2">Responsables</p>
+                    <p className="text-xs text-[var(--text-secondary)] mb-2">Responsables</p>
                     {data.responsibles.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {data.responsibles.map(email => {
                           const member = teamMembers.find(m => m.user_email === email);
                           return (
-                            <Badge key={email} variant="outline" className="text-xs border-gray-600 text-gray-300">
+                            <Badge key={email} variant="outline" className="text-xs border-[var(--border-secondary)] text-[var(--text-secondary)]">
                               {member?.display_name || email}
                             </Badge>
                           );
                         })}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">Sin responsables asignados</p>
+                      <p className="text-xs text-[var(--text-tertiary)]">Sin responsables asignados</p>
                     )}
                   </div>
 
                   {/* Valor total */}
                   {data.totalValue > 0 && (
                     <div>
-                      <p className="text-xs text-gray-400 mb-1">Valor total</p>
+                      <p className="text-xs text-[var(--text-secondary)] mb-1">Valor total</p>
                       <p className="text-lg font-bold text-[#FF1B7E]">
                         ${data.totalValue.toLocaleString()}
                       </p>
@@ -168,13 +168,13 @@ export default function ResourceOccupancy() {
 
                   {/* Lista de proyectos */}
                   <div>
-                    <p className="text-xs text-gray-400 mb-2">Proyectos activos</p>
+                    <p className="text-xs text-[var(--text-secondary)] mb-2">Proyectos activos</p>
                     <div className="space-y-2">
                       {data.projects.map(project => (
                         <Link key={project.id} to={`${createPageUrl('ProjectChecklist')}?id=${project.id}`}>
-                          <div className="p-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded hover:border-[#FF1B7E]/40 transition-all cursor-pointer">
+                          <div className="p-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded hover:border-[#FF1B7E]/40 transition-all cursor-pointer">
                             <div className="flex items-center justify-between">
-                              <p className="text-sm text-white font-medium truncate">
+                              <p className="text-sm text-[var(--text-primary)] font-medium truncate">
                                 {project.name}
                               </p>
                               <Progress 
@@ -182,7 +182,7 @@ export default function ResourceOccupancy() {
                                 className="w-16 h-1.5 bg-white/20 [&>div]:bg-[#FF1B7E]"
                               />
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-[var(--text-tertiary)] mt-1">
                               {Math.round(project.completion_percentage || 0)}% completado
                             </p>
                           </div>
@@ -197,11 +197,11 @@ export default function ResourceOccupancy() {
 
           {areaOccupancy.length === 0 && (
             <div className="text-center py-20">
-              <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                <Briefcase className="h-10 w-10 text-gray-500" />
+              <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <Briefcase className="h-10 w-10 text-[var(--text-tertiary)]" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Sin ocupación por área</h3>
-              <p className="text-gray-400">No hay proyectos activos con áreas asignadas</p>
+              <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Sin ocupación por área</h3>
+              <p className="text-[var(--text-secondary)]">No hay proyectos activos con áreas asignadas</p>
             </div>
           )}
         </TabsContent>
@@ -210,13 +210,13 @@ export default function ResourceOccupancy() {
         <TabsContent value="by-responsible" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {responsibleOccupancy.map((data) => (
-              <Card key={data.email} className="bg-[#1a1a1a] border-[#2a2a2a]">
+              <Card key={data.email} className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
                 <CardHeader>
-                  <CardTitle className="text-base text-white">
+                  <CardTitle className="text-base text-[var(--text-primary)]">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-semibold">{data.name}</p>
-                        <p className="text-xs text-gray-400 font-normal">{data.email}</p>
+                        <p className="text-xs text-[var(--text-secondary)] font-normal">{data.email}</p>
                       </div>
                       <Badge className="bg-[#FF1B7E]/20 text-[#FF1B7E] border-[#FF1B7E]/40">
                         {data.projects.length}
@@ -283,11 +283,11 @@ export default function ResourceOccupancy() {
 
           {responsibleOccupancy.length === 0 && (
             <div className="text-center py-20">
-              <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                <Users className="h-10 w-10 text-gray-500" />
+              <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <Users className="h-10 w-10 text-[var(--text-tertiary)]" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Sin responsables asignados</h3>
-              <p className="text-gray-400">No hay responsables asignados en proyectos activos</p>
+              <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Sin responsables asignados</h3>
+              <p className="text-[var(--text-secondary)]">No hay responsables asignados en proyectos activos</p>
             </div>
           )}
         </TabsContent>

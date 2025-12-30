@@ -44,17 +44,17 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="bg-[#1a1a1a] border-[#2a2a2a] hover:shadow-lg hover:shadow-[#FF1B7E]/10 transition-all duration-300 group h-full flex flex-col">
+      <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:shadow-lg hover:shadow-[#FF1B7E]/10 transition-all duration-300 group h-full flex flex-col">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <div className={`w-2 h-2 rounded-full ${techConfig?.color || 'bg-gray-400'}`} />
-                <span className="text-xs text-gray-400 uppercase tracking-wide">
+                <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">
                   {techConfig?.name || project.technology}
                 </span>
               </div>
-              <CardTitle className="text-lg font-semibold text-white group-hover:text-[#FF1B7E] transition-colors">
+              <CardTitle className="text-lg font-semibold text-[var(--text-primary)] group-hover:text-[#FF1B7E] transition-colors">
                 {project.name}
               </CardTitle>
             </div>
@@ -93,12 +93,12 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
         <CardContent className="space-y-4 flex-1 flex flex-col">
           <div className="h-10">
             {project.description && (
-              <p className="text-sm text-gray-400 line-clamp-2">{project.description}</p>
+              <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{project.description}</p>
             )}
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+            <Badge variant="outline" className="text-xs border-[var(--border-secondary)] text-[var(--text-secondary)]">
               {siteTypeConfig?.name || project.site_type}
             </Badge>
             {project.has_conflicts && (
@@ -116,14 +116,14 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
           {/* Progreso */}
           <div>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-gray-300">Progreso</span>
-              <span className="font-medium text-white">{project.completion_percentage?.toFixed(0) || 0}%</span>
+              <span className="text-[var(--text-secondary)]">Progreso</span>
+              <span className="font-medium text-[var(--text-primary)]">{project.completion_percentage?.toFixed(0) || 0}%</span>
             </div>
             <Progress value={project.completion_percentage || 0} className="h-2 bg-white/20 [&>div]:bg-[#FF1B7E]" />
           </div>
           
           {/* Fechas y equipo */}
-          <div className="flex items-center justify-between text-xs text-gray-300 mb-2">
+          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-2">
             <div className="flex items-center gap-4">
               {project.target_date && (
                 <div className="flex items-center gap-1">
@@ -132,7 +132,7 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
                   {daysRemaining !== null && (
                     <Badge 
                       variant="outline" 
-                      className={`ml-1 text-xs ${daysRemaining < 0 ? 'text-red-400 border-red-500/40' : daysRemaining < 3 ? 'text-amber-400 border-amber-500/40' : 'text-gray-300 border-gray-600'}`}
+                      className={`ml-1 text-xs ${daysRemaining < 0 ? 'text-red-400 border-red-500/40' : daysRemaining < 3 ? 'text-amber-400 border-amber-500/40' : 'text-[var(--text-secondary)] border-[var(--border-secondary)]'}`}
                     >
                       {daysRemaining < 0 ? `${Math.abs(daysRemaining)}d vencido` : `${daysRemaining}d`}
                     </Badge>
@@ -150,7 +150,7 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
             {riskConfig && (
               <div className="flex items-center gap-1">
                 <div className={`w-2 h-2 rounded-full ${riskConfig.color}`} />
-                <span className="capitalize text-gray-300">{project.risk_level}</span>
+                <span className="capitalize text-[var(--text-secondary)]">{project.risk_level}</span>
               </div>
             )}
           </div>
