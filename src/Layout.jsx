@@ -8,7 +8,7 @@ export default function Layout({ children, currentPageName }) {
   const [currentSection, setCurrentSection] = React.useState('dashboard');
   const [sidebarAction, setSidebarAction] = React.useState(null);
   const [user, setUser] = React.useState(undefined);
-  const [theme, setTheme] = React.useState(() => localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('theme') || 'light');
   
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -74,27 +74,27 @@ export default function Layout({ children, currentPageName }) {
           
           /* Dark Mode */
           [data-theme="dark"] {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #2a2a2a;
-            --bg-hover: rgba(42, 42, 42, 0.5);
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
+            --bg-primary: #ffffff;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --bg-hover: rgba(248, 249, 250, 0.8);
+            --text-primary: #000000;
+            --text-secondary: #52525b;
             --text-tertiary: #71717a;
-            --border-primary: #2a2a2a;
-            --border-secondary: #3f3f46;
-            --shadow: rgba(0, 0, 0, 0.5);
-            --particle-opacity: 0.3;
-            --particle-color: white;
+            --border-primary: #e5e7eb;
+            --border-secondary: #d1d5db;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --particle-opacity: 0.15;
+            --particle-color: #1a1a1a;
           }
           
           /* Light Mode */
           [data-theme="light"] {
-            --bg-primary: #f8f9fa;
+            --bg-primary: #ffffff;
             --bg-secondary: #ffffff;
-            --bg-tertiary: #f1f3f5;
-            --bg-hover: rgba(241, 243, 245, 0.8);
-            --text-primary: #1a1a1a;
+            --bg-tertiary: #f8f9fa;
+            --bg-hover: rgba(248, 249, 250, 0.8);
+            --text-primary: #000000;
             --text-secondary: #52525b;
             --text-tertiary: #71717a;
             --border-primary: #e5e7eb;

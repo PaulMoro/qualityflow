@@ -1,3 +1,4 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,33 +9,33 @@
     --primary-magenta: #FF1B7E;
   }
 
-  /* Dark Mode (default) */
+  /* Dark Mode */
   [data-theme="dark"] {
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #2a2a2a;
-    --bg-hover: rgba(42, 42, 42, 0.5);
-    --bg-card: #1a1a1a;
-    --bg-input: #0a0a0a;
-    --text-primary: #ffffff;
-    --text-secondary: #a1a1aa;
+    --bg-primary: #ffffff;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f8f9fa;
+    --bg-hover: rgba(248, 249, 250, 0.8);
+    --bg-card: #ffffff;
+    --bg-input: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: #52525b;
     --text-tertiary: #71717a;
-    --text-muted: #52525b;
-    --border-primary: #2a2a2a;
-    --border-secondary: #3f3f46;
-    --shadow: rgba(0, 0, 0, 0.5);
-    --ring: rgba(255, 27, 126, 0.2);
+    --text-muted: #a1a1aa;
+    --border-primary: #e5e7eb;
+    --border-secondary: #d1d5db;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --ring: rgba(255, 27, 126, 0.15);
   }
 
   /* Light Mode */
   [data-theme="light"] {
-    --bg-primary: #f8f9fa;
+    --bg-primary: #ffffff;
     --bg-secondary: #ffffff;
-    --bg-tertiary: #f1f3f5;
-    --bg-hover: rgba(241, 243, 245, 0.8);
+    --bg-tertiary: #f8f9fa;
+    --bg-hover: rgba(248, 249, 250, 0.8);
     --bg-card: #ffffff;
     --bg-input: #ffffff;
-    --text-primary: #1a1a1a;
+    --text-primary: #000000;
     --text-secondary: #52525b;
     --text-tertiary: #71717a;
     --text-muted: #a1a1aa;
