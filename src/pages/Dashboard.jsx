@@ -151,7 +151,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
             Proyectos de {areaNames[areaKey]}
           </h2>
         </div>
@@ -203,7 +203,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Cronogramas Generales</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Cronogramas Generales</h2>
         </div>
         <GeneralSchedules />
       </div>
@@ -215,7 +215,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Ocupación de Recursos</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Ocupación de Recursos</h2>
         </div>
         <ResourceOccupancy />
       </div>
@@ -225,9 +225,9 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   // Vista de Proyectos
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)]">Gestión de Proyectos</h2>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Gestión de Proyectos</h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <RoleSelector value={userRole} onChange={setUserRole} />
           <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
             <Plus className="h-4 w-4 mr-2" />

@@ -49,7 +49,7 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
   
   return (
     <div className={`
-      flex items-start gap-3 p-3 rounded-lg transition-all group
+      flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all group
       ${isCompleted ? 'bg-green-500/10' : 'bg-[var(--bg-primary)]'}
       ${isConflict ? 'bg-orange-500/10 border border-orange-500/40' : ''}
       ${isNotApplicable ? 'opacity-60' : ''}
@@ -58,7 +58,7 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
     `}>
       <div 
         {...dragHandleProps}
-        className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block"
       >
         <GripVertical className="h-5 w-5 text-[var(--text-tertiary)] mt-0.5" />
       </div>
@@ -67,7 +67,7 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
         checked={isCompleted}
         onCheckedChange={handleStatusChange}
         disabled={isNotApplicable}
-        className="mt-1"
+        className="mt-1 flex-shrink-0"
       />
       
       <div className="flex-1 min-w-0">
@@ -132,58 +132,60 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
             )}
           </div>
           
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge className={`${weightConfig.color} border-0 text-xs`}>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
+            <Badge className={`${weightConfig.color} border-0 text-xs whitespace-nowrap`}>
               {weightConfig.label}
             </Badge>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7"
-                    onClick={() => onEdit(item)}
-                  >
-                    <Edit className="h-4 w-4 text-[var(--text-tertiary)]" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Editar ítem</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7"
-                    onClick={() => setShowNotes(!showNotes)}
-                  >
-                    <MessageSquare className="h-4 w-4 text-[var(--text-tertiary)]" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Agregar nota</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`h-7 w-7 ${isNotApplicable ? 'bg-slate-200' : ''}`}
-                    onClick={handleMarkNotApplicable}
-                  >
-                    <X className="h-4 w-4 text-[var(--text-tertiary)]" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Marcar como N/A</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7"
+                      onClick={() => onEdit(item)}
+                    >
+                      <Edit className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--text-tertiary)]" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Editar ítem</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7"
+                      onClick={() => setShowNotes(!showNotes)}
+                    >
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--text-tertiary)]" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Agregar nota</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={`h-7 w-7 ${isNotApplicable ? 'bg-slate-200' : ''}`}
+                      onClick={handleMarkNotApplicable}
+                    >
+                      <X className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--text-tertiary)]" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Marcar como N/A</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
         </div>
       </div>

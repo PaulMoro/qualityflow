@@ -478,31 +478,31 @@ export default function ProjectChecklist() {
       {/* Header */}
       <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-start gap-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-2 sm:gap-4">
               <Link to={createPageUrl('Dashboard')}>
-                <Button variant="ghost" size="icon" className="mt-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
+                <Button variant="ghost" size="icon" className="mt-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex-shrink-0">
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-2 h-2 rounded-full ${techConfig?.color || 'bg-gray-400'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <div className={`w-2 h-2 rounded-full ${techConfig?.color || 'bg-gray-400'} flex-shrink-0`} />
                   <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">
                     {techConfig?.name} • {siteTypeConfig?.name}
                   </span>
                 </div>
-                <h1 className="text-xl font-bold text-[var(--text-primary)]">{project.name}</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words">{project.name}</h1>
                 {project.target_date && (
-                  <div className="flex items-center gap-2 mt-1 text-sm text-[var(--text-secondary)]">
-                    <Calendar className="h-4 w-4" />
+                  <div className="flex items-center gap-2 mt-1 text-xs sm:text-sm text-[var(--text-secondary)]">
+                    <Calendar className="h-4 w-4 flex-shrink-0" />
                     <span>Entrega: {format(new Date(project.target_date), "d MMMM yyyy", { locale: es })}</span>
                   </div>
                 )}
               </div>
             </div>
-            
-            <div className="flex flex-wrap items-center gap-3">
+
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
               <RoleSelector value={userRole} onChange={setUserRole} showLabel={false} />
               <Button 
                 size="sm" 
@@ -510,14 +510,17 @@ export default function ProjectChecklist() {
                 className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Editar Proyecto
+                <span className="hidden xs:inline">Editar Proyecto</span>
+                <span className="xs:hidden">Editar</span>
               </Button>
-              <Button size="sm" onClick={expandAll} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]">
-                Expandir todo
-              </Button>
-              <Button size="sm" onClick={collapseAll} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]">
-                Colapsar todo
-              </Button>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={expandAll} className="flex-1 sm:flex-initial bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]">
+                  Expandir
+                </Button>
+                <Button size="sm" onClick={collapseAll} className="flex-1 sm:flex-initial bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)]">
+                  Colapsar
+                </Button>
+              </div>
             </div>
           </div>
         </div>
