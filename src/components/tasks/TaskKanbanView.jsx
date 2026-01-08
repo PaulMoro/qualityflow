@@ -33,7 +33,7 @@ export default function TaskKanbanView({ projectId }) {
 
   const queryClient = useQueryClient();
 
-  const { data: config } = useQuery({
+  const { data: config, refetch: refetchConfig } = useQuery({
     queryKey: ['task-configuration', projectId],
     queryFn: async () => {
       const projectConfigs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
@@ -49,8 +49,20 @@ export default function TaskKanbanView({ projectId }) {
       
       return null;
     },
-    enabled: !!projectId
+    enabled: !!projectId,
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
+
+  // Refetch cuando se actualizan las configuraciones
+  React.useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event?.query?.queryKey?.[0] === 'task-configuration' && event?.type === 'updated') {
+        refetchConfig();
+      }
+    });
+    return unsubscribe;
+  }, [queryClient, refetchConfig]);
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks', projectId],
