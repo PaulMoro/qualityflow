@@ -78,21 +78,36 @@ export default function TaskConfigurationPanel({ projectId }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const configData = { ...data, project_id: projectId || null };
+      console.log('Guardando en mutationFn:', data);
+      const configData = { 
+        module_enabled: data.module_enabled,
+        custom_statuses: data.custom_statuses,
+        custom_priorities: data.custom_priorities,
+        custom_fields: data.custom_fields || [],
+        project_id: projectId || null
+      };
+      
       if (configurations && configurations.length > 0) {
-        return base44.entities.TaskConfiguration.update(configurations[0].id, configData);
+        console.log('Actualizando configuración existente:', configurations[0].id);
+        const result = await base44.entities.TaskConfiguration.update(configurations[0].id, configData);
+        console.log('Resultado update:', result);
+        return result;
       } else {
-        return base44.entities.TaskConfiguration.create(configData);
+        console.log('Creando nueva configuración');
+        const result = await base44.entities.TaskConfiguration.create(configData);
+        console.log('Resultado create:', result);
+        return result;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Guardado exitoso:', data);
       queryClient.invalidateQueries({ queryKey: projectId ? ['task-configuration', projectId] : ['task-configurations'] });
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       toast.success('✓ Configuración guardada correctamente', { duration: 3000 });
     },
     onError: (error) => {
-      toast.error('Error al guardar la configuración');
-      console.error('Save error:', error);
+      console.error('Error completo al guardar:', error);
+      toast.error(`Error al guardar: ${error.message}`);
     }
   });
 
@@ -104,6 +119,7 @@ export default function TaskConfigurationPanel({ projectId }) {
       return;
     }
 
+    console.log('Guardando configuración:', config);
     saveMutation.mutate(config);
   };
 
