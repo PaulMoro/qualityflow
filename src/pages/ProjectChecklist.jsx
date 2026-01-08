@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TasksViewDynamic from '../components/tasks/TasksViewDynamic';
+import TaskConfigurationPanel from '../components/tasks/TaskConfigurationPanel';
 import { 
   ArrowLeft, Download, RefreshCw, Send, AlertTriangle, CheckCircle2, 
   ChevronDown, Settings, Users, Calendar, GripVertical 
@@ -528,9 +529,10 @@ export default function ProjectChecklist() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-2xl grid-cols-3 bg-[var(--bg-secondary)] border-[var(--border-primary)]">
+          <TabsList className="grid w-full max-w-3xl grid-cols-4 bg-[var(--bg-secondary)] border-[var(--border-primary)]">
             <TabsTrigger value="checklist" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Checklist</TabsTrigger>
             <TabsTrigger value="tasks" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Tareas</TabsTrigger>
+            <TabsTrigger value="task-config" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Config Tareas</TabsTrigger>
             <TabsTrigger value="calendar" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Calendario</TabsTrigger>
           </TabsList>
 
@@ -689,6 +691,10 @@ export default function ProjectChecklist() {
 
           <TabsContent value="tasks" className="mt-6">
             <TasksViewDynamic projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="task-config" className="mt-6">
+            <TaskConfigurationPanel projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="calendar" className="mt-6">

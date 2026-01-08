@@ -39,11 +39,23 @@ export default function TasksViewDynamic({ projectId }) {
   });
 
   const { data: config } = useQuery({
-    queryKey: ['task-configurations'],
+    queryKey: ['task-configuration', projectId],
     queryFn: async () => {
-      const configs = await base44.entities.TaskConfiguration.list('-created_date');
-      return configs[0] || null;
-    }
+      // Buscar configuración específica del proyecto
+      const projectConfigs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
+      if (projectConfigs.length > 0) {
+        return projectConfigs[0];
+      }
+      
+      // Si no existe, buscar configuración global (sin project_id)
+      const globalConfigs = await base44.entities.TaskConfiguration.filter({ project_id: null });
+      if (globalConfigs.length > 0) {
+        return globalConfigs[0];
+      }
+      
+      return null;
+    },
+    enabled: !!projectId
   });
 
   const { data: allUsers = [] } = useQuery({

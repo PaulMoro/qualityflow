@@ -91,7 +91,7 @@ const COLOR_OPTIONS = [
   { key: 'orange', label: 'Naranja', className: 'bg-orange-500' }
 ];
 
-export default function TaskConfigurationPanel() {
+export default function TaskConfigurationPanel({ projectId = null }) {
   const [config, setConfig] = useState(null);
   const [newStatus, setNewStatus] = useState({ key: '', label: '', color: 'gray' });
   const [newPriority, setNewPriority] = useState({ key: '', label: '', color: 'gray' });
@@ -101,28 +101,37 @@ export default function TaskConfigurationPanel() {
   const queryClient = useQueryClient();
   
   const { data: configurations = [], isLoading } = useQuery({
-    queryKey: ['task-configurations'],
-    queryFn: () => base44.entities.TaskConfiguration.list('-created_date')
+    queryKey: projectId ? ['task-configuration', projectId] : ['task-configurations'],
+    queryFn: async () => {
+      if (projectId) {
+        // Buscar configuración del proyecto específico
+        return await base44.entities.TaskConfiguration.filter({ project_id: projectId });
+      } else {
+        // Buscar configuración global (sin project_id)
+        return await base44.entities.TaskConfiguration.filter({ project_id: null });
+      }
+    }
   });
   
   React.useEffect(() => {
     if (configurations.length > 0) {
       setConfig(configurations[0]);
     } else {
-      setConfig(DEFAULT_CONFIG);
+      setConfig({ ...DEFAULT_CONFIG, project_id: projectId });
     }
-  }, [configurations]);
+  }, [configurations, projectId]);
   
   const saveMutation = useMutation({
     mutationFn: async (data) => {
+      const configData = { ...data, project_id: projectId };
       if (configurations.length > 0) {
-        return base44.entities.TaskConfiguration.update(configurations[0].id, data);
+        return base44.entities.TaskConfiguration.update(configurations[0].id, configData);
       } else {
-        return base44.entities.TaskConfiguration.create(data);
+        return base44.entities.TaskConfiguration.create(configData);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task-configurations'] });
+      queryClient.invalidateQueries({ queryKey: projectId ? ['task-configuration', projectId] : ['task-configurations'] });
       toast.success('Configuración guardada correctamente');
     }
   });
@@ -239,8 +248,17 @@ export default function TaskConfigurationPanel() {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)]">Configuración de Tareas</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+            {projectId ? 'Configuración de Tareas del Proyecto' : 'Configuración Global de Tareas'}
+          </h2>
+          {projectId && (
+            <p className="text-sm text-[var(--text-secondary)] mt-1">
+              Personaliza el módulo de tareas para este proyecto
+            </p>
+          )}
+        </div>
         <Button onClick={handleSave} disabled={saveMutation.isPending} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white">
           Guardar Configuración
         </Button>
