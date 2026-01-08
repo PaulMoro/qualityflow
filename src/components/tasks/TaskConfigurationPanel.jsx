@@ -240,6 +240,10 @@ export default function TaskConfigurationPanel({ projectId }) {
               Configuración del Módulo de Tareas {projectId && <Badge className="ml-2 bg-[#FF1B7E]">Proyecto Específico</Badge>}
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button onClick={handleSave} disabled={saveMutation.isPending} className="bg-[#FF1B7E] hover:bg-[#e6156e]">
+                <Save className="h-4 w-4 mr-2" />
+                {saveMutation.isPending ? 'Guardando...' : 'Guardar Configuración'}
+              </Button>
               <Switch
                 checked={config.module_enabled}
                 onCheckedChange={(checked) => setConfig({ ...config, module_enabled: checked })}
@@ -483,13 +487,6 @@ export default function TaskConfigurationPanel({ projectId }) {
           <TaskFormManager projectId={projectId} config={config} />
         </TabsContent>
       </Tabs>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saveMutation.isPending} className="bg-[#FF1B7E] hover:bg-[#e6156e]">
-          <Save className="h-4 w-4 mr-2" />
-          {saveMutation.isPending ? 'Guardando...' : 'Guardar Configuración'}
-        </Button>
-      </div>
     </div>
   );
 }
