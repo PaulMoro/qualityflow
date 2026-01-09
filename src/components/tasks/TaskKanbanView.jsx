@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, GripVertical, Search, Filter, X, CheckCircle2 } from 'lucide-react';
+import { Plus, GripVertical, Search, Filter, X, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import TaskFormModal from './TaskFormModal';
@@ -30,28 +30,30 @@ export default function TaskKanbanView({ projectId }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterCustomField, setFilterCustomField] = useState({});
+  const [savingTaskId, setSavingTaskId] = useState(null);
 
   const queryClient = useQueryClient();
 
+  // ==================== BACKEND: Fuente única de verdad ====================
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ['task-configuration', projectId],
     queryFn: async () => {
-      console.log('🔍 Cargando configuración para proyecto:', projectId);
+      console.log('🔍 [BACKEND] Cargando configuración para proyecto:', projectId);
       
       const projectConfigs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
       if (projectConfigs && projectConfigs.length > 0) {
-        console.log('✅ Config específica encontrada:', projectConfigs[0]);
+        console.log('✅ [BACKEND] Config específica encontrada:', projectConfigs[0]);
         return projectConfigs[0];
       }
       
       const allConfigs = await base44.entities.TaskConfiguration.list('-created_date');
       const globalConfigs = (allConfigs || []).filter(c => !c.project_id);
       if (globalConfigs.length > 0) {
-        console.log('✅ Config global encontrada:', globalConfigs[0]);
+        console.log('✅ [BACKEND] Config global encontrada:', globalConfigs[0]);
         return globalConfigs[0];
       }
       
-      console.log('⚠️ No se encontró configuración');
+      console.log('⚠️ [BACKEND] No se encontró configuración');
       return null;
     },
     enabled: !!projectId,
@@ -61,53 +63,67 @@ export default function TaskKanbanView({ projectId }) {
     refetchOnWindowFocus: true
   });
 
-  const { data: tasks = [] } = useQuery({
+  const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['tasks', projectId],
-    queryFn: () => base44.entities.Task.filter({ project_id: projectId }),
-    enabled: !!projectId
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+    queryFn: async () => {
+      console.log('🔍 [BACKEND] Cargando tareas para proyecto:', projectId);
+      const result = await base44.entities.Task.filter({ project_id: projectId });
+      console.log('✅ [BACKEND] Tareas cargadas:', result.length);
+      return result;
     },
-    onError: (error) => {
-      console.error('Error updating task:', error);
-      toast.error(`Error al actualizar: ${error.message}`);
+    enabled: !!projectId,
+    staleTime: 0
+  });
+
+  // ==================== MUTATIONS: Con feedback visual robusto ====================
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }) => {
+      console.log('💾 [BACKEND] Actualizando tarea:', id, data);
+      const result = await base44.entities.Task.update(id, data);
+      console.log('✅ [BACKEND] Tarea actualizada:', result);
+      return result;
+    },
+    onMutate: async ({ id, data }) => {
+      // Estado optimista
+      console.log('🔄 [FRONTEND] Estado optimista activado para:', id);
+      setSavingTaskId(id);
+      
+      // Cancelar queries en vuelo
+      await queryClient.cancelQueries({ queryKey: ['tasks', projectId] });
+      
+      // Snapshot del estado anterior
+      const previousTasks = queryClient.getQueryData(['tasks', projectId]);
+      
+      // Actualización optimista
+      queryClient.setQueryData(['tasks', projectId], (old = []) => 
+        old.map(t => t.id === id ? { ...t, ...data } : t)
+      );
+      
+      return { previousTasks };
+    },
+    onSuccess: (result, { id }) => {
+      console.log('✅ [FRONTEND] Confirmación de guardado:', id);
+      setSavingTaskId(null);
+      
+      // Invalidar para forzar recarga y sincronización
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      
+      toast.success('✅ Guardado', { duration: 1500 });
+    },
+    onError: (error, { id }, context) => {
+      console.error('❌ [FRONTEND] Error al guardar:', error);
+      setSavingTaskId(null);
+      
+      // Rollback: Restaurar estado anterior
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks', projectId], context.previousTasks);
+      }
+      
+      toast.error(`❌ Error: ${error.message}`, { duration: 3000 });
     }
   });
 
-  // Filtrado avanzado
-  const filteredTasks = useMemo(() => {
-    let filtered = [...tasks];
-
-    // Búsqueda
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (t) =>
-          t.title?.toLowerCase().includes(query) ||
-          t.description?.toLowerCase().includes(query)
-      );
-    }
-
-    // Filtro de prioridad
-    if (filterPriority !== 'all') {
-      filtered = filtered.filter((t) => t.priority === filterPriority);
-    }
-
-    // Filtros de campos personalizados
-    Object.keys(filterCustomField).forEach((fieldKey) => {
-      const fieldValue = filterCustomField[fieldKey];
-      if (fieldValue && fieldValue !== 'all') {
-        filtered = filtered.filter((t) => t.custom_fields?.[fieldKey] === fieldValue);
-      }
-    });
-
-    return filtered;
-  }, [tasks, searchQuery, filterPriority, filterCustomField]);
-
+  // ==================== DRAG & DROP: Con validación y reconciliación ====================
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
 
@@ -122,35 +138,27 @@ export default function TaskKanbanView({ projectId }) {
       const missingFields = requiredFields.filter(f => !task.custom_fields?.[f.key]);
       
       if (missingFields.length > 0) {
-        toast.error(`Completa los campos obligatorios: ${missingFields.map(f => f.label).join(', ')}`);
+        toast.error(`⚠️ Completa: ${missingFields.map(f => f.label).join(', ')}`);
         return;
       }
     }
 
     // Cambio de columna (estado)
     if (source.droppableId !== destination.droppableId) {
-      const optimisticUpdate = tasks.map(t => 
-        t.id === task.id ? { ...t, status: destination.droppableId } : t
-      );
-      queryClient.setQueryData(['tasks', projectId], optimisticUpdate);
-
+      const toastId = toast.loading('💾 Moviendo tarea...');
+      
       try {
         await updateMutation.mutateAsync({
           id: task.id,
           data: { status: destination.droppableId }
         });
         
-        // Feedback visual
-        toast.success(`Tarea movida a ${destinationStatus?.label || destination.droppableId}`, {
-          duration: 2000
-        });
-
+        toast.success(`✅ Movida a ${destinationStatus?.label}`, { id: toastId, duration: 2000 });
+        
         // Disparar notificaciones si aplica
         await triggerTaskNotifications(task, destination.droppableId);
       } catch (error) {
-        // Revertir en caso de error
-        queryClient.setQueryData(['tasks', projectId], tasks);
-        toast.error('Error al mover la tarea');
+        toast.error('❌ Error al mover', { id: toastId });
       }
     }
 
@@ -164,17 +172,23 @@ export default function TaskKanbanView({ projectId }) {
       columnTasks.splice(destination.index, 0, movedTask);
 
       // Actualizar orden de todas las tareas afectadas
-      const updates = columnTasks.map((t, index) => 
-        updateMutation.mutateAsync({ id: t.id, data: { order: index } })
-      );
+      const toastId = toast.loading('💾 Reordenando...');
       
-      await Promise.all(updates);
+      try {
+        const updates = columnTasks.map((t, index) => 
+          updateMutation.mutateAsync({ id: t.id, data: { order: index } })
+        );
+        
+        await Promise.all(updates);
+        toast.success('✅ Orden actualizado', { id: toastId, duration: 1500 });
+      } catch (error) {
+        toast.error('❌ Error al reordenar', { id: toastId });
+      }
     }
   };
 
   const triggerTaskNotifications = async (task, newStatus) => {
     try {
-      // Buscar reglas de notificación aplicables
       const rules = await base44.entities.TaskNotificationRule.filter({
         project_id: projectId,
         is_active: true
@@ -185,7 +199,6 @@ export default function TaskKanbanView({ projectId }) {
         (!r.conditions?.status || r.conditions.status === newStatus)
       );
 
-      // Ejecutar notificaciones
       for (const rule of statusChangedRules) {
         if (rule.action?.send_email && rule.action?.email_recipients?.length > 0) {
           const emailBody = rule.action.email_body
@@ -215,11 +228,39 @@ export default function TaskKanbanView({ projectId }) {
     setFilterCustomField({});
   };
 
-  if (configLoading) {
+  // ==================== FILTRADO ====================
+  const filteredTasks = useMemo(() => {
+    let filtered = [...tasks];
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (t) =>
+          t.title?.toLowerCase().includes(query) ||
+          t.description?.toLowerCase().includes(query)
+      );
+    }
+
+    if (filterPriority !== 'all') {
+      filtered = filtered.filter((t) => t.priority === filterPriority);
+    }
+
+    Object.keys(filterCustomField).forEach((fieldKey) => {
+      const fieldValue = filterCustomField[fieldKey];
+      if (fieldValue && fieldValue !== 'all') {
+        filtered = filtered.filter((t) => t.custom_fields?.[fieldKey] === fieldValue);
+      }
+    });
+
+    return filtered;
+  }, [tasks, searchQuery, filterPriority, filterCustomField]);
+
+  // ==================== LOADING STATES ====================
+  if (configLoading || tasksLoading) {
     return (
       <div className="text-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF1B7E] mx-auto" />
-        <p className="text-sm text-[var(--text-secondary)] mt-4">Cargando configuración...</p>
+        <p className="text-sm text-[var(--text-secondary)] mt-4">Cargando Kanban...</p>
       </div>
     );
   }
@@ -259,13 +300,13 @@ export default function TaskKanbanView({ projectId }) {
 
   const hasActiveFilters = searchQuery || filterPriority !== 'all' || Object.keys(filterCustomField).length > 0;
 
+  // ==================== RENDER ====================
   return (
     <div className="space-y-4">
       {/* Barra de búsqueda y filtros */}
       <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
         <CardContent className="pt-4">
           <div className="flex flex-col gap-3">
-            {/* Búsqueda */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
               <Input
@@ -276,7 +317,6 @@ export default function TaskKanbanView({ projectId }) {
               />
             </div>
 
-            {/* Filtros */}
             <div className="flex flex-wrap gap-2">
               <Select value={filterPriority} onValueChange={setFilterPriority}>
                 <SelectTrigger className="w-40">
@@ -291,7 +331,6 @@ export default function TaskKanbanView({ projectId }) {
                 </SelectContent>
               </Select>
 
-              {/* Filtros por campos personalizados de tipo select */}
               {(config.custom_fields || [])
                 .filter(f => f.type === 'select')
                 .map(field => (
@@ -378,6 +417,7 @@ export default function TaskKanbanView({ projectId }) {
                       <AnimatePresence>
                         {statusTasks.map((task, index) => {
                           const priority = priorities[task.priority];
+                          const isSaving = savingTaskId === task.id;
                           
                           return (
                             <Draggable key={task.id} draggableId={task.id} index={index}>
@@ -391,13 +431,18 @@ export default function TaskKanbanView({ projectId }) {
                                   transition={{ duration: 0.2 }}
                                 >
                                   <Card 
-                                    className={`cursor-pointer transition-all hover:shadow-md group ${
+                                    className={`cursor-pointer transition-all hover:shadow-md group relative ${
                                       snapshot.isDragging 
                                         ? 'shadow-2xl ring-2 ring-[#FF1B7E] rotate-2' 
                                         : 'shadow-sm'
-                                    } bg-white border-[var(--border-primary)]`}
+                                    } ${isSaving ? 'opacity-70' : ''} bg-white border-[var(--border-primary)]`}
                                     onClick={() => handleTaskClick(task)}
                                   >
+                                    {isSaving && (
+                                      <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">
+                                        <Loader2 className="h-3 w-3 animate-spin text-[#FF1B7E]" />
+                                      </div>
+                                    )}
                                     <CardContent className="pt-4 pb-3">
                                       <div className="flex items-start gap-3">
                                         <div 
