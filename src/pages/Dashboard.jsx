@@ -198,17 +198,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     );
   }
 
-  // Vista de Cronogramas
-  if (currentSection === 'schedules') {
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Cronogramas Generales</h2>
-        </div>
-        <GeneralSchedules />
-      </div>
-    );
-  }
+
 
   // Vista de Ocupación de Recursos
   if (currentSection === 'resources') {
