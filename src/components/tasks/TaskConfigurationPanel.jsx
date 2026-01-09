@@ -86,7 +86,7 @@ export default function TaskConfigurationPanel({ projectId }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('💾 Iniciando guardado con data:', data);
+      console.log('💾 [BACKEND] Iniciando guardado:', { projectId, hasExisting: configurations?.length > 0 });
       
       const configData = { 
         module_enabled: data.module_enabled ?? true,
@@ -96,69 +96,95 @@ export default function TaskConfigurationPanel({ projectId }) {
         project_id: projectId || null
       };
       
+      console.log('📦 [BACKEND] Datos a guardar:', configData);
+      
       let result;
+      
+      // CASO 1: Actualizar configuración existente
       if (configurations && configurations.length > 0) {
-        console.log('✏️ Actualizando config existente, ID:', configurations[0].id);
+        console.log('✏️ [BACKEND] Actualizando config existente, ID:', configurations[0].id);
         result = await base44.entities.TaskConfiguration.update(configurations[0].id, configData);
-      } else {
-        console.log('➕ Creando nueva config');
+        console.log('✅ [BACKEND] Config actualizada:', result);
+      } 
+      // CASO 2: Crear nueva configuración
+      else {
+        console.log('➕ [BACKEND] Creando nueva config');
         result = await base44.entities.TaskConfiguration.create(configData);
+        console.log('✅ [BACKEND] Config creada:', result);
       }
       
-      return result;
+      return { savedConfig: result, isGlobal: !projectId };
     },
-    onSuccess: async (savedConfig) => {
-      console.log('✅ Configuración guardada:', savedConfig);
+    onSuccess: async ({ savedConfig, isGlobal }) => {
+      console.log('✅ [FRONTEND] Configuración guardada:', savedConfig);
       
-      // Actualizar estado local inmediatamente
+      // 1. Actualizar estado local inmediatamente
       setConfig(savedConfig);
       setHasUnsavedChanges(false);
       
-      // Actualizar cache
-      queryClient.setQueryData(
-        projectId ? ['task-configuration', projectId] : ['task-configurations'],
-        [savedConfig]
-      );
+      // 2. Actualizar cache específico
+      const cacheKey = projectId ? ['task-configuration', projectId] : ['task-configurations'];
+      queryClient.setQueryData(cacheKey, [savedConfig]);
+      console.log('📦 [FRONTEND] Cache actualizado:', cacheKey);
       
-      // Invalidar todas las queries relacionadas para forzar recarga
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['task-configuration'] }),
-        projectId ? queryClient.invalidateQueries({ queryKey: ['tasks', projectId] }) : Promise.resolve()
-      ]);
+      // 3. Invalidar TODAS las queries de configuración para forzar recarga global
+      await queryClient.invalidateQueries({ queryKey: ['task-configuration'], refetchType: 'all' });
+      console.log('🔄 [FRONTEND] Queries invalidadas');
+      
+      // 4. Si es proyecto específico, invalidar también tareas
+      if (projectId) {
+        await queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+        console.log('🔄 [FRONTEND] Tareas invalidadas para proyecto:', projectId);
+      }
+      
+      // 5. Si es cambio GLOBAL, invalidar TODOS los proyectos para que se recarguen
+      if (isGlobal) {
+        await queryClient.invalidateQueries({ queryKey: ['tasks'], refetchType: 'all' });
+        console.log('🔄 [FRONTEND] TODAS las tareas invalidadas (cambio global)');
+      }
     },
     onError: (error) => {
-      console.error('❌ Error guardando:', error);
+      console.error('❌ [BACKEND] Error guardando:', error);
+      console.error('❌ [BACKEND] Stack:', error.stack);
       throw error;
     }
   });
 
   const handleSave = async () => {
+    console.log('🔘 [FRONTEND] Iniciando proceso de guardado...');
+    
     // Validaciones
     const hasFinalStatus = config.custom_statuses?.some(s => s.is_final);
     if (!hasFinalStatus) {
-      toast.error('Debe haber al menos un estado marcado como final');
+      toast.error('⚠️ Debe haber al menos un estado marcado como final');
       return;
     }
 
     if (!config.custom_statuses || config.custom_statuses.length === 0) {
-      toast.error('Debe haber al menos un estado');
+      toast.error('⚠️ Debe haber al menos un estado');
       return;
     }
     
     if (!config.custom_priorities || config.custom_priorities.length === 0) {
-      toast.error('Debe haber al menos una prioridad');
+      toast.error('⚠️ Debe haber al menos una prioridad');
       return;
     }
 
     setIsSaving(true);
-    const toastId = toast.loading('💾 Guardando configuración...');
+    const toastId = toast.loading(projectId ? '💾 Guardando configuración del proyecto...' : '💾 Guardando configuración global...');
     
     try {
       await saveMutation.mutateAsync(config);
-      toast.success('✅ Configuración guardada correctamente', { id: toastId, duration: 2000 });
+      
+      const successMsg = projectId 
+        ? '✅ Config del proyecto guardada' 
+        : '✅ Config global guardada y aplicada a todos los proyectos';
+        
+      toast.success(successMsg, { id: toastId, duration: 3000 });
+      console.log('✅ [FRONTEND] Guardado completado exitosamente');
     } catch (error) {
-      console.error('❌ Error:', error);
-      toast.error(`❌ Error al guardar: ${error.message || 'Intenta de nuevo'}`, { id: toastId });
+      console.error('❌ [FRONTEND] Error en handleSave:', error);
+      toast.error(`❌ Error: ${error.message || 'Intenta de nuevo'}`, { id: toastId, duration: 4000 });
     } finally {
       setIsSaving(false);
     }
