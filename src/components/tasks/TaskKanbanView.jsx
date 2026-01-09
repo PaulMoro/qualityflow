@@ -56,7 +56,8 @@ export default function TaskKanbanView({ projectId }) {
     },
     enabled: !!projectId,
     staleTime: 0,
-    refetchOnMount: true,
+    gcTime: 0,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true
   });
 
