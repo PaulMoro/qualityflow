@@ -48,7 +48,42 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   const [editingProject, setEditingProject] = useState(null);
   
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Project.create(data),
+    mutationFn: async (data) => {
+      // 1. Crear el proyecto
+      const newProject = await base44.entities.Project.create(data);
+      
+      // 2. Crear automáticamente configuración de tareas para este proyecto
+      const { data: globalConfigs } = await queryClient.fetchQuery({
+        queryKey: ['task-configurations'],
+        queryFn: async () => {
+          const allConfigs = await base44.entities.TaskConfiguration.list('-created_date');
+          return (allConfigs || []).filter(c => !c.project_id);
+        }
+      });
+      
+      const globalConfig = globalConfigs?.[0];
+      
+      // Crear config del proyecto basada en la global o default
+      const projectConfig = {
+        project_id: newProject.id,
+        module_enabled: globalConfig?.module_enabled ?? true,
+        custom_statuses: globalConfig?.custom_statuses || [
+          { key: 'todo', label: 'Por hacer', color: 'gray', is_final: false, order: 0 },
+          { key: 'in_progress', label: 'En progreso', color: 'blue', is_final: false, order: 1 },
+          { key: 'completed', label: 'Finalizado', color: 'green', is_final: true, order: 2 }
+        ],
+        custom_priorities: globalConfig?.custom_priorities || [
+          { key: 'low', label: 'Baja', color: 'gray', order: 0 },
+          { key: 'medium', label: 'Media', color: 'yellow', order: 1 },
+          { key: 'high', label: 'Alta', color: 'red', order: 2 }
+        ],
+        custom_fields: globalConfig?.custom_fields || []
+      };
+      
+      await base44.entities.TaskConfiguration.create(projectConfig);
+      
+      return newProject;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setIsCreateOpen(false);
