@@ -52,6 +52,8 @@ const FIELD_TYPES = [
 export default function TaskConfigurationPanel({ projectId }) {
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   const [newOption, setNewOption] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -67,13 +69,16 @@ export default function TaskConfigurationPanel({ projectId }) {
         const allConfigs = await base44.entities.TaskConfiguration.list('-created_date');
         return (allConfigs || []).filter(c => !c.project_id);
       }
-    }
+    },
+    staleTime: 0,
+    refetchOnMount: 'always'
   });
 
   React.useEffect(() => {
     console.log('🔄 Actualizando config local con:', configurations);
     if (configurations && configurations.length > 0) {
       setConfig(configurations[0]);
+      setHasUnsavedChanges(false);
     } else {
       setConfig({ ...DEFAULT_CONFIG, project_id: projectId });
     }
@@ -81,8 +86,8 @@ export default function TaskConfigurationPanel({ projectId }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
+      setIsSaving(true);
       console.log('💾 Iniciando guardado con data:', data);
-      console.log('📌 Configurations existentes:', configurations);
       
       const configData = { 
         module_enabled: data.module_enabled ?? true,
@@ -91,8 +96,6 @@ export default function TaskConfigurationPanel({ projectId }) {
         custom_fields: data.custom_fields || [],
         project_id: projectId || null
       };
-      
-      console.log('📤 ConfigData a guardar:', configData);
       
       let result;
       if (configurations && configurations.length > 0) {
@@ -103,57 +106,44 @@ export default function TaskConfigurationPanel({ projectId }) {
         result = await base44.entities.TaskConfiguration.create(configData);
       }
       
-      console.log('✅ Resultado del guardado:', result);
       return result;
     },
     onSuccess: async (savedConfig) => {
-      console.log('🎉 onSuccess ejecutado con:', savedConfig);
+      console.log('✅ Configuración guardada:', savedConfig);
       
-      // Actualizar el cache con el nuevo config
+      // Actualizar estado local inmediatamente
+      setConfig(savedConfig);
+      setHasUnsavedChanges(false);
+      
+      // Actualizar cache
       queryClient.setQueryData(
         projectId ? ['task-configuration', projectId] : ['task-configurations'],
         [savedConfig]
       );
       
-      // Invalidar y refetch todas las queries relacionadas
-      await queryClient.invalidateQueries({ 
-        queryKey: ['task-configuration'],
-        refetchType: 'all'
-      });
+      // Invalidar todas las queries relacionadas para forzar recarga
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['task-configuration'] }),
+        projectId ? queryClient.invalidateQueries({ queryKey: ['tasks', projectId] }) : Promise.resolve()
+      ]);
       
-      if (projectId) {
-        await queryClient.invalidateQueries({ 
-          queryKey: ['tasks', projectId],
-          refetchType: 'all'
-        });
-      }
-      
-      // Forzar refetch inmediato
-      await queryClient.refetchQueries({ 
-        queryKey: projectId ? ['task-configuration', projectId] : ['task-configurations'],
-        exact: true
-      });
-      
-      console.log('✅ Configuración actualizada, queries invalidadas y refetched');
+      setIsSaving(false);
     },
     onError: (error) => {
-      console.error('❌ Error en saveMutation:', error);
+      console.error('❌ Error guardando:', error);
+      setIsSaving(false);
       throw error;
     }
   });
 
   const handleSave = async () => {
-    console.log('🖱️ handleSave llamado');
-    console.log('📋 Config actual:', config);
-    
-    // Validar que hay al menos un estado final
+    // Validaciones
     const hasFinalStatus = config.custom_statuses?.some(s => s.is_final);
     if (!hasFinalStatus) {
       toast.error('Debe haber al menos un estado marcado como final');
       return;
     }
 
-    // Validar que hay al menos un estado y una prioridad
     if (!config.custom_statuses || config.custom_statuses.length === 0) {
       toast.error('Debe haber al menos un estado');
       return;
@@ -168,11 +158,17 @@ export default function TaskConfigurationPanel({ projectId }) {
     
     try {
       await saveMutation.mutateAsync(config);
-      toast.success('✅ Configuración guardada correctamente', { id: toastId, duration: 3000 });
+      toast.success('✅ Configuración guardada correctamente', { id: toastId, duration: 2000 });
     } catch (error) {
-      console.error('❌ Error capturado en handleSave:', error);
-      toast.error(`❌ Error: ${error.message || 'Error al guardar'}`, { id: toastId });
+      console.error('❌ Error:', error);
+      toast.error(`❌ Error al guardar: ${error.message || 'Intenta de nuevo'}`, { id: toastId });
     }
+  };
+
+  // Marcar cambios sin guardar cuando se modifica config
+  const updateConfig = (newConfig) => {
+    setConfig(newConfig);
+    setHasUnsavedChanges(true);
   };
 
   const addStatus = () => {
@@ -184,13 +180,13 @@ export default function TaskConfigurationPanel({ projectId }) {
       is_final: false,
       order: newStatuses.length
     });
-    setConfig({ ...config, custom_statuses: newStatuses });
+    updateConfig({ ...config, custom_statuses: newStatuses });
   };
 
   const updateStatus = (index, updates) => {
     const newStatuses = [...config.custom_statuses];
     newStatuses[index] = { ...newStatuses[index], ...updates };
-    setConfig({ ...config, custom_statuses: newStatuses });
+    updateConfig({ ...config, custom_statuses: newStatuses });
   };
 
   const deleteStatus = (index) => {
@@ -199,7 +195,7 @@ export default function TaskConfigurationPanel({ projectId }) {
       return;
     }
     const newStatuses = config.custom_statuses.filter((_, i) => i !== index);
-    setConfig({ ...config, custom_statuses: newStatuses });
+    updateConfig({ ...config, custom_statuses: newStatuses });
   };
 
   const handleStatusReorder = (result) => {
@@ -208,7 +204,7 @@ export default function TaskConfigurationPanel({ projectId }) {
     const [reordered] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reordered);
     const reorderedItems = items.map((item, index) => ({ ...item, order: index }));
-    setConfig({ ...config, custom_statuses: reorderedItems });
+    updateConfig({ ...config, custom_statuses: reorderedItems });
   };
 
   const addPriority = () => {
@@ -219,13 +215,13 @@ export default function TaskConfigurationPanel({ projectId }) {
       color: 'gray',
       order: newPriorities.length
     });
-    setConfig({ ...config, custom_priorities: newPriorities });
+    updateConfig({ ...config, custom_priorities: newPriorities });
   };
 
   const updatePriority = (index, updates) => {
     const newPriorities = [...config.custom_priorities];
     newPriorities[index] = { ...newPriorities[index], ...updates };
-    setConfig({ ...config, custom_priorities: newPriorities });
+    updateConfig({ ...config, custom_priorities: newPriorities });
   };
 
   const deletePriority = (index) => {
@@ -234,7 +230,7 @@ export default function TaskConfigurationPanel({ projectId }) {
       return;
     }
     const newPriorities = config.custom_priorities.filter((_, i) => i !== index);
-    setConfig({ ...config, custom_priorities: newPriorities });
+    updateConfig({ ...config, custom_priorities: newPriorities });
   };
 
   const addCustomField = () => {
@@ -249,18 +245,18 @@ export default function TaskConfigurationPanel({ projectId }) {
       options: [],
       default_value: ''
     });
-    setConfig({ ...config, custom_fields: newFields });
+    updateConfig({ ...config, custom_fields: newFields });
   };
 
   const updateCustomField = (index, updates) => {
     const newFields = [...config.custom_fields];
     newFields[index] = { ...newFields[index], ...updates };
-    setConfig({ ...config, custom_fields: newFields });
+    updateConfig({ ...config, custom_fields: newFields });
   };
 
   const deleteCustomField = (index) => {
     const newFields = config.custom_fields.filter((_, i) => i !== index);
-    setConfig({ ...config, custom_fields: newFields });
+    updateConfig({ ...config, custom_fields: newFields });
   };
 
   const addFieldOption = (fieldIndex) => {
@@ -288,17 +284,27 @@ export default function TaskConfigurationPanel({ projectId }) {
       <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-[var(--text-primary)]">
-              Configuración del Módulo de Tareas {projectId && <Badge className="ml-2 bg-[#FF1B7E]">Proyecto Específico</Badge>}
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-[var(--text-primary)]">
+                Configuración del Módulo de Tareas
+              </CardTitle>
+              {projectId && <Badge className="bg-[#FF1B7E]">Proyecto Específico</Badge>}
+              {hasUnsavedChanges && <Badge variant="outline" className="text-orange-500">Cambios sin guardar</Badge>}
+              {isSaving && <Badge variant="outline" className="text-blue-500">Guardando...</Badge>}
+            </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSave} disabled={saveMutation.isPending} className="bg-[#FF1B7E] hover:bg-[#e6156e]">
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving || !hasUnsavedChanges} 
+                className="bg-[#FF1B7E] hover:bg-[#e6156e] disabled:opacity-50"
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saveMutation.isPending ? 'Guardando...' : 'Guardar Configuración'}
+                {isSaving ? 'Guardando...' : 'Guardar Configuración'}
               </Button>
               <Switch
                 checked={config.module_enabled}
-                onCheckedChange={(checked) => setConfig({ ...config, module_enabled: checked })}
+                onCheckedChange={(checked) => updateConfig({ ...config, module_enabled: checked })}
+                disabled={isSaving}
               />
               <span className="text-sm text-[var(--text-secondary)]">
                 {config.module_enabled ? 'Habilitado' : 'Deshabilitado'}
