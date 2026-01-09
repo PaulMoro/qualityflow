@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, GripVertical, Search, Filter, X, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plus, GripVertical, Search, Filter, X, CheckCircle2, Loader2, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import TaskFormModal from './TaskFormModal';
 import TaskDetailPanel from './TaskDetailPanel';
+import TaskConfigurationPanel from './TaskConfigurationPanel';
 
 const COLOR_MAP = {
   gray: 'bg-gray-500',
@@ -31,8 +32,25 @@ export default function TaskKanbanView({ projectId }) {
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterCustomField, setFilterCustomField] = useState({});
   const [savingTaskId, setSavingTaskId] = useState(null);
+  const [showConfig, setShowConfig] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const queryClient = useQueryClient();
+  
+  // Verificar si el usuario es administrador
+  React.useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const user = await base44.auth.me();
+        const members = await base44.entities.TeamMember.filter({ user_email: user.email });
+        const member = members[0];
+        setIsAdmin(member?.role === 'administrador' || user.role === 'admin');
+      } catch (error) {
+        console.error('Error checking admin:', error);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // ==================== BACKEND: Fuente única de verdad ====================
   const { data: config, isLoading: configLoading } = useQuery({
@@ -301,20 +319,54 @@ export default function TaskKanbanView({ projectId }) {
   const hasActiveFilters = searchQuery || filterPriority !== 'all' || Object.keys(filterCustomField).length > 0;
 
   // ==================== RENDER ====================
+  
+  // Si está en modo configuración, mostrar panel de configuración
+  if (showConfig && isAdmin) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Configuración de Tareas</h2>
+          <Button
+            onClick={() => setShowConfig(false)}
+            variant="outline"
+            className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cerrar
+          </Button>
+        </div>
+        <TaskConfigurationPanel projectId={projectId} />
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-4">
       {/* Barra de búsqueda y filtros */}
       <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
         <CardContent className="pt-4">
           <div className="flex flex-col gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
-              <Input
-                placeholder="Buscar tareas..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-[var(--bg-input)]"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
+                <Input
+                  placeholder="Buscar tareas..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-[var(--bg-input)]"
+                />
+              </div>
+              
+              {isAdmin && (
+                <Button
+                  onClick={() => setShowConfig(true)}
+                  variant="outline"
+                  className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-hover)] flex-shrink-0"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurar
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2">
