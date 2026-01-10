@@ -64,7 +64,20 @@ export default function TaskConfigurationPanel({ projectId }) {
       if (projectId) {
         const configs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
         console.log('📦 Configs del proyecto:', configs);
-        return configs || [];
+        
+        // Si no hay configuración, crearla inmediatamente
+        if (!configs || configs.length === 0) {
+          console.log('⚙️ No hay configuración, creando automáticamente...');
+          const newConfig = await base44.entities.TaskConfiguration.create({
+            ...DEFAULT_CONFIG,
+            project_id: projectId
+          });
+          console.log('✅ Configuración creada:', newConfig);
+          toast.success('✅ Configuración creada automáticamente');
+          return [newConfig];
+        }
+        
+        return configs;
       } else {
         const allConfigs = await base44.entities.TaskConfiguration.list('-created_date');
         return (allConfigs || []).filter(c => !c.project_id);
@@ -74,36 +87,13 @@ export default function TaskConfigurationPanel({ projectId }) {
     refetchOnMount: 'always'
   });
 
-  // Crear configuración automáticamente si no existe
-  const createDefaultConfigMutation = useMutation({
-    mutationFn: async () => {
-      const configData = { 
-        ...DEFAULT_CONFIG,
-        project_id: projectId || null
-      };
-      return await base44.entities.TaskConfiguration.create(configData);
-    },
-    onSuccess: (newConfig) => {
-      queryClient.setQueryData(
-        projectId ? ['task-configuration', projectId] : ['task-configurations'], 
-        [newConfig]
-      );
-      setConfig(newConfig);
-      toast.success('✅ Configuración creada automáticamente');
-    }
-  });
-
   React.useEffect(() => {
     console.log('🔄 Actualizando config local con:', configurations);
     if (configurations && configurations.length > 0) {
       setConfig(configurations[0]);
       setHasUnsavedChanges(false);
-    } else if (!isLoading && configurations.length === 0) {
-      // Si no hay configuración, crearla automáticamente
-      console.log('⚙️ No hay configuración, creando automáticamente...');
-      createDefaultConfigMutation.mutate();
     }
-  }, [configurations, projectId, isLoading]);
+  }, [configurations]);
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
@@ -321,13 +311,11 @@ export default function TaskConfigurationPanel({ projectId }) {
     updateConfig({ ...config, custom_fields: newFields });
   };
 
-  if (isLoading || createDefaultConfigMutation.isPending) {
+  if (isLoading) {
     return (
       <div className="text-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF1B7E] mx-auto" />
-        <p className="text-sm text-[var(--text-secondary)] mt-4">
-          {createDefaultConfigMutation.isPending ? 'Creando configuración inicial...' : 'Cargando...'}
-        </p>
+        <p className="text-sm text-[var(--text-secondary)] mt-4">Cargando configuración...</p>
       </div>
     );
   }
