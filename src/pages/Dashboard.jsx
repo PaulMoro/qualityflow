@@ -134,7 +134,19 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   
   const deleteMutation = useMutation({
     mutationFn: async (projectId) => {
-      // Eliminar checklist items primero
+      // Eliminar tareas
+      const tasks = await base44.entities.Task.filter({ project_id: projectId });
+      for (const task of tasks) {
+        await base44.entities.Task.delete(task.id);
+      }
+      
+      // Eliminar configuración de tareas
+      const configs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
+      for (const config of configs) {
+        await base44.entities.TaskConfiguration.delete(config.id);
+      }
+      
+      // Eliminar checklist items
       const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
       for (const item of items) {
         await base44.entities.ChecklistItem.delete(item.id);
@@ -152,6 +164,11 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setEditingProject(null);
+      toast.success('✅ Proyecto eliminado correctamente');
+    },
+    onError: (error) => {
+      console.error('Error eliminando proyecto:', error);
+      toast.error('❌ Error al eliminar el proyecto');
     }
   });
   
