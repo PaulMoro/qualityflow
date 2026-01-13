@@ -324,7 +324,19 @@ export default function TaskKanbanView({ projectId }) {
     return (
       <div className="text-center py-12 space-y-4">
         <p className="text-[var(--text-secondary)]">No hay estados configurados</p>
-        <p className="text-xs text-[var(--text-tertiary)]">Ve a "Config Tareas" → "Estados (Columnas)" para agregar estados</p>
+        <p className="text-xs text-[var(--text-tertiary)] mb-4">Necesitas configurar al menos un estado para usar el Kanban</p>
+        {isAdmin && (
+          <Button
+            onClick={() => setShowConfig(true)}
+            className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Abrir Configuración
+          </Button>
+        )}
+        {!isAdmin && (
+          <p className="text-xs text-[var(--text-tertiary)]">Contacta a un administrador para configurar los estados</p>
+        )}
       </div>
     );
   }
