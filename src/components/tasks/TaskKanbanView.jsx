@@ -53,7 +53,7 @@ export default function TaskKanbanView({ projectId }) {
   }, []);
 
   // ==================== BACKEND: Fuente única de verdad ====================
-  const { data: config, isLoading: configLoading } = useQuery({
+  const { data: config, isLoading: configLoading, refetch: refetchConfig } = useQuery({
     queryKey: ['task-configuration', projectId],
     queryFn: async () => {
       console.log('🔍 [BACKEND] Cargando configuración para proyecto:', projectId);
@@ -82,6 +82,7 @@ export default function TaskKanbanView({ projectId }) {
         custom_fields: []
       });
       console.log('✅ [BACKEND] Config creada automáticamente:', newConfig);
+      toast.success('✅ Configuración de tareas creada');
       return newConfig;
     },
     enabled: !!projectId,
@@ -90,6 +91,13 @@ export default function TaskKanbanView({ projectId }) {
     refetchOnMount: 'always',
     refetchOnWindowFocus: true
   });
+  
+  // Recargar config cuando se cierra el panel de configuración
+  React.useEffect(() => {
+    if (!showConfig) {
+      refetchConfig();
+    }
+  }, [showConfig, refetchConfig]);
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['tasks', projectId],

@@ -57,22 +57,27 @@ export default function TaskConfigurationPanel({ projectId }) {
 
   const queryClient = useQueryClient();
 
-  const { data: configurations = [], isLoading } = useQuery({
+  const { data: configurations = [], isLoading, error } = useQuery({
     queryKey: projectId ? ['task-configuration', projectId] : ['task-configurations'],
     queryFn: async () => {
-      console.log('📥 Cargando configuraciones para proyecto:', projectId);
+      console.log('📥 [CONFIG PANEL] Cargando configuraciones para proyecto:', projectId);
+      
       if (projectId) {
         const configs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
-        console.log('📦 Configs del proyecto:', configs);
+        console.log('📦 [CONFIG PANEL] Configs encontradas:', configs?.length);
         
         // Si no hay configuración, crearla inmediatamente
         if (!configs || configs.length === 0) {
-          console.log('⚙️ No hay configuración, creando automáticamente...');
+          console.log('⚙️ [CONFIG PANEL] Creando configuración automáticamente...');
           const newConfig = await base44.entities.TaskConfiguration.create({
             ...DEFAULT_CONFIG,
             project_id: projectId
           });
-          console.log('✅ Configuración creada:', newConfig);
+          console.log('✅ [CONFIG PANEL] Configuración creada:', newConfig);
+          
+          // Invalidar cache para que otras queries vean la nueva config
+          queryClient.invalidateQueries({ queryKey: ['task-configuration', projectId] });
+          
           toast.success('✅ Configuración creada automáticamente');
           return [newConfig];
         }
@@ -84,7 +89,8 @@ export default function TaskConfigurationPanel({ projectId }) {
       }
     },
     staleTime: 0,
-    refetchOnMount: 'always'
+    refetchOnMount: 'always',
+    retry: 1
   });
 
   React.useEffect(() => {
