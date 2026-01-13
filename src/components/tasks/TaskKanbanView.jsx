@@ -44,7 +44,9 @@ export default function TaskKanbanView({ projectId }) {
         const user = await base44.auth.me();
         const members = await base44.entities.TeamMember.filter({ user_email: user.email });
         const member = members[0];
-        setIsAdmin(member?.role === 'administrador' || user.role === 'admin');
+        // Permitir acceso a configuración si es admin de sistema o miembro del equipo
+        setIsAdmin(user.role === 'admin' || !!member);
+        console.log('👤 Usuario:', user.email, '- Admin:', user.role === 'admin' || !!member);
       } catch (error) {
         console.error('Error checking admin:', error);
       }
@@ -351,7 +353,7 @@ export default function TaskKanbanView({ projectId }) {
   // ==================== RENDER ====================
   
   // Si está en modo configuración, mostrar panel de configuración
-  if (showConfig && isAdmin) {
+  if (showConfig) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
