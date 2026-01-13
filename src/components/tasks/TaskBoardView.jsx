@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, GripVertical, Search, Settings, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plus, GripVertical, Search, Settings, CheckCircle2, Loader2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTaskConfiguration } from './hooks/useTaskConfiguration';
 import { useProjectTasks } from './hooks/useProjectTasks';
 import TaskFormModal from './TaskFormModal';
 import TaskDetailPanel from './TaskDetailPanel';
+import TaskConfigurationPanel from './TaskConfigurationPanel';
 
 const COLOR_MAP = {
   gray: 'bg-gray-500',
@@ -26,10 +27,11 @@ const COLOR_MAP = {
  * Vista de tablero Kanban para tareas de un proyecto
  * Componente presentacional que delega lógica a hooks
  */
-export default function TaskBoardView({ projectId, onOpenConfig }) {
+export default function TaskBoardView({ projectId }) {
   const [selectedTask, setSelectedTask] = useState(null);
   const [creatingInStatus, setCreatingInStatus] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showConfig, setShowConfig] = useState(false);
 
   const { config, isLoading: configLoading } = useTaskConfiguration(projectId);
   const { 
@@ -99,6 +101,26 @@ export default function TaskBoardView({ projectId, onOpenConfig }) {
     );
   }
 
+  // Mostrar panel de configuración
+  if (showConfig) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Configuración de Tareas</h2>
+          <Button
+            onClick={() => setShowConfig(false)}
+            variant="outline"
+            className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Volver al Tablero
+          </Button>
+        </div>
+        <TaskConfigurationPanel projectId={projectId} />
+      </div>
+    );
+  }
+
   const statuses = (config.custom_statuses || []).sort((a, b) => a.order - b.order);
   const priorities = (config.custom_priorities || []).reduce((acc, p) => {
     acc[p.key] = { label: p.label, color: COLOR_MAP[p.color] || 'bg-gray-500' };
@@ -122,7 +144,7 @@ export default function TaskBoardView({ projectId, onOpenConfig }) {
             </div>
             
             <Button
-              onClick={onOpenConfig}
+              onClick={() => setShowConfig(true)}
               variant="outline"
               className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)]"
             >

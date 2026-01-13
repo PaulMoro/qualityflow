@@ -688,10 +688,7 @@ export default function ProjectChecklist() {
           </TabsContent>
 
           <TabsContent value="tasks" className="mt-6">
-            <TaskBoardView 
-              projectId={projectId} 
-              onOpenConfig={() => setActiveTab('task-config')}
-            />
+            <TaskBoardView projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="calendar" className="mt-6">
