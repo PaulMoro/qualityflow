@@ -46,7 +46,8 @@ const FIELD_TYPES = [
   { value: 'number', label: 'Número' },
   { value: 'date', label: 'Fecha' },
   { value: 'checkbox', label: 'Checkbox' },
-  { value: 'select', label: 'Select' }
+  { value: 'select', label: 'Select' },
+  { value: 'file', label: 'Adjunto (PDF, DOC, Excel, Imágenes)' }
 ];
 
 export default function TaskConfigurationPanel({ projectId }) {
