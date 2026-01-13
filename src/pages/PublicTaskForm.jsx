@@ -36,7 +36,10 @@ export default function PublicTaskForm() {
       return response.data.data;
     },
     enabled: !!formToken,
-    retry: false
+    retry: false,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
 
   const submitMutation = useMutation({
