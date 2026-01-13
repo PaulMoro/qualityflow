@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, Calendar as CalendarIcon, User, Clock, Tag, Trash2, Save, Loader2 } from 'lucide-react';
+import { X, Calendar as CalendarIcon, User, Clock, Tag, Trash2, Save, Loader2, Upload, FileText, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -30,6 +30,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
   const [formData, setFormData] = useState(task || {});
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [uploadingFields, setUploadingFields] = useState({});
 
   const queryClient = useQueryClient();
 
@@ -180,6 +181,94 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               ))}
             </SelectContent>
           </Select>
+        );
+      case 'file':
+        return (
+          <div className="space-y-2">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.svg,.png,.jpg,.jpeg,.webp"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                if (file.size > 10 * 1024 * 1024) {
+                  toast.error('El archivo no puede superar 10MB');
+                  return;
+                }
+                
+                setUploadingFields({ ...uploadingFields, [field.key]: true });
+                
+                try {
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  handleUpdate({
+                    custom_fields: { ...(formData.custom_fields || {}), [field.key]: file_url }
+                  });
+                  toast.success('Archivo subido correctamente');
+                } catch (error) {
+                  toast.error('Error al subir archivo');
+                } finally {
+                  setUploadingFields({ ...uploadingFields, [field.key]: false });
+                }
+              }}
+              disabled={uploadingFields[field.key]}
+              className="hidden"
+              id={`file-detail-${field.key}`}
+            />
+            
+            {!value ? (
+              <label htmlFor={`file-detail-${field.key}`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={uploadingFields[field.key]}
+                  asChild
+                >
+                  <span>
+                    {uploadingFields[field.key] ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Seleccionar archivo
+                      </>
+                    )}
+                  </span>
+                </Button>
+              </label>
+            ) : (
+              <div className="flex items-center gap-2 p-3 bg-[var(--bg-tertiary)] rounded border border-[var(--border-primary)]">
+                {value.match(/\.(svg|png|jpg|jpeg|webp)$/i) ? (
+                  <ImageIcon className="h-5 w-5 text-[var(--text-secondary)]" />
+                ) : (
+                  <FileText className="h-5 w-5 text-[var(--text-secondary)]" />
+                )}
+                <a 
+                  href={value} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1 text-sm text-[var(--text-primary)] hover:underline truncate"
+                >
+                  Ver archivo adjunto
+                </a>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleUpdate({
+                    custom_fields: { ...(formData.custom_fields || {}), [field.key]: null }
+                  })}
+                  className="h-8 w-8 p-0 text-red-500"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         );
       default:
         return null;
