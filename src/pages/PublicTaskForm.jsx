@@ -24,26 +24,15 @@ export default function PublicTaskForm() {
   const { data: formConfig, isLoading } = useQuery({
     queryKey: ['public-form', formToken],
     queryFn: async () => {
-      const forms = await base44.asServiceRole.entities.TaskFormPublicUrl.filter({ 
-        form_token: formToken,
-        is_active: true 
+      const response = await base44.functions.invoke('getPublicForm', {
+        form_token: formToken
       });
       
-      if (!forms || forms.length === 0) {
-        throw new Error('Formulario no encontrado o inactivo');
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || 'Formulario no encontrado');
       }
-
-      const form = forms[0];
       
-      // Cargar configuración de tareas
-      const configs = await base44.asServiceRole.entities.TaskConfiguration.filter({ 
-        project_id: form.project_id 
-      });
-      
-      return {
-        ...form,
-        taskConfig: configs[0]
-      };
+      return response.data.data;
     },
     enabled: !!formToken,
     retry: false
