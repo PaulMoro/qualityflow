@@ -418,13 +418,11 @@ export default function PublicTaskForm() {
               renderField({ key: 'due_date', type: 'due_date' })}
             
             {/* Campos personalizados */}
-            {(formConfig.taskConfig?.custom_fields || [])
-              .filter(f => f.visible !== false)
-              .map((field) => (
-                <div key={field.key}>
-                  {renderField(field)}
-                </div>
-              ))}
+            {(formConfig.taskConfig?.custom_fields || []).map((field) => (
+              <div key={field.key}>
+                {renderField(field)}
+              </div>
+            ))}
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
