@@ -414,9 +414,9 @@ export default function PublicTaskForm() {
             {(!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes('due_date')) && 
               renderField({ key: 'due_date', type: 'due_date' })}
             
-            {/* Campos personalizados visibles */}
+            {/* Campos personalizados */}
             {(formConfig.taskConfig?.custom_fields || [])
-              .filter(f => f.visible && (!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes(f.key)))
+              .filter(f => f.visible !== false)
               .map((field) => (
                 <div key={field.key}>
                   {renderField(field)}
