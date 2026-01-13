@@ -86,6 +86,7 @@ export function useTaskConfiguration(projectId) {
     isLoading,
     error,
     updateConfig: updateMutation.mutate,
-    isUpdating: updateMutation.isPending
+    isUpdating: updateMutation.isPending,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['task-configuration', projectId] })
   };
 }

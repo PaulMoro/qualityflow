@@ -33,7 +33,7 @@ export default function TaskBoardView({ projectId }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showConfig, setShowConfig] = useState(false);
 
-  const { config, isLoading: configLoading } = useTaskConfiguration(projectId);
+  const { config, isLoading: configLoading, refetch: refetchConfig } = useTaskConfiguration(projectId);
   const { 
     tasks, 
     isLoading: tasksLoading, 
@@ -41,6 +41,13 @@ export default function TaskBoardView({ projectId }) {
     isUpdating,
     getTasksByStatus 
   } = useProjectTasks(projectId, config);
+
+  // Refrescar configuración al volver del panel de config
+  React.useEffect(() => {
+    if (!showConfig) {
+      refetchConfig();
+    }
+  }, [showConfig, refetchConfig]);
 
   // Filtrar tareas por búsqueda
   const filteredTasks = React.useMemo(() => {
