@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Link2, Plus, Settings, Eye, EyeOff, ExternalLink, X } from 'lucide-react';
+import { Copy, Link2, Plus, Settings, Eye, EyeOff, ExternalLink, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TaskFormManager({ projectId, config }) {
@@ -73,6 +73,17 @@ export default function TaskFormManager({ projectId, config }) {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.TaskFormPublicUrl.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task-form-urls', projectId] });
+      toast.success('✅ Formulario eliminado', { duration: 2000 });
+    },
+    onError: (error) => {
+      toast.error(`❌ Error al eliminar: ${error.message}`);
+    }
+  });
+
   const handleCreate = () => {
     if (!formData.form_title) {
       toast.error('El título es obligatorio');
@@ -124,6 +135,12 @@ export default function TaskFormManager({ projectId, config }) {
       ...formData,
       notification_emails: formData.notification_emails.filter(e => e !== email)
     });
+  };
+
+  const handleDelete = (form) => {
+    if (confirm(`¿Estás seguro de eliminar el formulario "${form.form_title}"?`)) {
+      deleteMutation.mutate(form.id);
+    }
   };
 
 
@@ -272,6 +289,15 @@ export default function TaskFormManager({ projectId, config }) {
                     title={form.is_active ? 'Desactivar' : 'Activar'}
                   >
                     {form.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDelete(form)}
+                    title="Eliminar formulario"
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
