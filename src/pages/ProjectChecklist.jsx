@@ -126,18 +126,22 @@ export default function ProjectChecklist() {
     },
     onSuccess: () => {
       setHasInitialized(true);
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId], exact: true });
     },
     onError: (error) => {
       console.error('Error initializing checklist:', error);
+      setHasInitialized(true);
     }
   });
   
   useEffect(() => {
     if (project?.id && checklistItems.length === 0 && !itemsLoading && !hasInitialized && !initializeChecklistMutation.isPending) {
-      initializeChecklistMutation.mutate();
+      const timeout = setTimeout(() => {
+        initializeChecklistMutation.mutate();
+      }, 500);
+      return () => clearTimeout(timeout);
     }
-  }, [project?.id, itemsLoading]);
+  }, [project?.id, itemsLoading, hasInitialized]);
   
   // Ordenar fases según phase_order personalizado o por defecto, filtrando ocultas
   const orderedPhases = useMemo(() => {
@@ -199,23 +203,22 @@ export default function ProjectChecklist() {
       return { previousItems };
     },
     onError: (error, _, context) => {
-      queryClient.setQueryData(['checklist-items', projectId], context.previousItems);
+      if (context?.previousItems) {
+        queryClient.setQueryData(['checklist-items', projectId], context.previousItems);
+      }
       toast.error('Error al actualizar ítem');
     },
     onSuccess: (_, variables) => {
       if (!variables.data.status) {
         toast.success('Ítem actualizado correctamente');
       }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
     }
   });
   
   const deleteItemMutation = useMutation({
     mutationFn: (itemId) => base44.entities.ChecklistItem.delete(itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId], exact: true });
       setEditingItem(null);
       toast.success('Ítem eliminado correctamente');
     }
@@ -224,7 +227,7 @@ export default function ProjectChecklist() {
   const createItemMutation = useMutation({
     mutationFn: (data) => base44.entities.ChecklistItem.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId], exact: true });
       setAddingToPhase(null);
       toast.success('Ítem agregado correctamente');
     }
@@ -268,7 +271,7 @@ export default function ProjectChecklist() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conflicts', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['conflicts', projectId], exact: true });
     }
   });
   
@@ -278,7 +281,7 @@ export default function ProjectChecklist() {
     return calculateProjectRisk(checklistItems, project);
   }, [checklistItems, project]);
   
-  // Actualizar proyecto con métricas (optimizado)
+  // Actualizar proyecto con métricas (deshabilitado temporalmente para evitar loops)
   const projectMetrics = useMemo(() => {
     if (!checklistItems.length || !project) return null;
     
@@ -291,34 +294,9 @@ export default function ProjectChecklist() {
     return { 
       criticalPending, 
       completionPercentage,
-      hasConflicts,
-      needsUpdate: 
-        project.completion_percentage !== completionPercentage || 
-        project.critical_pending !== criticalPending ||
-        project.has_conflicts !== hasConflicts
+      hasConflicts
     };
-  }, [checklistItems, conflicts.length, project?.completion_percentage, project?.critical_pending, project?.has_conflicts]);
-  
-  useEffect(() => {
-    if (!risk || !project || !projectMetrics || updateProjectMutation.isPending || !projectMetrics.needsUpdate) {
-      return;
-    }
-    
-    const needsRiskUpdate = project.risk_level !== risk.level;
-    
-    if (projectMetrics.needsUpdate || needsRiskUpdate) {
-      const timeout = setTimeout(() => {
-        updateProjectMutation.mutate({
-          completion_percentage: projectMetrics.completionPercentage,
-          critical_pending: projectMetrics.criticalPending,
-          risk_level: risk.level,
-          has_conflicts: projectMetrics.hasConflicts
-        });
-      }, 2000);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [projectMetrics?.needsUpdate, risk?.level, project?.id]);
+  }, [checklistItems, conflicts.length]);
   
   // Agrupar items por fase
   const itemsByPhase = useMemo(() => {
@@ -531,7 +509,7 @@ export default function ProjectChecklist() {
       );
       
       await Promise.all(updates);
-      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId], exact: true });
     } catch (error) {
       console.error('Error reordering items:', error);
       toast.error('Error al reordenar ítems');
