@@ -23,7 +23,7 @@ export default function PublicTaskForm() {
   const [error, setError] = useState(null);
 
   const { data: formConfig, isLoading } = useQuery({
-    queryKey: ['public-form', formToken, Date.now()],
+    queryKey: ['public-form', formToken],
     queryFn: async () => {
       const response = await base44.functions.invoke('getPublicForm', {
         form_token: formToken
@@ -40,7 +40,7 @@ export default function PublicTaskForm() {
     },
     enabled: !!formToken,
     retry: false,
-    cacheTime: 0,
+    refetchOnMount: true,
     staleTime: 0
   });
 
