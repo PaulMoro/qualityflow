@@ -55,8 +55,12 @@ export default function ProjectChecklist() {
   
   useEffect(() => {
     const loadUser = async () => {
-      const u = await base44.auth.me();
-      setUser(u);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+      } catch (error) {
+        console.error('Error loading user:', error);
+      }
     };
     loadUser();
   }, []);
@@ -69,26 +73,32 @@ export default function ProjectChecklist() {
   
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
-    queryFn: () => base44.entities.Project.filter({ id: projectId }).then(r => r[0]),
+    queryFn: async () => {
+      const result = await base44.entities.Project.filter({ id: projectId });
+      return result[0];
+    },
     enabled: !!projectId,
-    staleTime: 30000,
-    refetchOnWindowFocus: false
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+    retry: 1
   });
   
   const { data: checklistItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ['checklist-items', projectId],
     queryFn: () => base44.entities.ChecklistItem.filter({ project_id: projectId }),
-    enabled: !!projectId,
-    staleTime: 30000,
-    refetchOnWindowFocus: false
+    enabled: !!projectId && !!project,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+    retry: 1
   });
   
   const { data: conflicts = [] } = useQuery({
     queryKey: ['conflicts', projectId],
     queryFn: () => base44.entities.Conflict.filter({ project_id: projectId, status: 'open' }),
-    enabled: !!projectId,
-    staleTime: 30000,
-    refetchOnWindowFocus: false
+    enabled: !!projectId && !!project,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+    retry: 1
   });
   
   // Generar checklist inicial si no existe
@@ -96,7 +106,7 @@ export default function ProjectChecklist() {
   
   const initializeChecklistMutation = useMutation({
     mutationFn: async () => {
-      if (!project || checklistItems.length > 0) return;
+      if (!project || checklistItems.length > 0 || hasInitialized) return;
       
       const template = generateFilteredChecklist(project.site_type, project.technology, project.applicable_areas);
       const items = template.map(item => ({
@@ -110,19 +120,24 @@ export default function ProjectChecklist() {
         applicable_site_types: item.siteTypes
       }));
       
-      await base44.entities.ChecklistItem.bulkCreate(items);
-      setHasInitialized(true);
+      if (items.length > 0) {
+        await base44.entities.ChecklistItem.bulkCreate(items);
+      }
     },
     onSuccess: () => {
+      setHasInitialized(true);
       queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
+    },
+    onError: (error) => {
+      console.error('Error initializing checklist:', error);
     }
   });
   
   useEffect(() => {
-    if (project && checklistItems.length === 0 && !itemsLoading && !hasInitialized && !initializeChecklistMutation.isPending) {
+    if (project?.id && checklistItems.length === 0 && !itemsLoading && !hasInitialized && !initializeChecklistMutation.isPending) {
       initializeChecklistMutation.mutate();
     }
-  }, [project?.id, checklistItems.length]);
+  }, [project?.id, itemsLoading]);
   
   // Ordenar fases según phase_order personalizado o por defecto, filtrando ocultas
   const orderedPhases = useMemo(() => {
@@ -164,21 +179,36 @@ export default function ProjectChecklist() {
       if (data.status === 'completed') {
         updateData.completed_by = user?.email;
         updateData.completed_by_role = userRole;
+        updateData.completed_at = new Date().toISOString();
       }
-      await base44.entities.ChecklistItem.update(itemId, updateData);
+      return await base44.entities.ChecklistItem.update(itemId, updateData);
     },
-    onSuccess: (_, variables) => {
+    onMutate: async ({ itemId, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['checklist-items', projectId] });
+      const previousItems = queryClient.getQueryData(['checklist-items', projectId]);
+      
       queryClient.setQueryData(['checklist-items', projectId], (old) => {
         if (!old) return old;
         return old.map(item => 
-          item.id === variables.itemId 
-            ? { ...item, ...variables.data } 
+          item.id === itemId 
+            ? { ...item, ...data } 
             : item
         );
       });
+      
+      return { previousItems };
+    },
+    onError: (error, _, context) => {
+      queryClient.setQueryData(['checklist-items', projectId], context.previousItems);
+      toast.error('Error al actualizar ítem');
+    },
+    onSuccess: (_, variables) => {
       if (!variables.data.status) {
         toast.success('Ítem actualizado correctamente');
       }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
     }
   });
   
@@ -202,11 +232,24 @@ export default function ProjectChecklist() {
   
   const updateProjectMutation = useMutation({
     mutationFn: (data) => base44.entities.Project.update(projectId, data),
-    onSuccess: (_, variables) => {
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['project', projectId] });
+      const previousProject = queryClient.getQueryData(['project', projectId]);
+      
       queryClient.setQueryData(['project', projectId], (old) => {
         if (!old) return old;
-        return { ...old, ...variables };
+        return { ...old, ...data };
       });
+      
+      return { previousProject };
+    },
+    onError: (error, _, context) => {
+      queryClient.setQueryData(['project', projectId], context.previousProject);
+      if (isEditingProject) {
+        toast.error('Error al actualizar proyecto');
+      }
+    },
+    onSuccess: () => {
       if (isEditingProject) {
         queryClient.invalidateQueries({ queryKey: ['projects'] });
         setIsEditingProject(false);
@@ -235,46 +278,47 @@ export default function ProjectChecklist() {
     return calculateProjectRisk(checklistItems, project);
   }, [checklistItems, project]);
   
-  // Actualizar proyecto con métricas (optimizado con debounce y memoización)
+  // Actualizar proyecto con métricas (optimizado)
   const projectMetrics = useMemo(() => {
-    if (!checklistItems.length) return null;
+    if (!checklistItems.length || !project) return null;
     
     const criticalPending = checklistItems.filter(i => i.weight === 'critical' && i.status !== 'completed').length;
     const completed = checklistItems.filter(i => i.status === 'completed').length;
     const total = checklistItems.length;
     const completionPercentage = Math.round((completed / total) * 100);
+    const hasConflicts = conflicts.length > 0;
     
-    return { criticalPending, completionPercentage };
-  }, [checklistItems]);
+    return { 
+      criticalPending, 
+      completionPercentage,
+      hasConflicts,
+      needsUpdate: 
+        project.completion_percentage !== completionPercentage || 
+        project.critical_pending !== criticalPending ||
+        project.has_conflicts !== hasConflicts
+    };
+  }, [checklistItems, conflicts.length, project?.completion_percentage, project?.critical_pending, project?.has_conflicts]);
   
   useEffect(() => {
-    if (!risk || !project || !projectMetrics || updateProjectMutation.isPending) {
+    if (!risk || !project || !projectMetrics || updateProjectMutation.isPending || !projectMetrics.needsUpdate) {
       return;
     }
     
-    const hasConflicts = conflicts.length > 0;
-    const { criticalPending, completionPercentage } = projectMetrics;
+    const needsRiskUpdate = project.risk_level !== risk.level;
     
-    // Solo actualizar si hay cambios reales
-    const needsUpdate = 
-      (project.completion_percentage !== completionPercentage) || 
-      (project.critical_pending !== criticalPending) ||
-      (project.risk_level !== risk.level) ||
-      (project.has_conflicts !== hasConflicts);
-    
-    if (needsUpdate) {
+    if (projectMetrics.needsUpdate || needsRiskUpdate) {
       const timeout = setTimeout(() => {
         updateProjectMutation.mutate({
-          completion_percentage: completionPercentage,
-          critical_pending: criticalPending,
+          completion_percentage: projectMetrics.completionPercentage,
+          critical_pending: projectMetrics.criticalPending,
           risk_level: risk.level,
-          has_conflicts: hasConflicts
+          has_conflicts: projectMetrics.hasConflicts
         });
-      }, 1000);
+      }, 2000);
       
       return () => clearTimeout(timeout);
     }
-  }, [projectMetrics?.completionPercentage, projectMetrics?.criticalPending, risk?.level, conflicts.length, project?.id]);
+  }, [projectMetrics?.needsUpdate, risk?.level, project?.id]);
   
   // Agrupar items por fase
   const itemsByPhase = useMemo(() => {
@@ -476,19 +520,22 @@ export default function ProjectChecklist() {
     
     if (sourceIndex === destIndex) return;
     
-    const phaseItems = [...itemsByPhase[phase]].sort((a, b) => a.order - b.order);
+    const phaseItems = [...itemsByPhase[phase]].sort((a, b) => (a.order || 0) - (b.order || 0));
     const [removed] = phaseItems.splice(sourceIndex, 1);
     phaseItems.splice(destIndex, 0, removed);
     
     // Actualizar orden de todos los items afectados
-    const updates = phaseItems.map((item, index) => 
-      updateItemMutation.mutateAsync({ 
-        itemId: item.id, 
-        data: { order: index + 1 } 
-      })
-    );
-    
-    await Promise.all(updates);
+    try {
+      const updates = phaseItems.map((item, index) => 
+        base44.entities.ChecklistItem.update(item.id, { order: index + 1 })
+      );
+      
+      await Promise.all(updates);
+      queryClient.invalidateQueries({ queryKey: ['checklist-items', projectId] });
+    } catch (error) {
+      console.error('Error reordering items:', error);
+      toast.error('Error al reordenar ítems');
+    }
   };
   
   const togglePhase = (phase) => {
