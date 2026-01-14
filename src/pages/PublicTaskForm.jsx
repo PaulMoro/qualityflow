@@ -320,6 +320,36 @@ export default function PublicTaskForm() {
               </div>
             );
           
+          case 'file':
+            return (
+              <div>
+                <label className="text-sm font-medium text-[var(--text-primary)] mb-2 block">
+                  {field.label} {field.required && '*'}
+                </label>
+                <Input
+                  type="file"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const { data } = await base44.integrations.Core.UploadFile({ file });
+                        setFormData({
+                          ...formData,
+                          custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: data.file_url }
+                        });
+                      } catch (error) {
+                        setError('Error al subir el archivo');
+                      }
+                    }
+                  }}
+                  required={field.required}
+                />
+                {formData.custom_fields?.[fieldKey] && (
+                  <p className="text-xs text-green-600 mt-1">✓ Archivo cargado</p>
+                )}
+              </div>
+            );
+          
           default:
             return null;
         }
