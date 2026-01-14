@@ -33,15 +33,12 @@ export default function PublicTaskForm() {
         throw new Error(response.data?.error || 'Formulario no encontrado');
       }
       
-      console.log('Configuración cargada:', response.data.data);
-      console.log('Campos personalizados:', response.data.data.taskConfig?.custom_fields);
-      
       return response.data.data;
     },
     enabled: !!formToken,
     retry: false,
-    refetchOnMount: true,
-    staleTime: 0
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000
   });
 
   const submitMutation = useMutation({
@@ -449,12 +446,14 @@ export default function PublicTaskForm() {
             {(!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes('due_date')) && 
               renderField({ key: 'due_date', type: 'due_date' })}
             
-            {/* Campos personalizados */}
-            {(formConfig.taskConfig?.custom_fields || []).map((field) => (
-              <div key={field.key}>
-                {renderField(field)}
-              </div>
-            ))}
+            {/* Campos personalizados visibles */}
+            {(formConfig.taskConfig?.custom_fields || [])
+              .filter(field => field.visible === true)
+              .map((field) => (
+                <div key={field.key}>
+                  {renderField(field)}
+                </div>
+              ))}
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
