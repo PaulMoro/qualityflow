@@ -70,19 +70,25 @@ export default function ProjectChecklist() {
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: () => base44.entities.Project.filter({ id: projectId }).then(r => r[0]),
-    enabled: !!projectId
+    enabled: !!projectId,
+    staleTime: 30000,
+    refetchOnWindowFocus: false
   });
   
   const { data: checklistItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ['checklist-items', projectId],
     queryFn: () => base44.entities.ChecklistItem.filter({ project_id: projectId }),
-    enabled: !!projectId
+    enabled: !!projectId,
+    staleTime: 30000,
+    refetchOnWindowFocus: false
   });
   
   const { data: conflicts = [] } = useQuery({
     queryKey: ['conflicts', projectId],
     queryFn: () => base44.entities.Conflict.filter({ project_id: projectId, status: 'open' }),
-    enabled: !!projectId
+    enabled: !!projectId,
+    staleTime: 30000,
+    refetchOnWindowFocus: false
   });
   
   // Generar checklist inicial si no existe
@@ -215,33 +221,47 @@ export default function ProjectChecklist() {
     return calculateProjectRisk(checklistItems, project);
   }, [checklistItems, project]);
   
-  // Actualizar proyecto con métricas
+  // Actualizar proyecto con métricas (optimizado)
   useEffect(() => {
-    if (risk && project && checklistItems.length > 0) {
-      const criticalPending = checklistItems.filter(i => i.weight === 'critical' && i.status !== 'completed').length;
-      const completed = checklistItems.filter(i => i.status === 'completed').length;
-      const total = checklistItems.length;
-      const completionPercentage = Math.round((total > 0 ? (completed / total) * 100 : 0));
-      
-      const hasConflicts = conflicts.length > 0;
-      
-      // Solo actualizar si hay diferencias significativas (evitar loops por decimales)
-      const needsUpdate = 
-        Math.abs((project.completion_percentage || 0) - completionPercentage) > 0.5 || 
-        project.critical_pending !== criticalPending ||
-        project.risk_level !== risk.level ||
-        project.has_conflicts !== hasConflicts;
-      
-      if (needsUpdate && !updateProjectMutation.isPending) {
+    if (!risk || !project || checklistItems.length === 0 || updateProjectMutation.isPending) {
+      return;
+    }
+    
+    const criticalPending = checklistItems.filter(i => i.weight === 'critical' && i.status !== 'completed').length;
+    const completed = checklistItems.filter(i => i.status === 'completed').length;
+    const total = checklistItems.length;
+    const completionPercentage = Math.round((completed / total) * 100);
+    const hasConflicts = conflicts.length > 0;
+    
+    // Solo actualizar si hay cambios reales
+    const needsUpdate = 
+      (project.completion_percentage !== completionPercentage) || 
+      (project.critical_pending !== criticalPending) ||
+      (project.risk_level !== risk.level) ||
+      (project.has_conflicts !== hasConflicts);
+    
+    if (needsUpdate) {
+      const timeout = setTimeout(() => {
         updateProjectMutation.mutate({
           completion_percentage: completionPercentage,
           critical_pending: criticalPending,
           risk_level: risk.level,
           has_conflicts: hasConflicts
+        }, {
+          onError: (error) => {
+            console.error('Error updating project metrics:', error);
+          }
         });
-      }
+      }, 500);
+      
+      return () => clearTimeout(timeout);
     }
-  }, [risk?.level, checklistItems.length, conflicts.length]);
+  }, [
+    risk?.level, 
+    checklistItems.filter(i => i.status === 'completed').length,
+    checklistItems.filter(i => i.weight === 'critical' && i.status !== 'completed').length,
+    conflicts.length
+  ]);
   
   // Agrupar items por fase
   const itemsByPhase = useMemo(() => {
