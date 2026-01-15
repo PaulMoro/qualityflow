@@ -80,45 +80,45 @@ export default function Layout({ children, currentPageName }) {
             --primary-magenta: #FF1B7E;
           }
           
-          /* Dark Mode */
-          [data-theme="dark"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #f8f9fa;
-            --bg-hover: rgba(248, 249, 250, 0.8);
-            --text-primary: #000000;
-            --text-secondary: #52525b;
-            --text-tertiary: #71717a;
-            --border-primary: #e5e7eb;
-            --border-secondary: #d1d5db;
-            --shadow: rgba(0, 0, 0, 0.1);
-            --particle-opacity: 0.15;
-            --particle-color: #1a1a1a;
-          }
-          
           /* Light Mode */
           [data-theme="light"] {
-            --bg-primary: #ffffff;
+            --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
-            --bg-tertiary: #f8f9fa;
-            --bg-hover: rgba(248, 249, 250, 0.8);
-            --text-primary: #000000;
-            --text-secondary: #52525b;
-            --text-tertiary: #71717a;
-            --border-primary: #e5e7eb;
-            --border-secondary: #d1d5db;
+            --bg-tertiary: #f5f5f5;
+            --bg-hover: #f8f8f8;
+            --text-primary: #171717;
+            --text-secondary: #525252;
+            --text-tertiary: #737373;
+            --border-primary: #e5e5e5;
+            --border-secondary: #d4d4d4;
             --shadow: rgba(0, 0, 0, 0.1);
-            --particle-opacity: 0.15;
+            --particle-opacity: 0.12;
             --particle-color: #1a1a1a;
+          }
+
+          /* Dark Mode */
+          [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #171717;
+            --bg-tertiary: #262626;
+            --bg-hover: #1f1f1f;
+            --text-primary: #fafafa;
+            --text-secondary: #a3a3a3;
+            --text-tertiary: #737373;
+            --border-primary: #262626;
+            --border-secondary: #404040;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --particle-opacity: 0.2;
+            --particle-color: white;
           }
           
           body {
-            font-family: var(--font-sans);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background: var(--bg-primary);
             color: var(--text-primary);
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.2s ease, color 0.2s ease;
           }
           
           ::-webkit-scrollbar {
@@ -271,11 +271,11 @@ export default function Layout({ children, currentPageName }) {
 
         <div className="flex-1 flex flex-col">
           {/* Top Bar */}
-          <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10">
-            <div className="flex items-center justify-end px-6 py-3 gap-4">
+          <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10 backdrop-blur-sm bg-opacity-95">
+            <div className="flex items-center justify-end px-6 py-3.5 gap-3">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-all duration-200 active:scale-95"
                 title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               >
                 {theme === 'dark' ? (
@@ -293,7 +293,7 @@ export default function Layout({ children, currentPageName }) {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
+          <main className="flex-1 p-6 overflow-auto">
             {React.cloneElement(children, { 
               currentSection, 
               onSectionChange: setCurrentSection,
