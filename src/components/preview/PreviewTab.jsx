@@ -84,9 +84,16 @@ export default function PreviewTab({ projectId, project }) {
       toast.error('Ingresa una URL válida');
       return;
     }
+    
+    // Agregar protocolo si no existe
+    let formattedUrl = tempUrl.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+    
     setIframeLoading(true);
     setIframeError(false);
-    updateProjectMutation.mutate({ preview_url: tempUrl });
+    updateProjectMutation.mutate({ preview_url: formattedUrl });
   };
 
   useEffect(() => {
@@ -187,11 +194,16 @@ export default function PreviewTab({ projectId, project }) {
           <CardTitle>Configurar URL de Previsualización</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input
-            placeholder="https://ejemplo.com"
-            value={tempUrl}
-            onChange={(e) => setTempUrl(e.target.value)}
-          />
+          <div>
+            <Input
+              placeholder="ejemplo.com o https://ejemplo.com"
+              value={tempUrl}
+              onChange={(e) => setTempUrl(e.target.value)}
+            />
+            <p className="text-xs text-[var(--text-secondary)] mt-2">
+              Si no incluyes http:// o https://, se agregará automáticamente
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button onClick={handleSaveUrl} disabled={updateProjectMutation.isPending}>
               <Save className="h-4 w-4 mr-2" />
