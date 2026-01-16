@@ -16,6 +16,7 @@ import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
 import AdminPanel from '../components/admin/AdminPanel';
+import ReportsView from '../components/reports/ReportsView';
 
 
 export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled, currentUser }) {
@@ -275,6 +276,18 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
           <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Ocupación de Recursos</h2>
         </div>
         <ResourceOccupancy />
+      </div>
+    );
+  }
+
+  // Vista de Reportes
+  if (currentSection === 'reports') {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Reportes</h2>
+        </div>
+        <ReportsView />
       </div>
     );
   }

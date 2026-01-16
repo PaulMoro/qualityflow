@@ -21,6 +21,7 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: false,
     can_access_team: false,
     can_access_reports: false,
+    can_view_reports: false,
     can_access_admin: false,
     can_approve_phases: false,
     can_resolve_conflicts: false
@@ -35,6 +36,7 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: false,
     can_access_team: false,
     can_access_reports: false,
+    can_view_reports: false,
     can_access_admin: false,
     can_approve_phases: false,
     can_resolve_conflicts: false
@@ -49,6 +51,7 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: true,
     can_access_team: true,
     can_access_reports: true,
+    can_view_reports: true,
     can_access_admin: false,
     can_approve_phases: false,
     can_resolve_conflicts: true
@@ -63,6 +66,7 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: true,
     can_access_team: true,
     can_access_reports: true,
+    can_view_reports: true,
     can_access_admin: false,
     can_approve_phases: true,
     can_resolve_conflicts: true
@@ -77,6 +81,7 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: true,
     can_access_team: true,
     can_access_reports: true,
+    can_view_reports: true,
     can_access_admin: true,
     can_approve_phases: true,
     can_resolve_conflicts: true
@@ -92,7 +97,8 @@ const PERMISSION_LABELS = {
   can_access_resources: 'Ver ocupación de recursos',
   can_access_schedules: 'Ver cronogramas',
   can_access_team: 'Gestionar equipo',
-  can_access_reports: 'Ver reportes',
+  can_access_reports: 'Acceder a reportes',
+  can_view_reports: 'Ver estadísticas de reportes',
   can_access_admin: 'Acceso al panel admin',
   can_approve_phases: 'Aprobar fases',
   can_resolve_conflicts: 'Resolver conflictos'
