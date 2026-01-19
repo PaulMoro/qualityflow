@@ -15,6 +15,7 @@ import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 import { Progress } from "@/components/ui/progress";
 import RolePermissionsManager from './RolePermissionsManager';
 import TaskConfigurationPanel from '../tasks/TaskConfigurationPanel';
+import EntryCriteriaManager from './EntryCriteriaManager';
 
 export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) {
   const [newMember, setNewMember] = useState({ user_email: '', display_name: '', role: 'developer' });
@@ -142,7 +143,7 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
         </DialogHeader>
         
         <Tabs defaultValue={defaultTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-5 bg-[var(--bg-primary)] border-[var(--border-primary)]">
+          <TabsList className="grid w-full grid-cols-6 bg-[var(--bg-primary)] border-[var(--border-primary)]">
             <TabsTrigger value="members" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
               <Users className="h-4 w-4 mr-2" />
               Miembros
@@ -161,6 +162,9 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
             <TabsTrigger value="roles" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
               <Shield className="h-4 w-4 mr-2" />
               Roles
+            </TabsTrigger>
+            <TabsTrigger value="criteria" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white text-[var(--text-secondary)]">
+              Criterios
             </TabsTrigger>
           </TabsList>
           
@@ -592,6 +596,10 @@ export default function AdminPanel({ isOpen, onClose, defaultTab = 'members' }) 
             </div>
 
             <RolePermissionsManager />
+          </TabsContent>
+
+          <TabsContent value="criteria" className="space-y-4 mt-6">
+            <EntryCriteriaManager />
           </TabsContent>
           </Tabs>
       </DialogContent>
