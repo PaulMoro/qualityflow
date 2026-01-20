@@ -98,7 +98,7 @@ export default function GlobalAccess() {
               <CardContent className="space-y-6">
                 
                 {/* Hosting QA */}
-                {(access.qa_hosting_url || access.qa_hosting_access) && (
+                {(access.qa_hosting_url || access.qa_hosting_user || access.qa_hosting_password) && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-blue-500">QA</Badge>
@@ -106,7 +106,7 @@ export default function GlobalAccess() {
                     </div>
                     {access.qa_hosting_url && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">URL:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">URL:</span>
                         <a 
                           href={access.qa_hosting_url} 
                           target="_blank" 
@@ -118,12 +118,30 @@ export default function GlobalAccess() {
                         </a>
                       </div>
                     )}
-                    {access.qa_hosting_access && (
+                    {access.qa_hosting_user && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">Acceso:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Usuario:</span>
                         <div className="flex-1 flex items-center gap-2">
                           <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
-                            {showPasswords[`qa_host_${project.id}`] ? access.qa_hosting_access : '••••••••••'}
+                            {access.qa_hosting_user}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(access.qa_hosting_user, `qa_host_user_${project.id}`)}
+                          >
+                            {copiedField === `qa_host_user_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {access.qa_hosting_password && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Contraseña:</span>
+                        <div className="flex-1 flex items-center gap-2">
+                          <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
+                            {showPasswords[`qa_host_${project.id}`] ? access.qa_hosting_password : '••••••••••'}
                           </code>
                           <Button
                             variant="ghost"
@@ -137,9 +155,9 @@ export default function GlobalAccess() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => copyToClipboard(access.qa_hosting_access, `qa_host_${project.id}`)}
+                            onClick={() => copyToClipboard(access.qa_hosting_password, `qa_host_pass_${project.id}`)}
                           >
-                            {copiedField === `qa_host_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            {copiedField === `qa_host_pass_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                           </Button>
                         </div>
                       </div>
@@ -148,7 +166,7 @@ export default function GlobalAccess() {
                 )}
 
                 {/* Hosting Producción */}
-                {(access.prod_hosting_url || access.prod_hosting_access) && (
+                {(access.prod_hosting_url || access.prod_hosting_user || access.prod_hosting_password) && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-500">PROD</Badge>
@@ -156,7 +174,7 @@ export default function GlobalAccess() {
                     </div>
                     {access.prod_hosting_url && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">URL:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">URL:</span>
                         <a 
                           href={access.prod_hosting_url} 
                           target="_blank" 
@@ -168,12 +186,30 @@ export default function GlobalAccess() {
                         </a>
                       </div>
                     )}
-                    {access.prod_hosting_access && (
+                    {access.prod_hosting_user && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">Acceso:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Usuario:</span>
                         <div className="flex-1 flex items-center gap-2">
                           <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
-                            {showPasswords[`prod_host_${project.id}`] ? access.prod_hosting_access : '••••••••••'}
+                            {access.prod_hosting_user}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(access.prod_hosting_user, `prod_host_user_${project.id}`)}
+                          >
+                            {copiedField === `prod_host_user_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {access.prod_hosting_password && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Contraseña:</span>
+                        <div className="flex-1 flex items-center gap-2">
+                          <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
+                            {showPasswords[`prod_host_${project.id}`] ? access.prod_hosting_password : '••••••••••'}
                           </code>
                           <Button
                             variant="ghost"
@@ -187,9 +223,9 @@ export default function GlobalAccess() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => copyToClipboard(access.prod_hosting_access, `prod_host_${project.id}`)}
+                            onClick={() => copyToClipboard(access.prod_hosting_password, `prod_host_pass_${project.id}`)}
                           >
-                            {copiedField === `prod_host_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            {copiedField === `prod_host_pass_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                           </Button>
                         </div>
                       </div>
@@ -198,7 +234,7 @@ export default function GlobalAccess() {
                 )}
 
                 {/* CMS QA */}
-                {(access.cms_qa_url || access.cms_qa_access) && (
+                {(access.cms_qa_url || access.cms_qa_user || access.cms_qa_password) && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-blue-500">QA</Badge>
@@ -206,7 +242,7 @@ export default function GlobalAccess() {
                     </div>
                     {access.cms_qa_url && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">URL:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">URL:</span>
                         <a 
                           href={access.cms_qa_url} 
                           target="_blank" 
@@ -218,12 +254,30 @@ export default function GlobalAccess() {
                         </a>
                       </div>
                     )}
-                    {access.cms_qa_access && (
+                    {access.cms_qa_user && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">Acceso:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Usuario:</span>
                         <div className="flex-1 flex items-center gap-2">
                           <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
-                            {showPasswords[`cms_qa_${project.id}`] ? access.cms_qa_access : '••••••••••'}
+                            {access.cms_qa_user}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(access.cms_qa_user, `cms_qa_user_${project.id}`)}
+                          >
+                            {copiedField === `cms_qa_user_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {access.cms_qa_password && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Contraseña:</span>
+                        <div className="flex-1 flex items-center gap-2">
+                          <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
+                            {showPasswords[`cms_qa_${project.id}`] ? access.cms_qa_password : '••••••••••'}
                           </code>
                           <Button
                             variant="ghost"
@@ -237,9 +291,9 @@ export default function GlobalAccess() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => copyToClipboard(access.cms_qa_access, `cms_qa_${project.id}`)}
+                            onClick={() => copyToClipboard(access.cms_qa_password, `cms_qa_pass_${project.id}`)}
                           >
-                            {copiedField === `cms_qa_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            {copiedField === `cms_qa_pass_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                           </Button>
                         </div>
                       </div>
@@ -248,7 +302,7 @@ export default function GlobalAccess() {
                 )}
 
                 {/* CMS Producción */}
-                {(access.cms_prod_url || access.cms_prod_access) && (
+                {(access.cms_prod_url || access.cms_prod_user || access.cms_prod_password) && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-500">PROD</Badge>
@@ -256,7 +310,7 @@ export default function GlobalAccess() {
                     </div>
                     {access.cms_prod_url && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">URL:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">URL:</span>
                         <a 
                           href={access.cms_prod_url} 
                           target="_blank" 
@@ -268,12 +322,30 @@ export default function GlobalAccess() {
                         </a>
                       </div>
                     )}
-                    {access.cms_prod_access && (
+                    {access.cms_prod_user && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--text-secondary)] w-16">Acceso:</span>
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Usuario:</span>
                         <div className="flex-1 flex items-center gap-2">
                           <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
-                            {showPasswords[`cms_prod_${project.id}`] ? access.cms_prod_access : '••••••••••'}
+                            {access.cms_prod_user}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copyToClipboard(access.cms_prod_user, `cms_prod_user_${project.id}`)}
+                          >
+                            {copiedField === `cms_prod_user_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {access.cms_prod_password && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[var(--text-secondary)] w-20">Contraseña:</span>
+                        <div className="flex-1 flex items-center gap-2">
+                          <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded flex-1 font-mono">
+                            {showPasswords[`cms_prod_${project.id}`] ? access.cms_prod_password : '••••••••••'}
                           </code>
                           <Button
                             variant="ghost"
@@ -287,9 +359,9 @@ export default function GlobalAccess() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            onClick={() => copyToClipboard(access.cms_prod_access, `cms_prod_${project.id}`)}
+                            onClick={() => copyToClipboard(access.cms_prod_password, `cms_prod_pass_${project.id}`)}
                           >
-                            {copiedField === `cms_prod_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            {copiedField === `cms_prod_pass_${project.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                           </Button>
                         </div>
                       </div>
@@ -318,18 +390,36 @@ export default function GlobalAccess() {
                         </div>
                         {api.url && (
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-[var(--text-secondary)] w-16">URL:</span>
+                            <span className="text-xs text-[var(--text-secondary)] w-20">URL:</span>
                             <code className="text-xs bg-[var(--bg-input)] px-2 py-1 rounded flex-1 font-mono text-[var(--text-primary)]">
                               {api.url}
                             </code>
                           </div>
                         )}
-                        {api.access && (
+                        {api.user && (
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-[var(--text-secondary)] w-16">Acceso:</span>
+                            <span className="text-xs text-[var(--text-secondary)] w-20">Usuario:</span>
                             <div className="flex-1 flex items-center gap-2">
                               <code className="text-xs bg-[var(--bg-input)] px-2 py-1 rounded flex-1 font-mono">
-                                {showPasswords[`api_${project.id}_${idx}`] ? api.access : '••••••••••'}
+                                {api.user}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => copyToClipboard(api.user, `api_user_${project.id}_${idx}`)}
+                              >
+                                {copiedField === `api_user_${project.id}_${idx}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        {api.password && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-[var(--text-secondary)] w-20">Contraseña:</span>
+                            <div className="flex-1 flex items-center gap-2">
+                              <code className="text-xs bg-[var(--bg-input)] px-2 py-1 rounded flex-1 font-mono">
+                                {showPasswords[`api_${project.id}_${idx}`] ? api.password : '••••••••••'}
                               </code>
                               <Button
                                 variant="ghost"
@@ -343,9 +433,9 @@ export default function GlobalAccess() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7"
-                                onClick={() => copyToClipboard(api.access, `api_${project.id}_${idx}`)}
+                                onClick={() => copyToClipboard(api.password, `api_pass_${project.id}_${idx}`)}
                               >
-                                {copiedField === `api_${project.id}_${idx}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                                {copiedField === `api_pass_${project.id}_${idx}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                               </Button>
                             </div>
                           </div>
