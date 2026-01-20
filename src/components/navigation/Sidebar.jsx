@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Plus,
   Tag,
-  Shield
+  Shield,
+  Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
@@ -77,6 +78,14 @@ const MENU_ITEMS = [
     icon: BarChart3,
     page: 'Dashboard',
     section: 'reports'
+  },
+  {
+    id: 'global-access',
+    label: 'Accesos Globales',
+    icon: Lock,
+    page: 'GlobalAccess',
+    section: 'global-access',
+    requiresAdmin: true
   }
 ];
 
@@ -86,12 +95,19 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
   const [expandedSubMenus, setExpandedSubMenus] = useState({});
   const [currentUser, setCurrentUser] = React.useState(null);
   const [showAdminPanel, setShowAdminPanel] = React.useState(false);
+  const [canViewAccess, setCanViewAccess] = React.useState(false);
   
   React.useEffect(() => {
     const loadUser = async () => {
       try {
         const user = await base44.auth.me();
         setCurrentUser(user);
+        
+        // Verificar si el usuario puede ver accesos globales
+        const members = await base44.entities.TeamMember.filter({ user_email: user.email });
+        const member = members[0];
+        const canView = user.role === 'admin' || member?.role === 'administrador' || member?.role === 'software' || member?.role === 'web_leader';
+        setCanViewAccess(canView);
       } catch (error) {
         console.error('Error loading user:', error);
       }
@@ -128,6 +144,11 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
       {/* Menu Items */}
       <nav className="flex-1 p-4 space-y-1">
         {MENU_ITEMS.map((item) => {
+          // Filtrar items que requieren admin
+          if (item.requiresAdmin && !canViewAccess) {
+            return null;
+          }
+          
           const Icon = item.icon;
           const isActive = item.section ? currentSection === item.section : currentSection === 'dashboard';
           const isExpanded = expandedMenus[item.id];
@@ -135,12 +156,16 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
           
           return (
             <div key={item.id}>
-              <button
-                onClick={() => {
+              <Link
+                to={item.page ? createPageUrl(item.page) : '#'}
+                onClick={(e) => {
+                  if (!item.page) e.preventDefault();
                   if (hasSubMenu) {
                     toggleMenu(item.id);
                   }
-                  onSectionChange(item.section || 'dashboard');
+                  if (item.section) {
+                    onSectionChange(item.section || 'dashboard');
+                  }
                 }}
                 className={cn(
                   "w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
@@ -158,7 +183,7 @@ export default function Sidebar({ currentSection, onSectionChange, onAction }) {
                     <ChevronDown className="h-4 w-4" /> : 
                     <ChevronRight className="h-4 w-4" />
                 )}
-              </button>
+              </Link>
               
               {/* Submenu */}
               {hasSubMenu && isExpanded && (
