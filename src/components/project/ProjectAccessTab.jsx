@@ -26,13 +26,17 @@ export default function ProjectAccessTab({ projectId }) {
 
   const [formData, setFormData] = useState({
     qa_hosting_url: '',
-    qa_hosting_access: '',
+    qa_hosting_user: '',
+    qa_hosting_password: '',
     prod_hosting_url: '',
-    prod_hosting_access: '',
+    prod_hosting_user: '',
+    prod_hosting_password: '',
     cms_qa_url: '',
-    cms_qa_access: '',
+    cms_qa_user: '',
+    cms_qa_password: '',
     cms_prod_url: '',
-    cms_prod_access: '',
+    cms_prod_user: '',
+    cms_prod_password: '',
     apis: []
   });
 
@@ -40,13 +44,17 @@ export default function ProjectAccessTab({ projectId }) {
     if (accessData) {
       setFormData({
         qa_hosting_url: accessData.qa_hosting_url || '',
-        qa_hosting_access: accessData.qa_hosting_access || '',
+        qa_hosting_user: accessData.qa_hosting_user || '',
+        qa_hosting_password: accessData.qa_hosting_password || '',
         prod_hosting_url: accessData.prod_hosting_url || '',
-        prod_hosting_access: accessData.prod_hosting_access || '',
+        prod_hosting_user: accessData.prod_hosting_user || '',
+        prod_hosting_password: accessData.prod_hosting_password || '',
         cms_qa_url: accessData.cms_qa_url || '',
-        cms_qa_access: accessData.cms_qa_access || '',
+        cms_qa_user: accessData.cms_qa_user || '',
+        cms_qa_password: accessData.cms_qa_password || '',
         cms_prod_url: accessData.cms_prod_url || '',
-        cms_prod_access: accessData.cms_prod_access || '',
+        cms_prod_user: accessData.cms_prod_user || '',
+        cms_prod_password: accessData.cms_prod_password || '',
         apis: accessData.apis || []
       });
     }
@@ -76,7 +84,7 @@ export default function ProjectAccessTab({ projectId }) {
   const handleAddApi = () => {
     setFormData({
       ...formData,
-      apis: [...formData.apis, { name: '', url: '', access: '' }]
+      apis: [...formData.apis, { name: '', url: '', user: '', password: '' }]
     });
   };
 
@@ -143,17 +151,37 @@ export default function ProjectAccessTab({ projectId }) {
             </div>
           </div>
           <div>
-            <Label className="text-xs">Accesos</Label>
+            <Label className="text-xs">Usuario</Label>
             <div className="relative">
-              <Textarea
-                value={formData.qa_hosting_access}
-                onChange={(e) => setFormData({ ...formData, qa_hosting_access: e.target.value })}
-                placeholder="Usuario, contraseña, y otros accesos..."
-                className="bg-[var(--bg-input)] pr-20"
-                type={showPasswords['qa_hosting'] ? 'text' : 'password'}
-                rows={3}
+              <Input
+                value={formData.qa_hosting_user}
+                onChange={(e) => setFormData({ ...formData, qa_hosting_user: e.target.value })}
+                placeholder="usuario@ejemplo.com"
+                className="bg-[var(--bg-input)] pr-10"
               />
-              <div className="absolute top-2 right-2 flex gap-1">
+              {formData.qa_hosting_user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => copyToClipboard(formData.qa_hosting_user, 'qa_hosting_user')}
+                >
+                  {copiedField === 'qa_hosting_user' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              )}
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Contraseña</Label>
+            <div className="relative">
+              <Input
+                value={formData.qa_hosting_password}
+                onChange={(e) => setFormData({ ...formData, qa_hosting_password: e.target.value })}
+                placeholder="••••••••"
+                type={showPasswords['qa_hosting'] ? 'text' : 'password'}
+                className="bg-[var(--bg-input)] pr-20"
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 right-1 flex gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -162,14 +190,14 @@ export default function ProjectAccessTab({ projectId }) {
                 >
                   {showPasswords['qa_hosting'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                {formData.qa_hosting_access && (
+                {formData.qa_hosting_password && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => copyToClipboard(formData.qa_hosting_access, 'qa_hosting')}
+                    onClick={() => copyToClipboard(formData.qa_hosting_password, 'qa_hosting_pass')}
                   >
-                    {copiedField === 'qa_hosting' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedField === 'qa_hosting_pass' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 )}
               </div>
@@ -208,17 +236,37 @@ export default function ProjectAccessTab({ projectId }) {
             </div>
           </div>
           <div>
-            <Label className="text-xs">Accesos</Label>
+            <Label className="text-xs">Usuario</Label>
             <div className="relative">
-              <Textarea
-                value={formData.prod_hosting_access}
-                onChange={(e) => setFormData({ ...formData, prod_hosting_access: e.target.value })}
-                placeholder="Usuario, contraseña, y otros accesos..."
-                className="bg-[var(--bg-input)] pr-20"
-                type={showPasswords['prod_hosting'] ? 'text' : 'password'}
-                rows={3}
+              <Input
+                value={formData.prod_hosting_user}
+                onChange={(e) => setFormData({ ...formData, prod_hosting_user: e.target.value })}
+                placeholder="usuario@ejemplo.com"
+                className="bg-[var(--bg-input)] pr-10"
               />
-              <div className="absolute top-2 right-2 flex gap-1">
+              {formData.prod_hosting_user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => copyToClipboard(formData.prod_hosting_user, 'prod_hosting_user')}
+                >
+                  {copiedField === 'prod_hosting_user' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              )}
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Contraseña</Label>
+            <div className="relative">
+              <Input
+                value={formData.prod_hosting_password}
+                onChange={(e) => setFormData({ ...formData, prod_hosting_password: e.target.value })}
+                placeholder="••••••••"
+                type={showPasswords['prod_hosting'] ? 'text' : 'password'}
+                className="bg-[var(--bg-input)] pr-20"
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 right-1 flex gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -227,14 +275,14 @@ export default function ProjectAccessTab({ projectId }) {
                 >
                   {showPasswords['prod_hosting'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                {formData.prod_hosting_access && (
+                {formData.prod_hosting_password && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => copyToClipboard(formData.prod_hosting_access, 'prod_hosting')}
+                    onClick={() => copyToClipboard(formData.prod_hosting_password, 'prod_hosting_pass')}
                   >
-                    {copiedField === 'prod_hosting' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedField === 'prod_hosting_pass' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 )}
               </div>
@@ -273,17 +321,37 @@ export default function ProjectAccessTab({ projectId }) {
             </div>
           </div>
           <div>
-            <Label className="text-xs">Accesos</Label>
+            <Label className="text-xs">Usuario</Label>
             <div className="relative">
-              <Textarea
-                value={formData.cms_qa_access}
-                onChange={(e) => setFormData({ ...formData, cms_qa_access: e.target.value })}
-                placeholder="Usuario, contraseña, y otros accesos..."
-                className="bg-[var(--bg-input)] pr-20"
-                type={showPasswords['cms_qa'] ? 'text' : 'password'}
-                rows={3}
+              <Input
+                value={formData.cms_qa_user}
+                onChange={(e) => setFormData({ ...formData, cms_qa_user: e.target.value })}
+                placeholder="usuario@ejemplo.com"
+                className="bg-[var(--bg-input)] pr-10"
               />
-              <div className="absolute top-2 right-2 flex gap-1">
+              {formData.cms_qa_user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => copyToClipboard(formData.cms_qa_user, 'cms_qa_user')}
+                >
+                  {copiedField === 'cms_qa_user' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              )}
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Contraseña</Label>
+            <div className="relative">
+              <Input
+                value={formData.cms_qa_password}
+                onChange={(e) => setFormData({ ...formData, cms_qa_password: e.target.value })}
+                placeholder="••••••••"
+                type={showPasswords['cms_qa'] ? 'text' : 'password'}
+                className="bg-[var(--bg-input)] pr-20"
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 right-1 flex gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -292,14 +360,14 @@ export default function ProjectAccessTab({ projectId }) {
                 >
                   {showPasswords['cms_qa'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                {formData.cms_qa_access && (
+                {formData.cms_qa_password && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => copyToClipboard(formData.cms_qa_access, 'cms_qa')}
+                    onClick={() => copyToClipboard(formData.cms_qa_password, 'cms_qa_pass')}
                   >
-                    {copiedField === 'cms_qa' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedField === 'cms_qa_pass' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 )}
               </div>
@@ -338,17 +406,37 @@ export default function ProjectAccessTab({ projectId }) {
             </div>
           </div>
           <div>
-            <Label className="text-xs">Accesos</Label>
+            <Label className="text-xs">Usuario</Label>
             <div className="relative">
-              <Textarea
-                value={formData.cms_prod_access}
-                onChange={(e) => setFormData({ ...formData, cms_prod_access: e.target.value })}
-                placeholder="Usuario, contraseña, y otros accesos..."
-                className="bg-[var(--bg-input)] pr-20"
-                type={showPasswords['cms_prod'] ? 'text' : 'password'}
-                rows={3}
+              <Input
+                value={formData.cms_prod_user}
+                onChange={(e) => setFormData({ ...formData, cms_prod_user: e.target.value })}
+                placeholder="usuario@ejemplo.com"
+                className="bg-[var(--bg-input)] pr-10"
               />
-              <div className="absolute top-2 right-2 flex gap-1">
+              {formData.cms_prod_user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => copyToClipboard(formData.cms_prod_user, 'cms_prod_user')}
+                >
+                  {copiedField === 'cms_prod_user' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              )}
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Contraseña</Label>
+            <div className="relative">
+              <Input
+                value={formData.cms_prod_password}
+                onChange={(e) => setFormData({ ...formData, cms_prod_password: e.target.value })}
+                placeholder="••••••••"
+                type={showPasswords['cms_prod'] ? 'text' : 'password'}
+                className="bg-[var(--bg-input)] pr-20"
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 right-1 flex gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -357,14 +445,14 @@ export default function ProjectAccessTab({ projectId }) {
                 >
                   {showPasswords['cms_prod'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                {formData.cms_prod_access && (
+                {formData.cms_prod_password && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => copyToClipboard(formData.cms_prod_access, 'cms_prod')}
+                    onClick={() => copyToClipboard(formData.cms_prod_password, 'cms_prod_pass')}
                   >
-                    {copiedField === 'cms_prod' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedField === 'cms_prod_pass' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 )}
               </div>
@@ -429,17 +517,37 @@ export default function ProjectAccessTab({ projectId }) {
                         </div>
                       </div>
                       <div>
-                        <Label className="text-xs">Accesos</Label>
+                        <Label className="text-xs">Usuario</Label>
                         <div className="relative">
-                          <Textarea
-                            value={api.access}
-                            onChange={(e) => handleApiChange(index, 'access', e.target.value)}
-                            placeholder="API keys, tokens, credenciales..."
-                            className="bg-[var(--bg-input)] pr-20"
-                            type={showPasswords[`api_${index}`] ? 'text' : 'password'}
-                            rows={3}
+                          <Input
+                            value={api.user}
+                            onChange={(e) => handleApiChange(index, 'user', e.target.value)}
+                            placeholder="usuario / API key"
+                            className="bg-[var(--bg-input)] pr-10"
                           />
-                          <div className="absolute top-2 right-2 flex gap-1">
+                          {api.user && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                              onClick={() => copyToClipboard(api.user, `api_user_${index}`)}
+                            >
+                              {copiedField === `api_user_${index}` ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Contraseña / Token</Label>
+                        <div className="relative">
+                          <Input
+                            value={api.password}
+                            onChange={(e) => handleApiChange(index, 'password', e.target.value)}
+                            placeholder="••••••••"
+                            type={showPasswords[`api_${index}`] ? 'text' : 'password'}
+                            className="bg-[var(--bg-input)] pr-20"
+                          />
+                          <div className="absolute top-1/2 -translate-y-1/2 right-1 flex gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -448,14 +556,14 @@ export default function ProjectAccessTab({ projectId }) {
                             >
                               {showPasswords[`api_${index}`] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
-                            {api.access && (
+                            {api.password && (
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7"
-                                onClick={() => copyToClipboard(api.access, `api_${index}`)}
+                                onClick={() => copyToClipboard(api.password, `api_pass_${index}`)}
                               >
-                                {copiedField === `api_${index}` ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                {copiedField === `api_pass_${index}` ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                               </Button>
                             )}
                           </div>
