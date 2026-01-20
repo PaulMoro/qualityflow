@@ -60,10 +60,39 @@ export default function TaskNotificationBadge() {
       const projects = await base44.entities.Project.filter({ id: projectId });
       const project = projects[0];
 
+      // Obtener todas las tareas del proyecto para calcular el número secuencial
+      const allTasks = await base44.entities.Task.filter({ project_id: projectId });
+      const taskNumber = allTasks.findIndex(t => t.id === taskId) + 1;
+
+      // Crear código del proyecto (primeras 3-4 letras en mayúsculas)
+      const projectCode = (project?.name || 'TASK')
+        .split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase()
+        .substring(0, 4);
+
+      // Crear título con código
+      const taskCode = `${projectCode}-${String(taskNumber).padStart(3, '0')}`;
+      const title = encodeURIComponent(`${taskCode} - ${task.title}`);
+
+      // Obtener configuración de prioridades
+      const configs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
+      const config = configs[0];
+      const priorityLabel = config?.custom_priorities?.find(p => p.key === task.priority)?.label || task.priority || 'Media';
+
+      // Crear descripción detallada
+      const descriptionParts = [
+        `Proyecto: ${project?.name}`,
+        `Código: ${taskCode}`,
+        `Prioridad: ${priorityLabel}`,
+        task.description ? `\nDescripción:\n${task.description}` : '',
+        `\nRecursos: ${window.location.origin}/project/${projectId}`
+      ];
+      const description = encodeURIComponent(descriptionParts.filter(Boolean).join('\n'));
+
       // Crear URL de Google Calendar
       const eventDate = task.due_date || new Date().toISOString().split('T')[0];
-      const title = encodeURIComponent(task.title);
-      const description = encodeURIComponent(`Proyecto: ${project?.name}\n\n${task.description || ''}`);
       const dates = `${eventDate.replace(/-/g, '')}/${eventDate.replace(/-/g, '')}`;
 
       const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${description}`;
