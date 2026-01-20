@@ -37,14 +37,43 @@ export default function TaskFormModal({ isOpen, onClose, task, initialStatus, pr
     description: task?.description || '',
     status: task?.status || initialStatus || config?.custom_statuses?.[0]?.key,
     priority: task?.priority || config?.custom_priorities?.[0]?.key,
+    assigned_to: task?.assigned_to || [],
     custom_fields: task?.custom_fields || {}
   }));
   const [uploadingFields, setUploadingFields] = useState({});
 
   const queryClient = useQueryClient();
 
+  // Cargar miembros del equipo
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => base44.entities.TeamMember.filter({ is_active: true })
+  });
+
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Task.create(data),
+    mutationFn: async (data) => {
+      const newTask = await base44.entities.Task.create(data);
+      
+      // Si hay un usuario asignado, enviar notificación
+      if (data.assigned_to?.[0]) {
+        try {
+          const projects = await base44.entities.Project.filter({ id: projectId });
+          const project = projects[0];
+          
+          await base44.functions.invoke('notifyTaskAssignment', {
+            taskId: newTask.id,
+            projectId: projectId,
+            assignedTo: data.assigned_to[0],
+            taskTitle: data.title,
+            projectName: project?.name
+          });
+        } catch (error) {
+          console.error('Error enviando notificación:', error);
+        }
+      }
+      
+      return newTask;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       toast.success('✅ Tarea creada correctamente', { duration: 2000 });
@@ -349,6 +378,29 @@ export default function TaskFormModal({ isOpen, onClose, task, initialStatus, pr
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] mb-1 block">Asignado a</label>
+            <Select
+              value={(formData.assigned_to || [])[0] || 'unassigned'}
+              onValueChange={(value) => {
+                const newAssigned = value === 'unassigned' ? [] : [value];
+                setFormData({ ...formData, assigned_to: newAssigned });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sin asignar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Sin asignar</SelectItem>
+                {teamMembers.map((member) => (
+                  <SelectItem key={member.user_email} value={member.user_email}>
+                    {member.display_name || member.user_email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {customFields.length > 0 && (
