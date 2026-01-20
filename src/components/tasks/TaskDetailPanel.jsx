@@ -423,37 +423,25 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               handleUpdate({ assigned_to: newAssigned });
             }}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Sin asignar" />
+            <SelectTrigger className="bg-[var(--bg-input)]">
+              <SelectValue>
+                {(() => {
+                  const assignedEmail = (formData.assigned_to || [])[0];
+                  if (!assignedEmail) return 'Sin asignar';
+                  const member = teamMembers.find(m => m.user_email === assignedEmail);
+                  return member?.display_name || assignedEmail;
+                })()}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-white">
-              <SelectItem value="unassigned">
-                <span className="text-[var(--text-tertiary)]">Sin asignar</span>
-              </SelectItem>
+              <SelectItem value="unassigned">Sin asignar</SelectItem>
               {teamMembers.map((member) => (
                 <SelectItem key={member.user_email} value={member.user_email}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[#FF1B7E] text-white text-xs flex items-center justify-center">
-                      {member.display_name?.charAt(0).toUpperCase() || member.user_email?.charAt(0).toUpperCase()}
-                    </div>
-                    <span>{member.display_name || member.user_email}</span>
-                  </div>
+                  {member.display_name || member.user_email}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {(formData.assigned_to || []).length > 0 && (
-            <div className="mt-2 flex items-center gap-2">
-              {teamMembers
-                .filter(m => (formData.assigned_to || []).includes(m.user_email))
-                .map(member => (
-                  <Badge key={member.user_email} variant="outline" className="text-xs">
-                    {member.display_name || member.user_email}
-                  </Badge>
-                ))
-              }
-            </div>
-          )}
         </div>
 
         <Separator />
