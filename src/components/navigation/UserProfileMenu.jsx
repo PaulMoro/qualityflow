@@ -24,6 +24,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { ROLE_CONFIG } from '../checklist/checklistTemplates';
+import TaskNotificationBadge from '../notifications/TaskNotificationBadge';
 
 export default function UserProfileMenu() {
   const [user, setUser] = useState(null);
@@ -76,7 +77,9 @@ export default function UserProfileMenu() {
 
   return (
     <>
-      <DropdownMenu>
+      <div className="flex items-center gap-2">
+        <TaskNotificationBadge />
+        <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-3 bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] border border-[var(--border-primary)]">
             <div className="flex items-center gap-3">
@@ -115,7 +118,7 @@ export default function UserProfileMenu() {
             Cerrar Sesión
           </DropdownMenuItem>
         </DropdownMenuContent>
-        </DropdownMenu>
+      </DropdownMenu>
       </div>
 
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
