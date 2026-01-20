@@ -94,7 +94,7 @@ export default function Layout({ children, currentPageName }) {
       <div className="min-h-screen bg-[var(--bg-primary)]">
         <style>{`
           :root {
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-sans: Satoshi, sans-serif;
             --primary-magenta: #FF1B7E;
           }
           
@@ -207,7 +207,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-[var(--bg-primary)]">
       <style>{`
         :root {
-          --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+          --font-sans: Satoshi, sans-serif;
           --primary-magenta: #FF1B7E;
         }
         

@@ -5,7 +5,7 @@ css
 
 @layer base {
   :root {
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    --font-sans: Satoshi, sans-serif;
     --primary-magenta: #FF1B7E;
     --primary-magenta-hover: #e6156e;
     --primary-magenta-light: rgba(255, 27, 126, 0.08);
