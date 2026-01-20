@@ -34,7 +34,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
 
   const queryClient = useQueryClient();
 
-  // Cargar proyecto para obtener miembros del equipo
+  // Cargar proyecto
   const { data: project } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
@@ -44,15 +44,10 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
     enabled: !!projectId
   });
 
-  // Cargar miembros del equipo del proyecto
+  // Cargar todos los miembros del equipo activos
   const { data: teamMembers = [] } = useQuery({
-    queryKey: ['team-members', projectId],
-    queryFn: async () => {
-      if (!project?.team_members || project.team_members.length === 0) return [];
-      const members = await base44.entities.TeamMember.filter({ is_active: true });
-      return members.filter(m => project.team_members.includes(m.user_email));
-    },
-    enabled: !!project
+    queryKey: ['team-members'],
+    queryFn: () => base44.entities.TeamMember.filter({ is_active: true })
   });
 
   useEffect(() => {
