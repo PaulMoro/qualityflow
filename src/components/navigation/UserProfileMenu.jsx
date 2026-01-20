@@ -115,7 +115,8 @@ export default function UserProfileMenu() {
             Cerrar Sesión
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+        </DropdownMenu>
+      </div>
 
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
         <DialogContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-primary)] max-w-2xl">

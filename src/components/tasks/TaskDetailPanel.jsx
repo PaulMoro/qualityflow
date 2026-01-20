@@ -34,10 +34,25 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
 
   const queryClient = useQueryClient();
 
-  // Cargar usuarios del equipo
+  // Cargar proyecto para obtener miembros del equipo
+  const { data: project } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: async () => {
+      const result = await base44.entities.Project.filter({ id: projectId });
+      return result[0];
+    },
+    enabled: !!projectId
+  });
+
+  // Cargar miembros del equipo del proyecto
   const { data: teamMembers = [] } = useQuery({
-    queryKey: ['team-members'],
-    queryFn: () => base44.entities.TeamMember.filter({ is_active: true })
+    queryKey: ['team-members', projectId],
+    queryFn: async () => {
+      if (!project?.team_members || project.team_members.length === 0) return [];
+      const members = await base44.entities.TeamMember.filter({ is_active: true });
+      return members.filter(m => project.team_members.includes(m.user_email));
+    },
+    enabled: !!project
   });
 
   useEffect(() => {
@@ -46,7 +61,29 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
   }, [task]);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    mutationFn: async ({ id, data, previousData }) => {
+      const result = await base44.entities.Task.update(id, data);
+      
+      // Si se cambió la asignación, enviar notificación
+      const oldAssigned = previousData?.assigned_to?.[0];
+      const newAssigned = data.assigned_to?.[0];
+      
+      if (newAssigned && oldAssigned !== newAssigned) {
+        try {
+          await base44.functions.invoke('notifyTaskAssignment', {
+            taskId: id,
+            projectId: projectId,
+            assignedTo: newAssigned,
+            taskTitle: data.title || task.title,
+            projectName: project?.name
+          });
+        } catch (error) {
+          console.error('Error enviando notificación:', error);
+        }
+      }
+      
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       setHasChanges(false);
@@ -83,7 +120,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
   const handleSave = (dataToSave = formData) => {
     if (!task?.id) return;
     setIsSaving(true);
-    updateMutation.mutate({ id: task.id, data: dataToSave });
+    updateMutation.mutate({ id: task.id, data: dataToSave, previousData: task });
   };
 
   const handleDelete = () => {
