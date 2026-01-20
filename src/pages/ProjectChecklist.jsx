@@ -29,6 +29,7 @@ import ProjectDocuments from '../components/project/ProjectDocuments';
 import WorkflowTracker from '../components/workflow/WorkflowTracker';
 import ProjectSchedule from '../components/schedule/ProjectSchedule';
 import PreviewTab from '../components/preview/PreviewTab';
+import ProjectAccessTab from '../components/project/ProjectAccessTab';
 import { 
   PHASES, 
   SITE_TYPE_CONFIG, 
@@ -51,6 +52,7 @@ export default function ProjectChecklist() {
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editingPhase, setEditingPhase] = useState(null);
   const [activeTab, setActiveTab] = useState('checklist');
+  const [canViewAccess, setCanViewAccess] = useState(false);
   
   const queryClient = useQueryClient();
   
@@ -59,6 +61,12 @@ export default function ProjectChecklist() {
       try {
         const u = await base44.auth.me();
         setUser(u);
+        
+        // Verificar si el usuario puede ver el tab de accesos
+        const members = await base44.entities.TeamMember.filter({ user_email: u.email });
+        const member = members[0];
+        const canView = u.role === 'admin' || member?.role === 'administrador' || member?.role === 'software' || member?.role === 'web_leader';
+        setCanViewAccess(canView);
       } catch (error) {
         console.error('Error loading user:', error);
       }
@@ -594,11 +602,14 @@ export default function ProjectChecklist() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-6">
+          <TabsList className={`grid w-full max-w-3xl mb-6 ${canViewAccess ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
             <TabsTrigger value="tasks">Tareas</TabsTrigger>
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
             <TabsTrigger value="preview">Previsualización</TabsTrigger>
+            {canViewAccess && (
+              <TabsTrigger value="access">Accesos</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="checklist" className="mt-6">
@@ -766,6 +777,12 @@ export default function ProjectChecklist() {
           <TabsContent value="preview" className="mt-6">
             <PreviewTab projectId={projectId} project={project} />
           </TabsContent>
+
+          {canViewAccess && (
+            <TabsContent value="access" className="mt-6">
+              <ProjectAccessTab projectId={projectId} />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
       
