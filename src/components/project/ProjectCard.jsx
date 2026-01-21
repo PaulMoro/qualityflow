@@ -14,17 +14,17 @@ import { useTechnologies } from '../checklist/useTechnologies';
 import { motion } from 'framer-motion';
 
 const STATUS_CONFIG = {
-  draft: { label: 'Borrador', color: 'bg-slate-100 text-slate-700' },
-  in_progress: { label: 'En Progreso', color: 'bg-blue-100 text-blue-700' },
-  review: { label: 'En Revisión', color: 'bg-purple-100 text-purple-700' },
-  blocked: { label: 'Bloqueado', color: 'bg-red-100 text-red-700' },
-  completed: { label: 'Completado', color: 'bg-green-100 text-green-700' }
+  draft: { label: 'Borrador', color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]' },
+  in_progress: { label: 'En Progreso', color: 'bg-[#FF1B7E]/10 text-[#FF1B7E]' },
+  review: { label: 'En Revisión', color: 'bg-[#FF1B7E]/20 text-[#FF1B7E]' },
+  blocked: { label: 'Bloqueado', color: 'bg-[var(--text-primary)]/10 text-[var(--text-primary)]' },
+  completed: { label: 'Completado', color: 'bg-[var(--text-primary)]/10 text-[var(--text-primary)]' }
 };
 
 const RISK_CONFIG = {
-  low: { color: 'bg-green-500', icon: CheckCircle2 },
-  medium: { color: 'bg-amber-500', icon: AlertTriangle },
-  high: { color: 'bg-red-500', icon: AlertTriangle }
+  low: { color: 'bg-[var(--text-primary)]', icon: CheckCircle2 },
+  medium: { color: 'bg-[#FF1B7E]', icon: AlertTriangle },
+  high: { color: 'bg-[var(--text-primary)]', icon: AlertTriangle }
 };
 
 export default function ProjectCard({ project, index, onEdit, onDuplicate, onDelete }) {
@@ -99,12 +99,12 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
           
           <div className="flex flex-wrap gap-2">
             {project.has_conflicts && (
-              <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400 border-0 text-xs font-medium">
+              <Badge className="bg-[#FF1B7E]/10 text-[#FF1B7E] border-0 text-xs font-medium">
                 Conflictos
               </Badge>
             )}
             {project.critical_pending > 0 && (
-              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 border-0 text-xs font-medium">
+              <Badge className="bg-[var(--text-primary)]/10 text-[var(--text-primary)] border-0 text-xs font-medium">
                 {project.critical_pending} críticos
               </Badge>
             )}
@@ -129,7 +129,7 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
                   {daysRemaining !== null && (
                     <Badge 
                       variant="outline" 
-                      className={`ml-1 text-xs whitespace-nowrap ${daysRemaining < 0 ? 'text-red-400 border-red-500/40' : daysRemaining < 3 ? 'text-amber-400 border-amber-500/40' : 'text-[var(--text-secondary)] border-[var(--border-secondary)]'}`}
+                      className={`ml-1 text-xs whitespace-nowrap ${daysRemaining < 0 ? 'text-[#FF1B7E] border-[#FF1B7E]/40' : daysRemaining < 3 ? 'text-[#FF1B7E] border-[#FF1B7E]/40' : 'text-[var(--text-secondary)] border-[var(--border-secondary)]'}`}
                     >
                       {daysRemaining < 0 ? `${Math.abs(daysRemaining)}d vencido` : `${daysRemaining}d`}
                     </Badge>

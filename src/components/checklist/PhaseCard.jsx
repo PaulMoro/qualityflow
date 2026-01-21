@@ -213,8 +213,8 @@ export default function PhaseCard({
         "bg-[var(--bg-secondary)] border-[var(--border-primary)] overflow-hidden transition-all duration-200 shadow-sm",
         isCriticalPhase && 'ring-2 ring-[#FF1B7E]/30 border-[#FF1B7E]/20',
         isDragging && 'shadow-lg opacity-80',
-        isWorkflowCompleted && "border-green-500/30 bg-green-500/5",
-        isWorkflowInProgress && "border-blue-500/30 bg-blue-500/5"
+        isWorkflowCompleted && "border-[var(--text-primary)]/30 bg-[var(--text-primary)]/5",
+        isWorkflowInProgress && "border-[#FF1B7E]/30 bg-[#FF1B7E]/5"
       )}>
         <CardHeader className="hover:bg-[var(--bg-hover)] transition-colors duration-200 py-4">
           <div className="flex items-center justify-between">
@@ -230,11 +230,11 @@ export default function PhaseCard({
               {workflowConfig && (
                 <div className="flex-shrink-0">
                   {isWorkflowCompleted ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <CheckCircle2 className="h-5 w-5 text-[var(--text-primary)]" />
                   ) : isWorkflowInProgress ? (
-                    <Circle className="h-5 w-5 text-blue-600" />
+                    <Circle className="h-5 w-5 text-[#FF1B7E]" />
                   ) : (
-                    <Circle className="h-5 w-5 text-slate-300" />
+                    <Circle className="h-5 w-5 text-[var(--text-secondary)]" />
                   )}
                 </div>
               )}
@@ -252,7 +252,7 @@ export default function PhaseCard({
                       </Badge>
                     )}
                     {isWorkflowInProgress && (
-                      <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border-0 text-xs font-medium">
+                      <Badge className="bg-[#FF1B7E]/10 text-[#FF1B7E] border-0 text-xs font-medium">
                         En progreso
                       </Badge>
                     )}
@@ -280,12 +280,12 @@ export default function PhaseCard({
                 <Edit2 className="h-4 w-4 text-[var(--text-secondary)]" />
               </Button>
               {hasCritical && (
-                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 border-0 text-xs font-medium">
+                <Badge className="bg-[var(--text-primary)]/10 text-[var(--text-primary)] border-0 text-xs font-medium">
                   Críticos pendientes
                 </Badge>
               )}
               {hasConflicts && (
-                <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400 border-0 text-xs font-medium">
+                <Badge className="bg-[#FF1B7E]/10 text-[#FF1B7E] border-0 text-xs font-medium">
                   Conflictos
                 </Badge>
               )}
