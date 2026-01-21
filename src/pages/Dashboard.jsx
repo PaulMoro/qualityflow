@@ -383,11 +383,11 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
-                <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>Todos</TabsTrigger>
-                <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>En Progreso</TabsTrigger>
-                <TabsTrigger value="review" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>En Revisión</TabsTrigger>
-                <TabsTrigger value="blocked" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>Bloqueados</TabsTrigger>
-                <TabsTrigger value="completed" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>Completados</TabsTrigger>
+                <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Todos</TabsTrigger>
+                <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Progreso</TabsTrigger>
+                <TabsTrigger value="review" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Revisión</TabsTrigger>
+                <TabsTrigger value="blocked" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Bloqueados</TabsTrigger>
+                <TabsTrigger value="completed" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Completados</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
