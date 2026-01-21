@@ -245,11 +245,16 @@ export default function Layout({ children, currentPageName }) {
         
         body {
           font-family: var(--font-sans);
+          font-style: normal;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           background: var(--bg-primary);
           color: var(--text-primary);
           transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        * {
+          font-style: normal !important;
         }
         
         ::-webkit-scrollbar {
