@@ -383,11 +383,11 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
-                <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Todos</TabsTrigger>
-                <TabsTrigger value="in_progress" className="not-italic inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm hover:text-[var(--text-primary)] data-[state=active]:font-semibold data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">En Progreso</TabsTrigger>
-                <TabsTrigger value="review" className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">En Revisión</TabsTrigger>
-                <TabsTrigger value="blocked" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Bloqueados</TabsTrigger>
-                <TabsTrigger value="completed" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white">Completados</TabsTrigger>
+                <TabsTrigger value="all" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>Todos</TabsTrigger>
+                <TabsTrigger value="in_progress" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>En Progreso</TabsTrigger>
+                <TabsTrigger value="review" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>En Revisión</TabsTrigger>
+                <TabsTrigger value="blocked" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>Bloqueados</TabsTrigger>
+                <TabsTrigger value="completed" className="data-[state=active]:bg-[#FF1B7E] data-[state=active]:text-white" style={{ fontStyle: 'normal', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>Completados</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
