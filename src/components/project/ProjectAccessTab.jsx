@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Save, ExternalLink, Eye, EyeOff, Copy, Check, Share2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import ShareAccessModal from './ShareAccessModal';
-import { useQuery } from '@tanstack/react-query';
 
 export default function ProjectAccessTab({ projectId }) {
   const [showPasswords, setShowPasswords] = useState({});
