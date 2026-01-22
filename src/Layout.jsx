@@ -65,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
   
   // Páginas públicas que no requieren autenticación
-  const isPublicPage = currentPageName === 'PublicTaskForm';
+  const isPublicPage = currentPageName === 'PublicTaskForm' || currentPageName === 'SharedAccess';
   
   // Mostrar pantalla de login si no hay usuario (excepto páginas públicas)
   if (user === null && !isPublicPage) {
