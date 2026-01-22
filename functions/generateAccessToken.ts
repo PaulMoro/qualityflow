@@ -64,7 +64,8 @@ Deno.serve(async (req) => {
 
     // Enviar email de notificación
     try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
+      console.log('Attempting to send email to:', sharedWithEmail);
+      const emailResult = await base44.integrations.Core.SendEmail({
         to: sharedWithEmail,
         subject: `Te han compartido acceso al proyecto "${projectName}"`,
         body: `Hola,
@@ -78,9 +79,10 @@ ${expiresAt ? `Este acceso expira el: ${new Date(expiresAt).toLocaleDateString()
 Saludos,
 Sistema de Gestión de Proyectos`
       });
-      console.log('Email sent successfully');
+      console.log('Email sent successfully:', emailResult);
     } catch (emailError) {
-      console.error('Error sending email:', emailError);
+      console.error('Error sending email:', emailError.message);
+      console.error('Email error stack:', emailError.stack);
       // No fallar si el email falla
     }
 
