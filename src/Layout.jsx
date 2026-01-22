@@ -22,7 +22,7 @@ export default function Layout({ children, currentPageName }) {
         if (isAuth) {
           const u = await base44.auth.me();
           setUser(u);
-
+          
           // Configurar juan@antpack.co como administrador automáticamente
           if (u.email === 'juan@antpack.co') {
             try {
@@ -39,16 +39,6 @@ export default function Layout({ children, currentPageName }) {
               }
             } catch (error) {
               console.error('Error setting admin role:', error);
-            }
-          } else if (!u.email.endsWith('@antpack.co')) {
-            // Usuario externo - redirigir a SharedAccess si no está ahí
-            if (currentPageName !== 'SharedAccess') {
-              const params = new URLSearchParams(window.location.search);
-              const hasToken = params.get('token');
-              if (!hasToken) {
-                // Redirigir a SharedAccess sin token para que ingrese uno
-                window.location.href = '/SharedAccess';
-              }
             }
           } else {
             // Notificar nuevo usuario si no tiene TeamMember
@@ -72,35 +62,24 @@ export default function Layout({ children, currentPageName }) {
       }
     };
     loadUser();
-  }, [currentPageName]);
+  }, []);
   
   // Páginas públicas que no requieren autenticación
-  const isPublicPage = currentPageName === 'PublicTaskForm' || currentPageName === 'SharedAccess';
-
-  // Si el usuario es externo (no @antpack.co) solo puede ver SharedAccess
-  const isExternalUser = user && !user.email.endsWith('@antpack.co');
-
+  const isPublicPage = currentPageName === 'PublicTaskForm';
+  
   // Mostrar pantalla de login si no hay usuario (excepto páginas públicas)
   if (user === null && !isPublicPage) {
     return <LoginScreen />;
   }
-
+  
   // Mostrar loading mientras verificamos autenticación (excepto páginas públicas)
   if (user === undefined && !isPublicPage) {
     return null;
   }
-
-  // Si es página pública o usuario externo en SharedAccess, renderizar sin layout
-  if (isPublicPage || (isExternalUser && currentPageName === 'SharedAccess')) {
+  
+  // Si es página pública, renderizar directamente sin layout
+  if (isPublicPage) {
     return <div className="min-h-screen bg-[var(--bg-primary)]">{children}</div>;
-  }
-
-  // Si es usuario externo intentando acceder a otras páginas, redirigir
-  if (isExternalUser && currentPageName !== 'SharedAccess') {
-    React.useEffect(() => {
-      window.location.href = '/SharedAccess';
-    }, []);
-    return null;
   }
   
   const toggleTheme = () => {

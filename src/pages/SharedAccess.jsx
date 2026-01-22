@@ -25,14 +25,6 @@ export default function SharedAccess() {
     }
   }, []);
 
-  const handleManualValidation = () => {
-    if (!token) {
-      toast.error('Ingresa un token válido');
-      return;
-    }
-    validateToken(token);
-  };
-
   const validateToken = async (tokenValue) => {
     setLoading(true);
     setError(null);
@@ -123,15 +115,15 @@ export default function SharedAccess() {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                className="font-mono text-xs"
+                className="font-mono"
               />
             </div>
             <Button
-              onClick={handleManualValidation}
-              disabled={!token || loading}
+              onClick={() => validateToken(token)}
+              disabled={!token}
               className="w-full bg-[#FF1B7E] hover:bg-[#e6156e]"
             >
-              {loading ? 'Validando...' : 'Validar Acceso'}
+              Validar Acceso
             </Button>
           </CardContent>
         </Card>
@@ -241,7 +233,7 @@ export default function SharedAccess() {
         {/* Header */}
         <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-6">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
+            <div>
               <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
                 {access.project_name || 'Proyecto Compartido'}
               </h1>
@@ -253,28 +245,6 @@ export default function SharedAccess() {
               <Lock className="h-3 w-3 mr-1" />
               Solo lectura
             </Badge>
-          </div>
-
-          {/* Token visible */}
-          <div className="mt-4">
-            <Label className="text-xs text-[var(--text-secondary)]">Token de acceso</Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                value={token}
-                readOnly
-                className="bg-[var(--bg-tertiary)] font-mono text-xs"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => copyToClipboard(token, 'token')}
-              >
-                {copiedField === 'token' ? 
-                  <Check className="h-4 w-4 text-green-500" /> : 
-                  <Copy className="h-4 w-4" />
-                }
-              </Button>
-            </div>
           </div>
           
           <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
