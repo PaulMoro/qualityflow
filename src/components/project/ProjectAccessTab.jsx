@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Save, ExternalLink, Eye, EyeOff, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Save, ExternalLink, Eye, EyeOff, Copy, Check, Share2, Link as LinkIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
+import ShareAccessModal from './ShareAccessModal';
 
 export default function ProjectAccessTab({ projectId }) {
   const [showPasswords, setShowPasswords] = useState({});
   const [copiedField, setCopiedField] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: accessData, isLoading } = useQuery({
@@ -22,6 +24,24 @@ export default function ProjectAccessTab({ projectId }) {
       return result[0] || null;
     },
     enabled: !!projectId
+  });
+
+  const { data: tokens = [] } = useQuery({
+    queryKey: ['access-tokens', projectId],
+    queryFn: async () => {
+      return await base44.entities.ProjectAccessToken.filter({ project_id: projectId });
+    },
+    enabled: !!projectId
+  });
+
+  const revokeTokenMutation = useMutation({
+    mutationFn: async (tokenId) => {
+      return await base44.entities.ProjectAccessToken.update(tokenId, { is_revoked: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['access-tokens', projectId] });
+      toast.success('Token revocado');
+    }
   });
 
   const [formData, setFormData] = useState({
@@ -121,6 +141,54 @@ export default function ProjectAccessTab({ projectId }) {
 
   return (
     <div className="space-y-6">
+      {/* Botón Compartir */}
+      <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-[var(--text-primary)]">Compartir Accesos</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                Genera enlaces seguros para compartir accesos específicos con personas externas
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowShareModal(true)}
+              className="bg-[#FF1B7E] hover:bg-[#e6156e]"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Compartir
+            </Button>
+          </div>
+
+          {/* Tokens activos */}
+          {tokens.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h4 className="text-xs font-medium text-[var(--text-tertiary)]">Accesos compartidos activos</h4>
+              {tokens.filter(t => !t.is_revoked).map(token => (
+                <div key={token.id} className="flex items-center justify-between bg-[var(--bg-tertiary)] p-3 rounded-lg">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{token.recipient_name}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      Accedido {token.access_count || 0} veces • 
+                      Expira: {new Date(token.expires_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => revokeTokenMutation.mutate(token.id)}
+                    className="text-red-500"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Revocar
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Hosting QA */}
       <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
         <CardHeader>
@@ -597,6 +665,13 @@ export default function ProjectAccessTab({ projectId }) {
           {saveMutation.isPending ? 'Guardando...' : 'Guardar Accesos'}
         </Button>
       </div>
+
+      <ShareAccessModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        projectId={projectId}
+        projectAccess={accessData}
+      />
     </div>
   );
 }
