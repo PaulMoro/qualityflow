@@ -90,9 +90,11 @@ ${user.full_name || user.email} te ha asignado una tarea:
 📋 Tarea: ${taskTitle}
 ${taskDescription ? `📝 Descripción: ${taskDescription}` : ''}
 📁 Proyecto: ${projectName}
+${dueDate ? `📅 Fecha de vencimiento: ${new Date(dueDate).toLocaleDateString('es', { dateStyle: 'long' })}` : ''}
 
 Puedes ver los detalles completos en: ${projectUrl}
 
+${calendarLink ? `\n📆 Agregar a Google Calendar:\n${calendarLink}\n` : ''}
 ---
 Este es un correo automático del sistema de gestión de proyectos.
         `.trim();
