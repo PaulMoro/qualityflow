@@ -1,7 +1,6 @@
 import React from 'react';
 import Sidebar from './components/navigation/Sidebar';
 import UserProfileMenu from './components/navigation/UserProfileMenu';
-import LoginScreen from './components/auth/LoginScreen';
 import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
