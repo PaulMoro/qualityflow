@@ -4,8 +4,12 @@ import { LayoutDashboard } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function LoginScreen() {
-  const handleGoogleLogin = () => {
-    base44.auth.redirectToLogin(window.location.pathname);
+  const handleGoogleLogin = async () => {
+    try {
+      await base44.auth.redirectToLogin();
+    } catch (error) {
+      console.error('Error iniciando sesión:', error);
+    }
   };
 
   return (
