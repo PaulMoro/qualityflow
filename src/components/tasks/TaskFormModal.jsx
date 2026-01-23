@@ -84,7 +84,8 @@ export default function TaskFormModal({ isOpen, onClose, task, initialStatus, pr
             recipientName: assignedMember?.display_name,
             taskTitle: data.title,
             taskDescription: data.description,
-            projectName: project?.name
+            projectName: project?.name,
+            dueDate: data.due_date
           });
           toast.success('✉️ Notificación enviada al asignado');
         } catch (error) {
