@@ -36,6 +36,28 @@ Deno.serve(async (req) => {
 
     const baseUrl = req.headers.get('origin') || 'https://tu-app.base44.app';
     const projectUrl = `${baseUrl}/projects/${projectId}`;
+    
+    // Generar enlace de Google Calendar si hay fecha de vencimiento
+    let calendarLink = '';
+    if (dueDate) {
+      const startDate = new Date(dueDate);
+      const endDate = new Date(startDate);
+      endDate.setHours(startDate.getHours() + 1); // 1 hora de duración por defecto
+      
+      const formatDateForGCal = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+      
+      const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: taskTitle,
+        details: `${taskDescription || ''}\n\nProyecto: ${projectName}\n\nVer detalles: ${projectUrl}`,
+        dates: `${formatDateForGCal(startDate)}/${formatDateForGCal(endDate)}`,
+        location: projectName
+      });
+      
+      calendarLink = `https://calendar.google.com/calendar/render?${params.toString()}`;
+    }
 
     switch (notificationType) {
       case 'task_created':
@@ -48,9 +70,11 @@ Se te ha asignado una nueva tarea en el proyecto "${projectName}":
 📋 Tarea: ${taskTitle}
 ${taskDescription ? `📝 Descripción: ${taskDescription}` : ''}
 📁 Proyecto: ${projectName}
+${dueDate ? `📅 Fecha de vencimiento: ${new Date(dueDate).toLocaleDateString('es', { dateStyle: 'long' })}` : ''}
 
 Puedes ver los detalles completos en: ${projectUrl}
 
+${calendarLink ? `\n📆 Agregar a Google Calendar:\n${calendarLink}\n` : ''}
 ---
 Este es un correo automático del sistema de gestión de proyectos.
         `.trim();
