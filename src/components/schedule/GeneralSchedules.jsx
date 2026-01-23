@@ -5,14 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, BarChart3, Filter, Download, TrendingUp, AlertTriangle } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, BarChart3, Filter } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, eachWeekOfInterval, isSameMonth, isSameDay, addMonths, subMonths, parseISO, addDays, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import ScheduleGanttChart from './ScheduleGanttChart';
-import * as XLSX from 'xlsx';
-import { toast } from 'sonner';
 
 const AREA_COLORS = {
   creativity: { bg: 'bg-purple-500', name: 'Creatividad' },
@@ -26,8 +23,9 @@ const AREA_COLORS = {
 };
 
 export default function GeneralSchedules() {
-  const [viewMode, setViewMode] = useState('gantt'); // 'gantt' o 'stats'
-  const [ganttViewMode, setGanttViewMode] = useState('weeks'); // 'weeks' o 'months'
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState('gantt'); // 'gantt' o 'calendar'
+  const [filterArea, setFilterArea] = useState('all');
   const [filterProject, setFilterProject] = useState('all');
 
   const { data: projects = [] } = useQuery({
@@ -35,196 +33,99 @@ export default function GeneralSchedules() {
     queryFn: () => base44.entities.Project.list('-created_date')
   });
 
-  // Cargar fases del cronograma automatizado
-  const { data: allPhases = [] } = useQuery({
-    queryKey: ['all-schedule-phases'],
-    queryFn: () => base44.entities.SchedulePhase.list('-start_date')
+  const { data: allTasks = [] } = useQuery({
+    queryKey: ['all-schedule-tasks'],
+    queryFn: () => base44.entities.ScheduleTask.list('-start_date')
   });
 
-  // Filtrar proyectos con cronograma
-  const projectsWithSchedule = projects.filter(p => 
-    allPhases.some(phase => phase.project_id === p.id)
+  // Filtrar proyectos con tareas
+  const projectsWithTasks = projects.filter(p => 
+    allTasks.some(t => t.project_id === p.id)
   );
 
-  // Enriquecer fases con nombre de proyecto
-  const enrichedPhases = useMemo(() => {
-    return allPhases.map(phase => {
-      const project = projects.find(p => p.id === phase.project_id);
-      return {
-        ...phase,
-        project_name: project?.name || 'Sin nombre'
-      };
+  // Filtrar tareas
+  const filteredTasks = useMemo(() => {
+    let filtered = allTasks;
+    
+    if (filterArea !== 'all') {
+      filtered = filtered.filter(t => t.area === filterArea);
+    }
+    
+    if (filterProject !== 'all') {
+      filtered = filtered.filter(t => t.project_id === filterProject);
+    }
+    
+    return filtered;
+  }, [allTasks, filterArea, filterProject]);
+
+  // Agrupar tareas por proyecto
+  const tasksByProject = useMemo(() => {
+    const grouped = {};
+    filteredTasks.forEach(task => {
+      if (!grouped[task.project_id]) {
+        grouped[task.project_id] = [];
+      }
+      grouped[task.project_id].push(task);
     });
-  }, [allPhases, projects]);
-
-  // Filtrar fases
-  const filteredPhases = useMemo(() => {
-    if (filterProject === 'all') return enrichedPhases;
-    return enrichedPhases.filter(p => p.project_id === filterProject);
-  }, [enrichedPhases, filterProject]);
-
-  // Estadísticas
-  const stats = useMemo(() => {
-    return {
-      totalProjects: projectsWithSchedule.length,
-      totalPhases: allPhases.length,
-      inProgress: allPhases.filter(p => p.status === 'in_progress').length,
-      delayed: allPhases.filter(p => p.status === 'delayed').length,
-      completed: allPhases.filter(p => p.status === 'completed').length
-    };
-  }, [allPhases, projectsWithSchedule]);
+    return grouped;
+  }, [filteredTasks]);
 
   // Estadísticas por área
   const areaStats = useMemo(() => {
     const stats = {};
-    allPhases.forEach(phase => {
-      const area = phase.responsible_area;
-      if (!area) return;
-      
-      if (!stats[area]) {
-        stats[area] = { count: 0, totalDuration: 0, projects: new Set(), inProgress: 0, delayed: 0 };
+    allTasks.forEach(task => {
+      if (!stats[task.area]) {
+        stats[task.area] = { count: 0, totalDuration: 0, projects: new Set() };
       }
-      stats[area].count++;
-      stats[area].totalDuration += phase.duration_days || 0;
-      stats[area].projects.add(phase.project_id);
-      if (phase.status === 'in_progress') stats[area].inProgress++;
-      if (phase.status === 'delayed') stats[area].delayed++;
+      stats[task.area].count++;
+      stats[task.area].totalDuration += task.duration || 0;
+      stats[task.area].projects.add(task.project_id);
     });
-    
     return Object.entries(stats).map(([area, data]) => ({
       area,
       ...data,
       projectCount: data.projects.size
     }));
-  }, [allPhases]);
+  }, [allTasks]);
 
-  // Exportar a Excel
-  const handleExportExcel = () => {
-    if (filteredPhases.length === 0) {
-      toast.error('No hay datos para exportar');
-      return;
-    }
+  // Calcular rango de fechas para el Gantt
+  const dateRange = useMemo(() => {
+    if (filteredTasks.length === 0) return { start: new Date(), end: addDays(new Date(), 30) };
+    
+    const dates = filteredTasks.flatMap(t => [
+      parseISO(t.start_date),
+      parseISO(t.end_date || t.start_date)
+    ]);
+    
+    const minDate = new Date(Math.min(...dates));
+    const maxDate = new Date(Math.max(...dates));
+    
+    return {
+      start: startOfWeek(minDate, { locale: es }),
+      end: endOfWeek(maxDate, { locale: es })
+    };
+  }, [filteredTasks]);
 
-    try {
-      const header = [
-        ['Cronograma Global de Proyectos'],
-        [`Exportado: ${format(new Date(), "d 'de' MMMM, yyyy", { locale: es })}`],
-        [`Total proyectos: ${projectsWithSchedule.length}`],
-        []
-      ];
-
-      const dataRows = [
-        ['Proyecto', 'Fase', 'Inicio', 'Fin', 'Duración', 'Estado', 'Área', 'Responsable']
-      ];
-
-      projectsWithSchedule.forEach(project => {
-        const projectPhases = filteredPhases.filter(p => p.project_id === project.id);
-        
-        projectPhases.forEach((phase, idx) => {
-          dataRows.push([
-            idx === 0 ? project.name : '',
-            phase.phase_name,
-            phase.start_date,
-            phase.end_date,
-            `${phase.duration_days} días`,
-            phase.status,
-            AREA_COLORS[phase.responsible_area]?.name || '-',
-            phase.responsible_email || '-'
-          ]);
-        });
-
-        dataRows.push([]);
-      });
-
-      const data = [...header, ...dataRows];
-      const ws = XLSX.utils.aoa_to_sheet(data);
-
-      ws['A1'].s = { font: { bold: true, sz: 16 } };
-      ws['!cols'] = [
-        { wch: 30 },
-        { wch: 25 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 20 },
-        { wch: 30 }
-      ];
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Cronograma Global');
-
-      XLSX.writeFile(wb, `cronograma_global_${Date.now()}.xlsx`);
-      toast.success('✅ Cronograma exportado');
-    } catch (error) {
-      console.error('Error exportando:', error);
-      toast.error('Error al exportar');
-    }
-  };
+  const weeksInRange = useMemo(() => {
+    return eachWeekOfInterval(
+      { start: dateRange.start, end: dateRange.end },
+      { locale: es }
+    );
+  }, [dateRange]);
 
   return (
     <div className="space-y-6">
-      {/* Estadísticas */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <CalendarIcon className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">Proyectos</div>
-                <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.totalProjects}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">En progreso</div>
-                <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.inProgress}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">Retrasadas</div>
-                <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.delayed}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CalendarIcon className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <div className="text-xs text-[var(--text-secondary)]">Completadas</div>
-                <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.completed}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Header con controles */}
       <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="border-[var(--border-secondary)] text-[var(--text-secondary)]">
+            {projectsWithTasks.length} proyectos
+          </Badge>
+          <Badge variant="outline" className="border-[var(--border-secondary)] text-[var(--text-secondary)]">
+            {filteredTasks.length} tareas
+          </Badge>
+        </div>
+
         <div className="flex items-center gap-3">
           <Select value={viewMode} onValueChange={setViewMode}>
             <SelectTrigger className="w-40">
@@ -235,36 +136,7 @@ export default function GeneralSchedules() {
               <SelectItem value="stats">Estadísticas</SelectItem>
             </SelectContent>
           </Select>
-
-          {viewMode === 'gantt' && (
-            <div className="flex bg-[var(--bg-tertiary)] rounded-lg p-1">
-              {['weeks', 'months'].map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setGanttViewMode(mode)}
-                  className={`px-3 py-1 text-xs rounded transition-all ${
-                    ganttViewMode === mode
-                      ? 'bg-[#FF1B7E] text-white'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  {mode === 'weeks' && 'Semanas'}
-                  {mode === 'months' && 'Meses'}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
-
-        <Button
-          onClick={handleExportExcel}
-          variant="outline"
-          size="sm"
-          className="bg-[var(--bg-secondary)] border-[var(--border-primary)]"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Exportar Excel
-        </Button>
       </div>
 
       {/* Filtros */}
@@ -273,7 +145,7 @@ export default function GeneralSchedules() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-[var(--text-secondary)]" />
-              <span className="text-sm font-medium text-[var(--text-primary)]">Filtro:</span>
+              <span className="text-sm font-medium text-[var(--text-primary)]">Filtros:</span>
             </div>
             
             <Select value={filterProject} onValueChange={setFilterProject}>
@@ -282,17 +154,32 @@ export default function GeneralSchedules() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los proyectos</SelectItem>
-                {projectsWithSchedule.map(p => (
+                {projectsWithTasks.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {filterProject !== 'all' && (
+            <Select value={filterArea} onValueChange={setFilterArea}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Todas las áreas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las áreas</SelectItem>
+                {Object.entries(AREA_COLORS).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>{config.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {(filterArea !== 'all' || filterProject !== 'all') && (
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => setFilterProject('all')}
+                onClick={() => {
+                  setFilterArea('all');
+                  setFilterProject('all');
+                }}
               >
                 Limpiar
               </Button>
@@ -301,7 +188,7 @@ export default function GeneralSchedules() {
         </CardContent>
       </Card>
 
-      {projectsWithSchedule.length === 0 ? (
+      {projectsWithTasks.length === 0 ? (
         <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
           <CardContent className="py-12 text-center">
             <CalendarIcon className="h-12 w-12 text-[var(--text-tertiary)] mx-auto mb-4" />
@@ -315,16 +202,83 @@ export default function GeneralSchedules() {
               <CardHeader>
                 <CardTitle className="text-base text-[var(--text-primary)]">Cronograma General</CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <ScheduleGanttChart
-                  phases={filteredPhases}
-                  viewMode={ganttViewMode}
-                  isCompact={true}
-                  showProjectColumn={true}
-                  onPhaseClick={(phase) => {
-                    window.location.href = createPageUrl('ProjectChecklist') + `?id=${phase.project_id}`;
-                  }}
-                />
+              <CardContent>
+                <div className="overflow-x-auto">
+                  {/* Header con semanas */}
+                  <div className="flex gap-2 mb-4 min-w-max">
+                    <div className="w-64 flex-shrink-0" />
+                    <div className="flex gap-1">
+                      {weeksInRange.map((weekStart, idx) => (
+                        <div key={idx} className="w-24 text-center">
+                          <div className="text-xs font-medium text-[var(--text-secondary)]">
+                            {format(weekStart, 'MMM d', { locale: es })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tareas agrupadas por proyecto */}
+                  <div className="space-y-6">
+                    {Object.entries(tasksByProject).map(([projectId, tasks]) => {
+                      const project = projects.find(p => p.id === projectId);
+                      if (!project) return null;
+
+                      return (
+                        <div key={projectId} className="border-l-4 border-[#FF1B7E] pl-4">
+                          <Link 
+                            to={`${createPageUrl('ProjectChecklist')}?id=${projectId}`}
+                            className="text-sm font-semibold text-[var(--text-primary)] hover:text-[#FF1B7E] mb-3 block"
+                          >
+                            {project.name}
+                          </Link>
+                          
+                          <div className="space-y-2">
+                            {tasks.map(task => {
+                              const startDate = parseISO(task.start_date);
+                              const endDate = parseISO(task.end_date || task.start_date);
+                              const totalDays = differenceInDays(dateRange.end, dateRange.start);
+                              const startOffset = differenceInDays(startDate, dateRange.start);
+                              const duration = differenceInDays(endDate, startDate) + 1;
+                              const leftPercent = (startOffset / totalDays) * 100;
+                              const widthPercent = (duration / totalDays) * 100;
+                              const areaConfig = AREA_COLORS[task.area];
+
+                              return (
+                                <div key={task.id} className="flex gap-2 items-center min-w-max">
+                                  <div className="w-64 flex-shrink-0">
+                                    <div className="text-xs font-medium text-[var(--text-primary)] truncate">
+                                      {task.name}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <Badge className={`${areaConfig?.bg} text-white border-0 text-[10px]`}>
+                                        {areaConfig?.name}
+                                      </Badge>
+                                      <span className="text-[10px] text-[var(--text-secondary)]">
+                                        {task.duration}d
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex-1 relative h-8">
+                                    <div 
+                                      className={`absolute h-6 ${areaConfig?.bg} rounded opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
+                                      style={{
+                                        left: `${Math.max(0, leftPercent)}%`,
+                                        width: `${widthPercent}%`
+                                      }}
+                                      title={`${task.name} - ${format(startDate, 'd MMM', { locale: es })} a ${format(endDate, 'd MMM', { locale: es })}`}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ) : (
@@ -354,18 +308,14 @@ export default function GeneralSchedules() {
                             </span>
                           </div>
                           
-                          <div className="grid grid-cols-3 gap-4 mt-3">
+                          <div className="grid grid-cols-2 gap-4 mt-3">
                             <div>
-                              <p className="text-xs text-[var(--text-secondary)]">Total fases</p>
+                              <p className="text-xs text-[var(--text-secondary)]">Total tareas</p>
                               <p className="text-xl font-bold text-[var(--text-primary)]">{stat.count}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-[var(--text-secondary)]">En progreso</p>
-                              <p className="text-xl font-bold text-blue-500">{stat.inProgress}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-[var(--text-secondary)]">Retrasadas</p>
-                              <p className="text-xl font-bold text-red-500">{stat.delayed}</p>
+                              <p className="text-xs text-[var(--text-secondary)]">Duración promedio</p>
+                              <p className="text-xl font-bold text-[var(--text-primary)]">{Math.round(avgDuration)}d</p>
                             </div>
                           </div>
                           
@@ -393,14 +343,12 @@ export default function GeneralSchedules() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {projectsWithSchedule.map(project => {
-                      const projectPhases = allPhases.filter(p => p.project_id === project.id);
-                      const phasesByStatus = {
-                        planned: projectPhases.filter(p => p.status === 'planned').length,
-                        in_progress: projectPhases.filter(p => p.status === 'in_progress').length,
-                        completed: projectPhases.filter(p => p.status === 'completed').length,
-                        delayed: projectPhases.filter(p => p.status === 'delayed').length
-                      };
+                    {projectsWithTasks.map(project => {
+                      const projectTasks = allTasks.filter(t => t.project_id === project.id);
+                      const areaBreakdown = {};
+                      projectTasks.forEach(t => {
+                        areaBreakdown[t.area] = (areaBreakdown[t.area] || 0) + 1;
+                      });
 
                       return (
                         <Link 
@@ -410,21 +358,14 @@ export default function GeneralSchedules() {
                         >
                           <h4 className="font-medium text-[var(--text-primary)] mb-2">{project.name}</h4>
                           <div className="flex items-center gap-2 flex-wrap">
-                            {phasesByStatus.in_progress > 0 && (
-                              <Badge className="bg-blue-500 text-white border-0 text-xs">
-                                {phasesByStatus.in_progress} en progreso
-                              </Badge>
-                            )}
-                            {phasesByStatus.delayed > 0 && (
-                              <Badge className="bg-red-500 text-white border-0 text-xs">
-                                {phasesByStatus.delayed} retrasadas
-                              </Badge>
-                            )}
-                            {phasesByStatus.completed > 0 && (
-                              <Badge className="bg-green-500 text-white border-0 text-xs">
-                                {phasesByStatus.completed} completadas
-                              </Badge>
-                            )}
+                            {Object.entries(areaBreakdown).map(([area, count]) => {
+                              const areaConfig = AREA_COLORS[area];
+                              return (
+                                <Badge key={area} className={`${areaConfig?.bg} text-white border-0 text-xs`}>
+                                  {areaConfig?.name}: {count}
+                                </Badge>
+                              );
+                            })}
                           </div>
                         </Link>
                       );
