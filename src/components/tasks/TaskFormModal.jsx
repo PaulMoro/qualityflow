@@ -76,6 +76,23 @@ export default function TaskFormModal({ isOpen, onClose, task, initialStatus, pr
           const project = projects[0];
           const assignedMember = teamMembers.find(m => m.user_email === data.assigned_to[0]);
           
+          // Crear notificación interna en el panel
+          await base44.entities.TaskNotification.create({
+            task_id: newTask.id,
+            project_id: projectId,
+            recipient_email: data.assigned_to[0],
+            event_type: 'task_created',
+            message: `Nueva tarea asignada: ${data.title}`,
+            is_read: false,
+            metadata: {
+              canAddToCalendar: true,
+              taskTitle: data.title,
+              projectName: project?.name,
+              dueDate: data.due_date
+            }
+          });
+          
+          // Enviar email con enlace a calendario
           await base44.functions.invoke('sendTaskNotification', {
             taskId: newTask.id,
             projectId: projectId,
@@ -87,6 +104,7 @@ export default function TaskFormModal({ isOpen, onClose, task, initialStatus, pr
             projectName: project?.name,
             dueDate: data.due_date
           });
+          
           toast.success('✉️ Notificación enviada al asignado');
         } catch (error) {
           console.error('Error enviando notificación:', error);

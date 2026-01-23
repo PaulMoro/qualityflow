@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from './components/navigation/Sidebar';
 import UserProfileMenu from './components/navigation/UserProfileMenu';
+import TaskNotificationBadge from './components/notifications/TaskNotificationBadge';
 import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
@@ -329,6 +330,7 @@ export default function Layout({ children, currentPageName }) {
                   </svg>
                 )}
               </button>
+              <TaskNotificationBadge />
               <UserProfileMenu />
             </div>
           </header>

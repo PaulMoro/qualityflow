@@ -85,6 +85,21 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
       // Enviar notificación si se completó
       if (nowCompleted && previousData?.notification_email) {
         try {
+          // Crear notificación interna
+          await base44.entities.TaskNotification.create({
+            task_id: id,
+            project_id: projectId,
+            recipient_email: previousData.notification_email,
+            event_type: 'task_completed',
+            message: `Tarea completada: ${data.title || task.title}`,
+            is_read: false,
+            metadata: {
+              completedBy: currentUser.full_name,
+              projectName: project?.name
+            }
+          });
+          
+          // Enviar email
           await base44.functions.invoke('sendTaskNotification', {
             taskId: id,
             projectId: projectId,
@@ -109,6 +124,23 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
       if (newAssigned && oldAssigned !== newAssigned) {
         const assignedMember = teamMembers.find(m => m.user_email === newAssigned);
         try {
+          // Crear notificación interna
+          await base44.entities.TaskNotification.create({
+            task_id: id,
+            project_id: projectId,
+            recipient_email: newAssigned,
+            event_type: 'assigned',
+            message: `Te han asignado la tarea: ${data.title || task.title}`,
+            is_read: false,
+            metadata: {
+              canAddToCalendar: true,
+              taskTitle: data.title || task.title,
+              projectName: project?.name,
+              dueDate: data.due_date || task.due_date
+            }
+          });
+          
+          // Enviar email
           await base44.functions.invoke('sendTaskNotification', {
             taskId: id,
             projectId: projectId,
