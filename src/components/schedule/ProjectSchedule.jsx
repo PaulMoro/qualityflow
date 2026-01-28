@@ -6,8 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Edit2, Trash2, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO, differenceInDays } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO, differenceInDays, isWeekend, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+// Función para añadir días hábiles (excluyendo sábados y domingos)
+const addBusinessDays = (date, days) => {
+  let currentDate = new Date(date);
+  let remainingDays = days;
+  
+  while (remainingDays > 0) {
+    currentDate = addDays(currentDate, 1);
+    if (!isWeekend(currentDate)) {
+      remainingDays--;
+    }
+  }
+  
+  return currentDate;
+};
 import { toast } from 'sonner';
 import EditScheduleTaskModal from './EditScheduleTaskModal';
 
@@ -49,9 +64,15 @@ export default function ProjectSchedule({ projectId, project }) {
 
   const createTaskMutation = useMutation({
     mutationFn: (data) => {
-      const endDate = addDays(parseISO(data.start_date), data.duration);
+      let startDate = parseISO(data.start_date);
+      // Si la fecha de inicio es fin de semana, mover al siguiente día hábil
+      while (isWeekend(startDate)) {
+        startDate = addDays(startDate, 1);
+      }
+      const endDate = addBusinessDays(startDate, data.duration - 1);
       return base44.entities.ScheduleTask.create({
         ...data,
+        start_date: format(startDate, 'yyyy-MM-dd'),
         end_date: format(endDate, 'yyyy-MM-dd')
       });
     },
@@ -65,7 +86,13 @@ export default function ProjectSchedule({ projectId, project }) {
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, data }) => {
       if (data.start_date && data.duration) {
-        const endDate = addDays(parseISO(data.start_date), data.duration);
+        let startDate = parseISO(data.start_date);
+        // Si la fecha de inicio es fin de semana, mover al siguiente día hábil
+        while (isWeekend(startDate)) {
+          startDate = addDays(startDate, 1);
+        }
+        const endDate = addBusinessDays(startDate, data.duration - 1);
+        data.start_date = format(startDate, 'yyyy-MM-dd');
         data.end_date = format(endDate, 'yyyy-MM-dd');
       }
       return base44.entities.ScheduleTask.update(id, data);
@@ -310,23 +337,26 @@ export default function ProjectSchedule({ projectId, project }) {
                 <div className="p-3 border-r border-[var(--border-primary)] font-semibold text-sm text-[var(--text-primary)] uppercase tracking-wide">
                   Tarea
                 </div>
-                {weekDays.map(day => (
-                  <div 
-                    key={day.toString()} 
-                    className={`p-3 text-center border-r border-[var(--border-primary)] ${
-                      isSameDay(day, new Date()) ? 'bg-[#FF1B7E]/10' : ''
-                    }`}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, day)}
-                  >
-                    <div className="text-xs text-[var(--text-secondary)] uppercase">
-                      {format(day, 'EEE', { locale: es })}
+                {weekDays.map(day => {
+                  const isWeekendDay = isWeekend(day);
+                  return (
+                    <div 
+                      key={day.toString()} 
+                      className={`p-3 text-center border-r border-[var(--border-primary)] ${
+                        isSameDay(day, new Date()) ? 'bg-[#FF1B7E]/10' : isWeekendDay ? 'bg-gray-100' : ''
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, day)}
+                    >
+                      <div className={`text-xs uppercase ${isWeekendDay ? 'text-gray-400' : 'text-[var(--text-secondary)]'}`}>
+                        {format(day, 'EEE', { locale: es })}
+                      </div>
+                      <div className={`text-sm font-semibold ${isWeekendDay ? 'text-gray-400' : 'text-[var(--text-primary)]'}`}>
+                        {format(day, 'd')}
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold text-[var(--text-primary)]">
-                      {format(day, 'd')}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Tareas */}
