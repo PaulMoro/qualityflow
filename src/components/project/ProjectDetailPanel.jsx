@@ -331,43 +331,40 @@ export default function ProjectDetailPanel({ projectId, onClose }) {
                     statusGroup.tasks.length > 0 && (
                       <div key={statusGroup.key}>
                         <div className="flex items-center gap-2 mb-3">
-                          <div className={`w-2 h-2 rounded-full ${COLOR_MAP[statusGroup.color] || 'bg-gray-500'}`} />
+                          <div className={`w-2 h-2 rounded-full bg-${statusGroup.color}-500`} />
                           <h3 className="text-sm font-medium text-[var(--text-primary)]">
                             {statusGroup.label}
                           </h3>
                           <Badge variant="secondary" className="text-xs">{statusGroup.tasks.length}</Badge>
                         </div>
                         <div className="space-y-2">
-                          {statusGroup.tasks.map(task => (
-                            <div
-                              key={task.id}
-                              onClick={() => setSelectedTask(task)}
-                              className="p-3 bg-white border border-[var(--border-primary)] rounded-lg hover:border-[#FF1B7E] hover:shadow-sm transition-all cursor-pointer"
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="text-sm font-medium text-[var(--text-primary)] flex-1">
-                                  {task.title}
-                                </h4>
-                                {task.priority && config?.custom_priorities?.find(p => p.key === task.priority) && (
-                                  <Badge 
-                                    className="text-xs" 
-                                    style={{ 
-                                      backgroundColor: `var(--${config.custom_priorities.find(p => p.key === task.priority)?.color}-100)`,
-                                      color: `var(--${config.custom_priorities.find(p => p.key === task.priority)?.color}-700)`
-                                    }}
-                                  >
-                                    {config.custom_priorities.find(p => p.key === task.priority)?.label}
-                                  </Badge>
+                          {statusGroup.tasks.map(task => {
+                            const priorityConfig = task.priority && config?.custom_priorities?.find(p => p.key === task.priority);
+                            return (
+                              <div
+                                key={task.id}
+                                onClick={() => setSelectedTask(task)}
+                                className="p-3 bg-white border border-[var(--border-primary)] rounded-lg hover:border-[#FF1B7E] hover:shadow-sm transition-all cursor-pointer"
+                              >
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <h4 className="text-sm font-medium text-[var(--text-primary)] flex-1">
+                                    {task.title}
+                                  </h4>
+                                  {priorityConfig && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {priorityConfig.label}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {task.due_date && (
+                                  <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                    <CalendarIcon className="h-3 w-3" />
+                                    {format(new Date(task.due_date), "d 'de' MMM", { locale: es })}
+                                  </div>
                                 )}
                               </div>
-                              {task.due_date && (
-                                <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
-                                  <CalendarIcon className="h-3 w-3" />
-                                  {format(new Date(task.due_date), "d 'de' MMM", { locale: es })}
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )
