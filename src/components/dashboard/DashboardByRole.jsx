@@ -6,12 +6,12 @@ import LeaderDashboard from './roles/LeaderDashboard';
 import OperationalDashboard from './roles/OperationalDashboard';
 import QADashboard from './roles/QADashboard';
 
-export default function DashboardByRole({ user, teamMember }) {
+export default function DashboardByRole({ user, teamMember, onSectionChange }) {
   const role = teamMember?.role;
 
   // Admin/Administrador
   if (role === 'administrador') {
-    return <AdminDashboard user={user} />;
+    return <AdminDashboard user={user} onSectionChange={onSectionChange} />;
   }
 
   // Líderes de área
@@ -28,12 +28,12 @@ export default function DashboardByRole({ user, teamMember }) {
   ];
   
   if (leaderRoles.includes(role)) {
-    return <LeaderDashboard user={user} teamMember={teamMember} />;
+    return <LeaderDashboard user={user} teamMember={teamMember} onSectionChange={onSectionChange} />;
   }
 
   // QA especializado
   if (role === 'qa') {
-    return <QADashboard user={user} />;
+    return <QADashboard user={user} onSectionChange={onSectionChange} />;
   }
 
   // Roles operativos
@@ -43,9 +43,9 @@ export default function DashboardByRole({ user, teamMember }) {
   ];
   
   if (operationalRoles.includes(role)) {
-    return <OperationalDashboard user={user} teamMember={teamMember} />;
+    return <OperationalDashboard user={user} teamMember={teamMember} onSectionChange={onSectionChange} />;
   }
 
   // Fallback: vista operativa por defecto
-  return <OperationalDashboard user={user} teamMember={teamMember} />;
+  return <OperationalDashboard user={user} teamMember={teamMember} onSectionChange={onSectionChange} />;
 }

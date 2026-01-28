@@ -193,7 +193,7 @@ export default function LeaderDashboard({ user, teamMember }) {
                 className="flex justify-between items-center p-2 rounded hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
                 onClick={() => {
                   const task = qaTasks[0];
-                  if (task) navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`);
+                  if (task) goToProject(task.project_id);
                 }}
               >
                 <span className="text-sm text-[var(--text-secondary)]">Total en QA:</span>
@@ -203,7 +203,7 @@ export default function LeaderDashboard({ user, teamMember }) {
                 className="flex justify-between items-center p-2 rounded hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
                 onClick={() => {
                   const task = qaTasks.find(t => t.status === 'pending' || t.status === 'todo');
-                  if (task) navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`);
+                  if (task) goToProject(task.project_id);
                 }}
               >
                 <span className="text-sm text-[var(--text-secondary)]">Pendientes:</span>
@@ -215,7 +215,7 @@ export default function LeaderDashboard({ user, teamMember }) {
                 className="flex justify-between items-center p-2 rounded hover:bg-red-50 cursor-pointer transition-colors"
                 onClick={() => {
                   const task = qaTasks.find(t => t.priority === 'high' && t.tags?.includes('bug'));
-                  if (task) navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`);
+                  if (task) goToProject(task.project_id);
                 }}
               >
                 <span className="text-sm text-[var(--text-secondary)]">Bugs críticos:</span>
@@ -230,7 +230,7 @@ export default function LeaderDashboard({ user, teamMember }) {
               <div
                 key={task.id}
                 className="border border-[var(--border-primary)] rounded-lg p-3 mb-2 hover:border-[#FF1B7E] cursor-pointer transition-all group"
-                onClick={() => navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`)}
+                onClick={() => goToProject(task.project_id)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">

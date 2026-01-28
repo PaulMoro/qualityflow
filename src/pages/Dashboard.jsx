@@ -203,7 +203,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   if (currentSection === 'dashboard') {
     // Si tiene TeamMember con rol, mostrar dashboard por perfil
     if (teamMember?.role) {
-      return <DashboardByRole user={user} teamMember={teamMember} />;
+      return <DashboardByRole user={user} teamMember={teamMember} onSectionChange={onSectionChange} />;
     }
     // Si no, mostrar dashboard general
     return <DashboardHome onNavigate={onSectionChange} />;

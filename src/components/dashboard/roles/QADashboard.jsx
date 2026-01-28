@@ -4,11 +4,12 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Bug, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../../utils';
 
-export default function QADashboard({ user }) {
-  const navigate = useNavigate();
+export default function QADashboard({ user, onSectionChange }) {
+  const goToProject = (projectId) => {
+    window.location.href = createPageUrl('ProjectChecklist') + `?project=${projectId}`;
+  };
   // Tareas QA
   const { data: qaTasks = [] } = useQuery({
     queryKey: ['qa-all-tasks'],
@@ -165,7 +166,7 @@ export default function QADashboard({ user }) {
                   <div
                     key={task.id}
                     className="border border-[var(--border-primary)] rounded-lg p-3 hover:bg-[var(--bg-hover)] hover:border-[#FF1B7E] transition-all cursor-pointer group"
-                    onClick={() => navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`)}
+                    onClick={() => goToProject(task.project_id)}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1">

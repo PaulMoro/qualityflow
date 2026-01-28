@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Clock, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../../utils';
 
-export default function OperationalDashboard({ user, teamMember }) {
-  const navigate = useNavigate();
+export default function OperationalDashboard({ user, teamMember, onSectionChange }) {
+  const goToProject = (projectId) => {
+    window.location.href = createPageUrl('ProjectChecklist') + `?project=${projectId}`;
+  };
   // Mis tareas
   const { data: myTasks = [] } = useQuery({
     queryKey: ['my-tasks', user.email],
@@ -60,7 +61,7 @@ export default function OperationalDashboard({ user, teamMember }) {
           className="cursor-pointer hover:shadow-lg transition-all hover:border-orange-500"
           onClick={() => {
             const task = myTasks.find(t => t.status === 'pending' || t.status === 'todo');
-            if (task) navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`);
+            if (task) goToProject(task.project_id);
           }}
         >
           <CardHeader className="pb-2">
@@ -79,7 +80,7 @@ export default function OperationalDashboard({ user, teamMember }) {
           className="cursor-pointer hover:shadow-lg transition-all hover:border-blue-500"
           onClick={() => {
             const task = myTasks.find(t => t.status === 'in_progress');
-            if (task) navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`);
+            if (task) goToProject(task.project_id);
           }}
         >
           <CardHeader className="pb-2">
@@ -111,7 +112,7 @@ export default function OperationalDashboard({ user, teamMember }) {
           className="cursor-pointer hover:shadow-lg transition-all hover:border-red-500"
           onClick={() => {
             const task = myTasks.find(t => t.priority === 'high' && t.status !== 'completed');
-            if (task) navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`);
+            if (task) goToProject(task.project_id);
           }}
         >
           <CardHeader className="pb-2">
@@ -169,7 +170,7 @@ export default function OperationalDashboard({ user, teamMember }) {
                   <div
                     key={task.id}
                     className="border border-[var(--border-primary)] rounded-lg p-3 hover:bg-[var(--bg-hover)] hover:border-[#FF1B7E] transition-all cursor-pointer group"
-                    onClick={() => navigate(createPageUrl('ProjectChecklist') + `?project=${task.project_id}`)}
+                    onClick={() => goToProject(task.project_id)}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
