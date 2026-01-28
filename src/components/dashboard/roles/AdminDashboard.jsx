@@ -5,19 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle2, Clock, TrendingUp, ArrowRight, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../../utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ProjectDetailPanel from '../../project/ProjectDetailPanel';
 
 export default function AdminDashboard({ user, onSectionChange }) {
-  const navigate = useNavigate();
-  
-  const goToProject = (projectId) => {
-    if (projectId) {
-      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
-    }
-  };
+  const [selectedProjectId, setSelectedProjectId] = React.useState(null);
   
   const { data: projects = [] } = useQuery({
     queryKey: ['projects-admin', user?.email],
@@ -59,7 +53,12 @@ export default function AdminDashboard({ user, onSectionChange }) {
   });
 
   return (
-    <div className="space-y-6">
+    <>
+      <ProjectDetailPanel 
+        projectId={selectedProjectId} 
+        onClose={() => setSelectedProjectId(null)} 
+      />
+      <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
           Dashboard Administrador
@@ -151,7 +150,7 @@ export default function AdminDashboard({ user, onSectionChange }) {
                   key={area} 
                   className="border border-[var(--border-primary)] rounded-lg p-4 hover:border-[#FF1B7E] hover:shadow-lg cursor-pointer transition-all group"
                   onClick={() => {
-                    if (areaProject) goToProject(areaProject.id);
+                    if (areaProject) setSelectedProjectId(areaProject.id);
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -202,7 +201,7 @@ export default function AdminDashboard({ user, onSectionChange }) {
                   <div
                     key={task.id}
                     className="border border-[var(--border-primary)] rounded-lg p-3 hover:border-[#FF1B7E] cursor-pointer transition-all group"
-                    onClick={() => goToProject(task.project_id)}
+                    onClick={() => setSelectedProjectId(task.project_id)}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
@@ -274,5 +273,6 @@ export default function AdminDashboard({ user, onSectionChange }) {
         </Card>
       )}
     </div>
+    </>
   );
 }

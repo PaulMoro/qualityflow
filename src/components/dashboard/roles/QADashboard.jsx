@@ -4,17 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Bug, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../../utils';
+import ProjectDetailPanel from '../../project/ProjectDetailPanel';
 
 export default function QADashboard({ user, onSectionChange }) {
-  const navigate = useNavigate();
-  
-  const goToProject = (projectId) => {
-    if (projectId) {
-      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
-    }
-  };
+  const [selectedProjectId, setSelectedProjectId] = React.useState(null);
   
   // Tareas QA
   const { data: qaTasks = [] } = useQuery({
@@ -49,7 +43,12 @@ export default function QADashboard({ user, onSectionChange }) {
     });
 
   return (
-    <div className="space-y-6">
+    <>
+      <ProjectDetailPanel 
+        projectId={selectedProjectId} 
+        onClose={() => setSelectedProjectId(null)} 
+      />
+      <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
           Dashboard QA
@@ -174,7 +173,7 @@ export default function QADashboard({ user, onSectionChange }) {
                   <div
                     key={task.id}
                     className="border border-[var(--border-primary)] rounded-lg p-3 hover:bg-[var(--bg-hover)] hover:border-[#FF1B7E] transition-all cursor-pointer group"
-                    onClick={() => goToProject(task.project_id)}
+                    onClick={() => setSelectedProjectId(task.project_id)}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1">
@@ -203,5 +202,6 @@ export default function QADashboard({ user, onSectionChange }) {
         </Card>
       )}
     </div>
+    </>
   );
 }

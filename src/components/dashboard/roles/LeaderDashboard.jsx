@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Users, Clock, ArrowRight, Bug } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../../utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ProjectDetailPanel from '../../project/ProjectDetailPanel';
 
 const AREA_MAP = {
   leader_web: 'web',
@@ -23,13 +23,7 @@ const AREA_MAP = {
 };
 
 export default function LeaderDashboard({ user, teamMember, onSectionChange }) {
-  const navigate = useNavigate();
-  
-  const goToProject = (projectId) => {
-    if (projectId) {
-      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
-    }
-  };
+  const [selectedProjectId, setSelectedProjectId] = React.useState(null);
   
   const myArea = AREA_MAP[teamMember?.role] || '';
   const isDevLeader = ['leader_software', 'leader_dev_web'].includes(teamMember?.role);
@@ -85,7 +79,12 @@ export default function LeaderDashboard({ user, teamMember, onSectionChange }) {
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <ProjectDetailPanel 
+        projectId={selectedProjectId} 
+        onClose={() => setSelectedProjectId(null)} 
+      />
+      <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
           Dashboard Líder - {myArea.charAt(0).toUpperCase() + myArea.slice(1)}
@@ -276,5 +275,6 @@ export default function LeaderDashboard({ user, teamMember, onSectionChange }) {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

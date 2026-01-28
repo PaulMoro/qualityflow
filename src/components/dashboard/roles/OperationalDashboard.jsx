@@ -7,17 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Clock, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../../../utils';
+import ProjectDetailPanel from '../../project/ProjectDetailPanel';
 
 export default function OperationalDashboard({ user, teamMember, onSectionChange }) {
-  const navigate = useNavigate();
-  
-  const goToProject = (projectId) => {
-    if (projectId) {
-      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
-    }
-  };
+  const [selectedProjectId, setSelectedProjectId] = React.useState(null);
   
   // Mis tareas
   const { data: myTasks = [] } = useQuery({
@@ -55,7 +49,12 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <>
+      <ProjectDetailPanel 
+        projectId={selectedProjectId} 
+        onClose={() => setSelectedProjectId(null)} 
+      />
+      <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
           Mi Panel de Trabajo
@@ -69,7 +68,7 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
           className="cursor-pointer hover:shadow-lg transition-all hover:border-orange-500"
           onClick={() => {
             const task = myTasks.find(t => t.status === 'pending' || t.status === 'todo');
-            if (task) goToProject(task.project_id);
+            if (task) setSelectedProjectId(task.project_id);
           }}
         >
           <CardHeader className="pb-2">
@@ -88,7 +87,7 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
           className="cursor-pointer hover:shadow-lg transition-all hover:border-blue-500"
           onClick={() => {
             const task = myTasks.find(t => t.status === 'in_progress');
-            if (task) goToProject(task.project_id);
+            if (task) setSelectedProjectId(task.project_id);
           }}
         >
           <CardHeader className="pb-2">
@@ -120,7 +119,7 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
           className="cursor-pointer hover:shadow-lg transition-all hover:border-red-500"
           onClick={() => {
             const task = myTasks.find(t => t.priority === 'high' && t.status !== 'completed');
-            if (task) goToProject(task.project_id);
+            if (task) setSelectedProjectId(task.project_id);
           }}
         >
           <CardHeader className="pb-2">
@@ -178,7 +177,7 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
                   <div
                     key={task.id}
                     className="border border-[var(--border-primary)] rounded-lg p-3 hover:bg-[var(--bg-hover)] hover:border-[#FF1B7E] transition-all cursor-pointer group"
-                    onClick={() => goToProject(task.project_id)}
+                    onClick={() => setSelectedProjectId(task.project_id)}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
@@ -207,5 +206,6 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
