@@ -15,6 +15,7 @@ import RoleSelector from '../components/team/RoleSelector';
 import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
+import DashboardByRole from '../components/dashboard/DashboardByRole';
 import AdminPanel from '../components/admin/AdminPanel';
 import ReportsView from '../components/reports/ReportsView';
 
@@ -27,6 +28,17 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
 
   const queryClient = useQueryClient();
   const user = currentUser;
+
+  // Obtener TeamMember del usuario
+  const { data: teamMember } = useQuery({
+    queryKey: ['team-member', user?.email],
+    queryFn: async () => {
+      if (!user) return null;
+      const members = await base44.entities.TeamMember.filter({ user_email: user.email });
+      return members[0] || null;
+    },
+    enabled: !!user
+  });
 
   // Handle sidebar actions
   useEffect(() => {
@@ -189,6 +201,11 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
 
   // Home Dashboard
   if (currentSection === 'dashboard') {
+    // Si tiene TeamMember con rol, mostrar dashboard por perfil
+    if (teamMember?.role) {
+      return <DashboardByRole user={user} teamMember={teamMember} />;
+    }
+    // Si no, mostrar dashboard general
     return <DashboardHome onNavigate={onSectionChange} />;
   }
 
