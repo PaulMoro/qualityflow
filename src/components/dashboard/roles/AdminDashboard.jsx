@@ -14,16 +14,21 @@ export default function AdminDashboard({ user, onSectionChange }) {
   const navigate = useNavigate();
   
   const goToProject = (projectId) => {
-    navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
+    if (projectId) {
+      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
+    }
   };
+  
   const { data: projects = [] } = useQuery({
-    queryKey: ['projects-admin'],
-    queryFn: () => base44.entities.Project.list()
+    queryKey: ['projects-admin', user?.email],
+    queryFn: () => base44.entities.Project.list(),
+    enabled: !!user
   });
 
   const { data: tasks = [] } = useQuery({
-    queryKey: ['tasks-admin'],
-    queryFn: () => base44.entities.Task.list()
+    queryKey: ['tasks-admin', user?.email],
+    queryFn: () => base44.entities.Task.list(),
+    enabled: !!user
   });
 
   // Métricas globales

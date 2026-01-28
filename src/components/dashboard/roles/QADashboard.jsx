@@ -11,18 +11,23 @@ export default function QADashboard({ user, onSectionChange }) {
   const navigate = useNavigate();
   
   const goToProject = (projectId) => {
-    navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
+    if (projectId) {
+      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
+    }
   };
+  
   // Tareas QA
   const { data: qaTasks = [] } = useQuery({
-    queryKey: ['qa-all-tasks'],
+    queryKey: ['qa-all-tasks', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       const allTasks = await base44.entities.Task.list();
       return allTasks.filter(t => 
         t.tags?.includes('qa') ||
         t.assigned_to?.includes(user.email)
       );
-    }
+    },
+    enabled: !!user?.email
   });
 
   const metrics = {

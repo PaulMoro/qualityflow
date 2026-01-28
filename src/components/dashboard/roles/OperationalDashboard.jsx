@@ -14,18 +14,23 @@ export default function OperationalDashboard({ user, teamMember, onSectionChange
   const navigate = useNavigate();
   
   const goToProject = (projectId) => {
-    navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
+    if (projectId) {
+      navigate(createPageUrl('ProjectChecklist') + `?project=${projectId}`);
+    }
   };
+  
   // Mis tareas
   const { data: myTasks = [] } = useQuery({
-    queryKey: ['my-tasks', user.email],
+    queryKey: ['my-tasks-operational', user?.email],
     queryFn: async () => {
+      if (!user?.email) return [];
       const allTasks = await base44.entities.Task.list();
       return allTasks.filter(t => 
         t.assigned_to?.includes(user.email) ||
         t.created_by === user.email
       );
-    }
+    },
+    enabled: !!user?.email
   });
 
   const metrics = {
