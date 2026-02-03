@@ -7,12 +7,14 @@ import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import AccessItemCard from './AccessItemCard';
 import ShareAccessItemModal from './ShareAccessItemModal';
+import ShareMultipleAccessModal from './ShareMultipleAccessModal';
 import BulkAccessUpload from './BulkAccessUpload';
 
 export default function ProjectAccessTab({ projectId, project }) {
   const [editingItemId, setEditingItemId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [sharingItem, setSharingItem] = useState(null);
+  const [showMultipleShareModal, setShowMultipleShareModal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: accessItems = [], isLoading } = useQuery({
@@ -92,13 +94,25 @@ export default function ProjectAccessTab({ projectId, project }) {
             {accessItems.length} acceso{accessItems.length !== 1 ? 's' : ''} registrado{accessItems.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button
-          onClick={() => setIsCreating(true)}
-          className="bg-[#FF1B7E] hover:bg-[#e6156e]"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Acceso
-        </Button>
+        <div className="flex gap-2">
+          {accessItems.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setShowMultipleShareModal(true)}
+              className="border-[#FF1B7E] text-[#FF1B7E] hover:bg-[#FF1B7E]/10"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Compartir Múltiples
+            </Button>
+          )}
+          <Button
+            onClick={() => setIsCreating(true)}
+            className="bg-[#FF1B7E] hover:bg-[#e6156e]"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Acceso
+          </Button>
+        </div>
       </div>
 
       {/* Carga masiva */}
@@ -110,13 +124,16 @@ export default function ProjectAccessTab({ projectId, project }) {
           <CardContent className="pt-6">
             <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3">Accesos Compartidos Activos</h3>
             <div className="space-y-2">
-              {tokens.filter(t => !t.is_revoked && t.access_item_id).map(token => {
-                const item = accessItems.find(i => i.id === token.access_item_id);
+              {tokens.filter(t => !t.is_revoked && (t.access_item_id || t.access_item_ids?.length > 0)).map(token => {
+                const isMultiple = token.access_item_ids?.length > 0;
+                const item = !isMultiple && accessItems.find(i => i.id === token.access_item_id);
+                const count = isMultiple ? token.access_item_ids.length : 1;
+                
                 return (
                   <div key={token.id} className="flex items-center justify-between bg-[var(--bg-tertiary)] p-3 rounded-lg">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-[var(--text-primary)]">
-                        {item?.title || 'Acceso'} → {token.recipient_name}
+                        {isMultiple ? `${count} accesos` : (item?.title || 'Acceso')} → {token.recipient_name}
                       </p>
                       <p className="text-xs text-[var(--text-secondary)]">
                         {token.recipient_email} • Accedido {token.access_count || 0} veces • 
@@ -180,11 +197,19 @@ export default function ProjectAccessTab({ projectId, project }) {
         </Card>
       )}
 
-      {/* Modal compartir */}
+      {/* Modales compartir */}
       <ShareAccessItemModal
         isOpen={!!sharingItem}
         onClose={() => setSharingItem(null)}
         accessItem={sharingItem}
+        projectId={projectId}
+        projectName={project?.name}
+      />
+
+      <ShareMultipleAccessModal
+        isOpen={showMultipleShareModal}
+        onClose={() => setShowMultipleShareModal(false)}
+        accessItems={accessItems}
         projectId={projectId}
         projectName={project?.name}
       />

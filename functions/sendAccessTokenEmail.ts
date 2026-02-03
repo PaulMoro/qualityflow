@@ -9,14 +9,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { token, recipient_email, recipient_name, project_name, access_title } = await req.json();
+    const body = await req.json();
+    const { token, recipient_email, recipient_name, project_name, access_title, access_count } = body;
 
     if (!token || !recipient_email || !recipient_name) {
       return Response.json({ error: 'Faltan datos requeridos' }, { status: 400 });
     }
 
-    const appUrl = Deno.env.get('BASE44_APP_URL') || 'https://app.base44.com';
-    const accessUrl = `${appUrl}/SharedAccess?token=${token}`;
+    const APP_ID = Deno.env.get('BASE44_APP_ID');
+    const accessUrl = `https://${APP_ID}.base44.run/SharedAccess?token=${token}`;
+    
+    const accessDescription = access_count > 1 
+      ? `${access_count} accesos` 
+      : (access_title || 'un recurso');
 
     const emailBody = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -28,7 +33,7 @@ Deno.serve(async (req) => {
           <p style="font-size: 16px; color: #1a1a1a; margin-top: 0;">Hola ${recipient_name},</p>
           
           <p style="font-size: 14px; color: #525252; line-height: 1.6;">
-            Se te ha compartido un acceso seguro para <strong>${access_title || 'un recurso'}</strong>
+            Se te ha compartido de forma segura <strong>${accessDescription}</strong>
             ${project_name ? ` del proyecto <strong>${project_name}</strong>` : ''}.
           </p>
 
@@ -56,11 +61,17 @@ Deno.serve(async (req) => {
       </div>
     `;
 
+    const subject = access_count > 1 
+      ? `🔐 Acceso compartido: ${access_count} recursos del proyecto`
+      : `🔐 Acceso compartido: ${access_title || 'Recurso del proyecto'}`;
+
     const result = await base44.integrations.Core.SendEmail({
       to: recipient_email,
-      subject: `🔐 Acceso compartido: ${access_title || 'Recurso del proyecto'}`,
+      subject: subject,
       body: emailBody
     });
+    
+    console.log('Email sent successfully:', result);
 
     return Response.json({ success: true, result });
   } catch (error) {

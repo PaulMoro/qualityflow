@@ -35,9 +35,19 @@ Deno.serve(async (req) => {
     });
 
     // Si el token es para un ítem específico (nuevo sistema)
-    if (accessToken.access_item_id) {
+    if (accessToken.access_item_id || (accessToken.access_item_ids && accessToken.access_item_ids.length > 0)) {
       // Obtener info del proyecto
       const projects = await base44.asServiceRole.entities.Project.filter({ id: accessToken.project_id });
+      
+      // Registrar acceso en log
+      await base44.asServiceRole.entities.ProjectAccessLog.create({
+        token_id: accessToken.id,
+        project_id: accessToken.project_id,
+        action: 'view',
+        section: 'access_items',
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown'
+      });
       
       return Response.json({ 
         success: true, 
