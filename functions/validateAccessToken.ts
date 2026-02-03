@@ -28,7 +28,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Token expirado' }, { status: 403 });
     }
 
-    // Obtener accesos del proyecto
+    // Actualizar última vez accedido y contador
+    await base44.asServiceRole.entities.ProjectAccessToken.update(accessToken.id, {
+      last_accessed_at: new Date().toISOString(),
+      access_count: (accessToken.access_count || 0) + 1
+    });
+
+    // Si el token es para un ítem específico (nuevo sistema)
+    if (accessToken.access_item_id) {
+      // Obtener info del proyecto
+      const projects = await base44.asServiceRole.entities.Project.filter({ id: accessToken.project_id });
+      
+      return Response.json({ 
+        success: true, 
+        token: accessToken,
+        access: {
+          project_name: projects[0]?.name,
+          recipient_name: accessToken.recipient_name
+        }
+      });
+    }
+
+    // Sistema legacy (accesos antiguos)
     const projectAccess = await base44.asServiceRole.entities.ProjectAccess.filter({ 
       project_id: accessToken.project_id 
     });
@@ -82,12 +103,6 @@ Deno.serve(async (req) => {
     if (permissions.apis && permissions.apis.length > 0 && access.apis) {
       sharedAccess.data.apis = permissions.apis.map(index => access.apis[index]).filter(Boolean);
     }
-
-    // Actualizar última vez accedido y contador
-    await base44.asServiceRole.entities.ProjectAccessToken.update(accessToken.id, {
-      last_accessed_at: new Date().toISOString(),
-      access_count: (accessToken.access_count || 0) + 1
-    });
 
     // Registrar en log
     await base44.asServiceRole.entities.ProjectAccessLog.create({
