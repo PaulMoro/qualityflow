@@ -251,7 +251,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
                 {value ? format(new Date(value), "d 'de' MMMM, yyyy", { locale: es }) : 'Seleccionar fecha'}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="start">
+            <PopoverContent className="w-auto p-0 bg-[var(--bg-secondary)] border-[var(--border-primary)]" align="start">
               <Calendar
                 mode="single"
                 selected={value ? new Date(value) : undefined}
@@ -294,7 +294,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
             <SelectTrigger>
               <SelectValue placeholder={`Seleccionar ${field.label}`} />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
               {(field.options || []).map((opt) => (
                 <SelectItem key={opt} value={opt}>{opt}</SelectItem>
               ))}
@@ -412,9 +412,9 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-      className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-white border-l border-[var(--border-primary)] shadow-2xl z-50 overflow-y-auto"
+      className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-[var(--bg-secondary)] border-l border-[var(--border-primary)] shadow-2xl z-50 overflow-y-auto"
     >
-      <div className="sticky top-0 bg-white border-b border-[var(--border-primary)] px-6 py-4 flex items-center justify-between">
+      <div className="sticky top-0 bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Detalles de la tarea</h2>
           {isSaving && (
@@ -457,7 +457,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
                 {(config?.custom_statuses || []).map((s) => (
                   <SelectItem key={s.key} value={s.key}>
                     <div className="flex items-center gap-2">
@@ -482,7 +482,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
                 {(config?.custom_priorities || []).map((p) => (
                   <SelectItem key={p.key} value={p.key}>
                     <div className="flex items-center gap-2">
@@ -509,7 +509,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
                 {formData.due_date ? format(new Date(formData.due_date), "d 'de' MMMM, yyyy", { locale: es }) : 'Sin fecha'}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="start">
+            <PopoverContent className="w-auto p-0 bg-[var(--bg-secondary)] border-[var(--border-primary)]" align="start">
               <Calendar
                 mode="single"
                 selected={formData.due_date ? new Date(formData.due_date) : undefined}
@@ -539,7 +539,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
             <SelectTrigger className="bg-[var(--bg-input)]">
               <SelectValue placeholder="Sin asignar" />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
               <SelectItem value="unassigned">Sin asignar</SelectItem>
               {teamMembers.map((member) => (
                 <SelectItem key={member.user_email} value={member.user_email}>
