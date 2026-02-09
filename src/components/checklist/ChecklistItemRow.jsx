@@ -50,11 +50,10 @@ export default function ChecklistItemRow({ item, onUpdate, onEdit, userRole, dra
   return (
     <div className={`
       flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all group
-      ${isCompleted ? 'bg-green-500/10' : 'bg-[var(--bg-primary)]'}
-      ${isConflict ? 'bg-orange-500/10 border border-orange-500/40' : ''}
-      ${isNotApplicable ? 'opacity-60' : ''}
+      ${isCompleted ? 'bg-green-500/10 hover:bg-green-500/15' : 'bg-[var(--bg-primary)] hover:bg-[var(--bg-hover)]'}
+      ${isConflict ? 'bg-orange-500/10 border border-orange-500/40 hover:bg-orange-500/15' : ''}
+      ${isNotApplicable ? 'opacity-60 hover:bg-[var(--bg-hover)]' : ''}
       ${isDragging ? 'shadow-lg opacity-80' : ''}
-      hover:bg-[var(--bg-hover)]
     `}>
       <div
         {...dragHandleProps}
