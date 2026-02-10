@@ -1,0 +1,4 @@
+name,contact_email,contact_phone,notes,is_active,id,created_date,updated_date,created_by_id,is_sample
+"GODO","","","","true","69777156ee234b2ebec9bb87","2026-01-26T13:51:18.325000","2026-01-26T13:51:18.325000","697385915ecde75ddf2df5d8","false"
+"prueba","","","","true","6961976031566da7eef4897c","2026-01-10T00:03:44.858000","2026-01-10T00:03:44.858000","6940670cff749d8ea0c5d536","false"
+"prueba","","","","true","694b2eeb3218f621b4df7165","2025-12-24T00:08:11.799000","2025-12-24T00:08:11.799000","6940670cff749d8ea0c5d536","false"
