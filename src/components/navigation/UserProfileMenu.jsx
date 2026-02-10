@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +15,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { 
-  User, 
-  LogOut, 
-  Settings, 
-  Briefcase, 
+import {
+  User,
+  LogOut,
+  Settings,
+  Briefcase,
   Users,
   FolderKanban,
   ChevronDown,
@@ -29,16 +30,8 @@ import { ROLE_CONFIG } from '../checklist/checklistTemplates';
 import TaskNotificationBadge from '../notifications/TaskNotificationBadge';
 
 export default function UserProfileMenu() {
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
-  
-  useEffect(() => {
-    const loadUser = async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-    };
-    loadUser();
-  }, []);
 
   const { data: teamMember } = useQuery({
     queryKey: ['team-member', user?.email],
@@ -51,7 +44,7 @@ export default function UserProfileMenu() {
     queryFn: async () => {
       if (!user?.email) return [];
       const allProjects = await base44.entities.Project.list();
-      return allProjects.filter(p => 
+      return allProjects.filter(p =>
         p.team_members?.includes(user.email) ||
         p.product_owner_email === user.email ||
         Object.values(p.area_responsibles || {}).includes(user.email) ||
@@ -85,52 +78,52 @@ export default function UserProfileMenu() {
   if (!user) return null;
 
   const roleConfig = ROLE_CONFIG[teamMember?.role] || {};
-  const initials = user.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email[0].toUpperCase();
+  const initials = user.display_name?.split(' ').map(n => n[0]).join('').toUpperCase() || user.email[0].toUpperCase();
 
   return (
     <>
       <div className="flex items-center gap-2">
         <TaskNotificationBadge />
         <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-3 bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] border border-[var(--border-primary)]">
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-medium text-[var(--text-primary)] font-sans" style={{ fontStyle: 'normal !important', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>{user.full_name || user.email}</p>
-                {teamMember && (
-                  <p className="text-xs text-[var(--text-secondary)] font-sans" style={{ fontStyle: 'normal !important', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>{roleConfig.name || teamMember.role}</p>
-                )}
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-3 bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] border border-[var(--border-primary)]">
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-[var(--text-primary)] font-sans" style={{ fontStyle: 'normal !important', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>{user.display_name || user.email}</p>
+                  {teamMember && (
+                    <p className="text-xs text-[var(--text-secondary)] font-sans" style={{ fontStyle: 'normal !important', fontFamily: 'Satoshi, -apple-system, BlinkMacSystemFont, sans-serif' }}>{roleConfig.name || teamMember.role}</p>
+                  )}
+                </div>
+                <Avatar className="h-10 w-10 bg-[#FF1B7E]">
+                  <AvatarFallback className="bg-[#FF1B7E] text-white font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <ChevronDown className="h-4 w-4 text-[var(--text-secondary)]" />
               </div>
-              <Avatar className="h-10 w-10 bg-[#FF1B7E]">
-                <AvatarFallback className="bg-[#FF1B7E] text-white font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <ChevronDown className="h-4 w-4 text-[var(--text-secondary)]" />
-            </div>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-[var(--bg-secondary)] border-[var(--border-primary)]">
-          <DropdownMenuLabel className="text-[var(--text-primary)]">Mi Cuenta</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-[var(--border-primary)]" />
-          <DropdownMenuItem onClick={() => setShowProfile(true)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
-            <User className="mr-2 h-4 w-4" />
-            Ver Perfil Completo
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
-            <Settings className="mr-2 h-4 w-4" />
-            Configuración
-          </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-[var(--border-primary)]" />
-          <DropdownMenuItem 
-            onClick={() => base44.auth.logout()}
-            className="text-red-500 hover:text-red-600 hover:bg-red-50"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Cerrar Sesión
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 bg-[var(--bg-secondary)] border-[var(--border-primary)]">
+            <DropdownMenuLabel className="text-[var(--text-primary)]">Mi Cuenta</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-[var(--border-primary)]" />
+            <DropdownMenuItem onClick={() => setShowProfile(true)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
+              <User className="mr-2 h-4 w-4" />
+              Ver Perfil Completo
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
+              <Settings className="mr-2 h-4 w-4" />
+              Configuración
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-[var(--border-primary)]" />
+            <DropdownMenuItem
+              onClick={() => logout()}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Cerrar Sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
@@ -138,7 +131,7 @@ export default function UserProfileMenu() {
           <DialogHeader>
             <DialogTitle className="text-[var(--text-primary)] text-xl">Mi Perfil</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             {/* Header con avatar */}
             <div className="flex items-center gap-6 p-6 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border-primary)]">
@@ -148,7 +141,7 @@ export default function UserProfileMenu() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-[var(--text-primary)]">{user.full_name || user.email}</h2>
+                <h2 className="text-2xl font-bold text-[var(--text-primary)]">{user.display_name || user.email}</h2>
                 <p className="text-[var(--text-secondary)]">{user.email}</p>
                 {teamMember && (
                   <Badge className={`mt-2 ${roleConfig.color} text-white`}>
@@ -211,7 +204,7 @@ export default function UserProfileMenu() {
                   <p className="text-[var(--text-secondary)] text-sm">No tienes proyectos asignados</p>
                 ) : (
                   projects.map(project => (
-                    <a 
+                    <a
                       key={project.id}
                       href={`#/project-checklist?id=${project.id}`}
                       className="flex items-center justify-between p-3 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-primary)] hover:border-[#FF1B7E] transition-all group cursor-pointer"
@@ -254,12 +247,12 @@ export default function UserProfileMenu() {
                       </div>
                       <div className="flex items-center gap-2">
                         {task.priority && (
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className={
                               task.priority === 'high' ? 'border-red-500 text-red-500' :
-                              task.priority === 'medium' ? 'border-yellow-500 text-yellow-500' :
-                              'border-gray-500 text-gray-500'
+                                task.priority === 'medium' ? 'border-yellow-500 text-yellow-500' :
+                                  'border-gray-500 text-gray-500'
                             }
                           >
                             {task.priority}

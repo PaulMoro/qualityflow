@@ -39,6 +39,14 @@ export const base44 = {
       }
     }
   },
+  // Mock app logs for compatibility
+  appLogs: {
+    logUserInApp: async (pageName) => {
+      console.log('📊 User navigated to:', pageName);
+      // TODO: Implement real analytics/logging if needed
+      return { success: true };
+    }
+  },
   // Direct access to Turso client if needed
   client: turso,
   // Helper functions

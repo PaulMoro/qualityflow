@@ -1,9 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// TODO: Implement proper authentication system for Turso
-// For now, we'll use a simplified auth context without Base44 dependencies
-
 const AuthContext = createContext();
+
+const STORAGE_KEY = 'qualityflow_user';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -20,21 +19,26 @@ export const AuthProvider = ({ children }) => {
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);
+      setIsLoadingAuth(true);
       setAuthError(null);
 
-      // TODO: Implement proper app state check with your auth system
-      // For now, we'll assume the app is accessible without authentication
+      // Load app public settings
       setAppPublicSettings({ id: 'qualityflow', public_settings: {} });
       setIsLoadingPublicSettings(false);
 
-      // Set a mock authenticated user for development
-      // TODO: Replace with real authentication
-      setUser({
-        email: 'user@qualityflow.com',
-        display_name: 'QualityFlow User',
-        role: 'admin' // Mock role for development
-      });
-      setIsAuthenticated(true);
+      // Check if user is already logged in (from localStorage)
+      const storedUser = localStorage.getItem(STORAGE_KEY);
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          setIsAuthenticated(true);
+        } catch (e) {
+          console.error('Error parsing stored user:', e);
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -47,24 +51,55 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkUserAuth = async () => {
-    // TODO: Implement proper user authentication check
-    setIsLoadingAuth(false);
+  const login = async ({ email, display_name, method = 'email' }) => {
+    try {
+      setIsLoadingAuth(true);
+      setAuthError(null);
+
+      // Create user object
+      const userData = {
+        email,
+        display_name: display_name || email.split('@')[0],
+        role: 'admin', // Default role
+        method,
+        loginAt: new Date().toISOString()
+      };
+
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+
+      // Update state
+      setUser(userData);
+      setIsAuthenticated(true);
+      setIsLoadingAuth(false);
+
+      return userData;
+    } catch (error) {
+      console.error('Login error:', error);
+      setAuthError({
+        type: 'login_failed',
+        message: error.message || 'Login failed'
+      });
+      setIsLoadingAuth(false);
+      throw error;
+    }
   };
 
   const logout = (shouldRedirect = true) => {
+    // Clear localStorage
+    localStorage.removeItem(STORAGE_KEY);
+
+    // Clear state
     setUser(null);
     setIsAuthenticated(false);
 
     if (shouldRedirect) {
-      // TODO: Implement proper logout redirect
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   };
 
   const navigateToLogin = () => {
-    // TODO: Implement proper login redirect
-    console.log('Navigate to login - not implemented yet');
+    window.location.href = '/login';
   };
 
   return (
@@ -75,6 +110,7 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
+      login,
       logout,
       navigateToLogin,
       checkAppState

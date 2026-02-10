@@ -3,15 +3,31 @@
 -- Enable foreign keys
 PRAGMA foreign_keys = ON;
 
+-- Users (Authentication)
+CREATE TABLE IF NOT EXISTS User (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    display_name TEXT,
+    is_active BOOLEAN DEFAULT 1,
+    last_login TEXT,
+    created_date TEXT,
+    updated_date TEXT,
+    is_sample BOOLEAN DEFAULT 0
+);
+
 -- Users / Team Members
 CREATE TABLE IF NOT EXISTS TeamMember (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     user_email TEXT NOT NULL UNIQUE,
     display_name TEXT,
-    role TEXT NOT NULL DEFAULT 'viewer', -- developer, qa, web_leader, product_owner, admin
+    role TEXT NOT NULL DEFAULT 'viewer',
+    avatar_color TEXT,
     is_active BOOLEAN DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Clients
@@ -37,10 +53,14 @@ CREATE TABLE IF NOT EXISTS ProjectType (
 );
 
 CREATE TABLE IF NOT EXISTS FeeType (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT NOT NULL UNIQUE,
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    is_active BOOLEAN DEFAULT 1
+    key TEXT NOT NULL UNIQUE,
+    is_active BOOLEAN DEFAULT 1,
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS SiteType (
@@ -98,34 +118,28 @@ CREATE TABLE IF NOT EXISTS Project (
 
 -- Tasks
 CREATE TABLE IF NOT EXISTS Task (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL REFERENCES Project(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
+    id TEXT PRIMARY KEY,
+    project_id TEXT REFERENCES Project(id) ON DELETE CASCADE,
+    title TEXT,
     description TEXT,
-    status TEXT NOT NULL DEFAULT 'todo',
-    priority TEXT DEFAULT 'medium',
-    "order" INTEGER DEFAULT 0,
-    assigned_to TEXT, -- JSON array of emails
-    due_date DATE,
-    
-    -- Tracking
-    completed_by TEXT,
-    completed_at DATETIME,
+    status TEXT,
+    priority TEXT,
+    due_date TEXT,
+    assigned_to TEXT,
     assigned_by TEXT,
-    created_by TEXT,
-    
-    -- Public form metadata
-    is_from_public_form BOOLEAN DEFAULT 0,
-    requester_email TEXT,
-    requester_name TEXT,
     notification_email TEXT,
-    
-    -- JSON for custom fields per project config
-    custom_fields TEXT, 
-    
-    is_sample BOOLEAN DEFAULT 0, -- Added
-    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    requester_name TEXT,
+    requester_email TEXT,
+    is_from_public_form BOOLEAN DEFAULT 0,
+    tags TEXT,
+    custom_fields TEXT,
+    "order" INTEGER DEFAULT 0,
+    completed_by TEXT,
+    completed_at TEXT,
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Task Comments
@@ -142,28 +156,32 @@ CREATE TABLE IF NOT EXISTS TaskComment (
 
 -- Task Configuration (per project)
 CREATE TABLE IF NOT EXISTS TaskConfiguration (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL REFERENCES Project(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY,
+    project_id TEXT, -- No strict FK
     module_enabled BOOLEAN DEFAULT 1,
     custom_statuses TEXT, -- JSON array
     custom_priorities TEXT, -- JSON array
     custom_fields TEXT, -- JSON array
-    is_sample BOOLEAN DEFAULT 0, -- Added
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Task Notifications
 CREATE TABLE IF NOT EXISTS TaskNotification (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id INTEGER REFERENCES Task(id) ON DELETE CASCADE,
-    project_id INTEGER REFERENCES Project(id) ON DELETE CASCADE,
-    recipient_email TEXT NOT NULL,
-    event_type TEXT NOT NULL, -- task_completed, assigned, etc.
+    id TEXT PRIMARY KEY,
+    task_id TEXT, -- No strict FK
+    project_id TEXT, -- No strict FK
+    recipient_email TEXT,
+    event_type TEXT, -- task_completed, assigned, etc.
     message TEXT,
     is_read BOOLEAN DEFAULT 0,
     metadata TEXT, -- JSON
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_date TEXT, -- CSV Header
+    updated_date TEXT, -- CSV Header
+    created_by_id TEXT, -- CSV Header
+    is_sample BOOLEAN DEFAULT 0 -- CSV Header
 );
 
 -- Task Notification Rules
@@ -182,35 +200,41 @@ CREATE TABLE IF NOT EXISTS TaskNotificationRule (
 
 -- Task Activity Log
 CREATE TABLE IF NOT EXISTS TaskActivityLog (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id INTEGER NOT NULL REFERENCES Task(id) ON DELETE CASCADE,
-    project_id INTEGER REFERENCES Project(id) ON DELETE CASCADE,
-    action_type TEXT NOT NULL, -- created, updated, status_changed, completed, etc.
-    action_by TEXT NOT NULL,
+    id TEXT PRIMARY KEY,
+    task_id TEXT NOT NULL,
+    project_id TEXT,
+    action_type TEXT,
+    action_by TEXT,
     action_by_name TEXT,
-    previous_value TEXT, -- JSON
-    new_value TEXT, -- JSON
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    previous_value TEXT,
+    new_value TEXT,
+    notification_details TEXT,
+    metadata TEXT,
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Task Form Public URLs
 CREATE TABLE IF NOT EXISTS TaskFormPublicUrl (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL REFERENCES Project(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY,
+    project_id TEXT, -- No strict FK
     form_token TEXT NOT NULL UNIQUE,
-    form_title TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT 1,
+    form_title TEXT,
     form_description TEXT,
     default_status TEXT,
     visible_fields TEXT, -- JSON array
-    notification_emails TEXT, -- JSON array
     require_authentication BOOLEAN DEFAULT 0,
-    is_active BOOLEAN DEFAULT 1,
-    max_submissions_per_day INTEGER,
+    max_submissions_per_day TEXT,
     success_message TEXT,
-    redirect_url TEXT, -- Added
-    is_sample BOOLEAN DEFAULT 0, -- Added
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    redirect_url TEXT,
+    notification_emails TEXT, -- JSON array
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Project Documents (Briefs, etc.)
@@ -262,39 +286,41 @@ CREATE TABLE IF NOT EXISTS Conflict (
 
 -- Workflow Phases (Tracking phase status/approvals)
 CREATE TABLE IF NOT EXISTS WorkflowPhase (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL REFERENCES Project(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY,
+    project_id TEXT, -- No strict FK
     phase_key TEXT NOT NULL,
-    status TEXT DEFAULT 'pending', -- pending, in_progress, completed
-    
-    started_at DATETIME,
-    completed_at DATETIME,
-    
+    status TEXT DEFAULT 'pending',
+    started_at TEXT,
+    completed_at TEXT,
+    completed_by TEXT,
     approved_by TEXT,
     approval_notes TEXT,
-    completed_by TEXT,
-    
-    blocked_reason TEXT, -- Added
+    blocked_reason TEXT,
     entry_criteria_completed BOOLEAN DEFAULT 0,
-    is_sample BOOLEAN DEFAULT 0, -- Added
-    
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Entry Criteria
 CREATE TABLE IF NOT EXISTS EntryCriteria (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL REFERENCES Project(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY,
+    project_id TEXT, -- No strict FK
     phase_key TEXT NOT NULL,
-    title TEXT, -- Added
-    criteria_text TEXT NOT NULL,
+    title TEXT,
+    description TEXT,
     is_mandatory BOOLEAN DEFAULT 1,
+    area TEXT,
     is_completed BOOLEAN DEFAULT 0,
-    completed_at DATETIME,
     completed_by TEXT,
-    is_sample BOOLEAN DEFAULT 0, -- Added
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    completed_at TEXT,
+    document_url TEXT,
+    notes TEXT,
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Preview Comments
@@ -327,18 +353,44 @@ CREATE TABLE IF NOT EXISTS ScheduleTask (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Project Access (Legacy/Extra table)
+CREATE TABLE IF NOT EXISTS ProjectAccess (
+    id TEXT PRIMARY KEY,
+    project_id TEXT, -- No strict FK
+    qa_hosting_url TEXT,
+    qa_hosting_user TEXT,
+    qa_hosting_password TEXT,
+    prod_hosting_url TEXT,
+    prod_hosting_user TEXT,
+    prod_hosting_password TEXT,
+    cms_qa_url TEXT,
+    cms_qa_user TEXT,
+    cms_qa_password TEXT,
+    cms_prod_url TEXT,
+    cms_prod_user TEXT,
+    cms_prod_password TEXT,
+    apis TEXT, -- JSON array
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
+);
+
 -- Project Access Items
 CREATE TABLE IF NOT EXISTS ProjectAccessItem (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL REFERENCES Project(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    access_type TEXT NOT NULL, -- url, credentials, file, etc.
+    id TEXT PRIMARY KEY,
+    project_id TEXT, -- No strict FK
+    title TEXT,
+    email TEXT,
     url TEXT,
     username TEXT,
     password TEXT,
     notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    "order" INTEGER DEFAULT 0,
+    created_date TEXT,
+    updated_date TEXT,
+    created_by_id TEXT,
+    is_sample BOOLEAN DEFAULT 0
 );
 
 -- Project Access Tokens (for sharing)

@@ -130,6 +130,9 @@ function createEntityHelper(tableName) {
 
 // Export entity helpers for all tables
 export const db = {
+  // Authentication
+  User: createEntityHelper('User'),
+
   // Core entities
   Project: createEntityHelper('Project'),
   Task: createEntityHelper('Task'),
