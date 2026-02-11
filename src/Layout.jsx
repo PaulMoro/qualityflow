@@ -2,13 +2,15 @@ import React from 'react';
 import Sidebar from './components/navigation/Sidebar';
 import UserProfileMenu from './components/navigation/UserProfileMenu';
 import { base44 } from '@/api/base44Client';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 export default function Layout({ children, currentPageName }) {
   const [currentSection, setCurrentSection] = React.useState('dashboard');
   const [sidebarAction, setSidebarAction] = React.useState(null);
   const [user, setUser] = React.useState(undefined);
   const [theme, setTheme] = React.useState(() => localStorage.getItem('theme') || 'light');
-  
+
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -21,7 +23,7 @@ export default function Layout({ children, currentPageName }) {
         if (isAuth) {
           const u = await base44.auth.me();
           setUser(u);
-          
+
           // Configurar juan@antpack.co como administrador automáticamente
           if (u.email === 'juan@antpack.co') {
             try {
@@ -62,33 +64,38 @@ export default function Layout({ children, currentPageName }) {
     };
     loadUser();
   }, []);
-  
+
   // Páginas públicas que no requieren autenticación
   const isPublicPage = currentPageName === 'PublicTaskForm' || currentPageName === 'SharedAccess';
-  
-  // Redirigir al login de Base44 si no hay usuario (excepto páginas públicas)
-  if (user === null && !isPublicPage) {
+  const isAuthPage = currentPageName === 'Login' || currentPageName === 'Register';
+
+  // Renderizar Login o Register si corresponde
+  if (currentPageName === 'Login') return <Login />;
+  if (currentPageName === 'Register') return <Register />;
+
+  // Redirigir al login si no hay usuario (excepto páginas públicas y auth apps)
+  if (user === null && !isPublicPage && !isAuthPage) {
     base44.auth.redirectToLogin();
     return null;
   }
 
   // Mostrar loading mientras verificamos autenticación (excepto páginas públicas)
-  if (user === undefined && !isPublicPage) {
+  if (user === undefined && !isPublicPage && !isAuthPage) {
     return null;
   }
-  
+
   // Si es página pública, renderizar directamente sin layout
   if (isPublicPage) {
     return <div className="min-h-screen bg-[var(--bg-primary)]">{children}</div>;
   }
-  
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   // Si estamos en una página específica (no Dashboard), no mostrar el layout de navegación
   const isProjectPage = currentPageName === 'ProjectChecklist';
-  
+
   if (isProjectPage) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -203,7 +210,7 @@ export default function Layout({ children, currentPageName }) {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
       <style>{`
@@ -302,10 +309,10 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       <div className="particle-bg" />
-      
+
       <div className="flex min-h-screen">
-        <Sidebar 
-          currentSection={currentSection} 
+        <Sidebar
+          currentSection={currentSection}
           onSectionChange={setCurrentSection}
           onAction={setSidebarAction}
         />
@@ -335,8 +342,8 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Main Content */}
           <main className="flex-1 p-6 overflow-auto">
-            {React.cloneElement(children, { 
-              currentSection, 
+            {React.cloneElement(children, {
+              currentSection,
               onSectionChange: setCurrentSection,
               sidebarAction,
               onActionHandled: () => setSidebarAction(null),

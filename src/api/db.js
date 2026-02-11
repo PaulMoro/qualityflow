@@ -4,7 +4,44 @@ import { query, queryOne, transaction, buildWhereClause, parseOrderBy } from './
  * Generic entity helper factory
  * Creates CRUD operations for any table
  */
-function createEntityHelper(tableName) {
+/**
+ * Generic entity helper factory
+ * Creates CRUD operations for any table
+ * @param {string} tableName
+ * @param {string[]} jsonFields - Array of field names that should be treated as JSON
+ */
+function createEntityHelper(tableName, jsonFields = []) {
+  /**
+   * Helper to parse JSON fields in a record
+   */
+  const parseRecord = (record) => {
+    if (!record) return record;
+    const parsed = { ...record };
+    jsonFields.forEach(field => {
+      if (parsed[field] && typeof parsed[field] === 'string') {
+        try {
+          parsed[field] = JSON.parse(parsed[field]);
+        } catch (e) {
+          console.warn(`Failed to parse JSON field ${field} in ${tableName}:`, e);
+        }
+      }
+    });
+    return parsed;
+  };
+
+  /**
+   * Helper to stringify JSON fields in data
+   */
+  const stringifyData = (data) => {
+    const stringified = { ...data };
+    jsonFields.forEach(field => {
+      if (stringified[field] && typeof stringified[field] === 'object') {
+        stringified[field] = JSON.stringify(stringified[field]);
+      }
+    });
+    return stringified;
+  };
+
   return {
     /**
      * List records with optional filtering and ordering
@@ -15,7 +52,6 @@ function createEntityHelper(tableName) {
       let orderBy = '';
       let actualFilters = {};
 
-      // Handle both signatures: list(orderBy) and list(filters)
       if (typeof orderByOrFilters === 'string') {
         orderBy = orderByOrFilters;
         actualFilters = filters;
@@ -29,7 +65,8 @@ function createEntityHelper(tableName) {
       const orderClause = parseOrderBy(orderBy);
 
       const sql = `SELECT * FROM ${tableName} ${clause} ${orderClause}`.trim();
-      return await query(sql, params);
+      const result = await query(sql, params);
+      return result.map(parseRecord);
     },
 
     /**
@@ -37,31 +74,36 @@ function createEntityHelper(tableName) {
      */
     async get(id) {
       const sql = `SELECT * FROM ${tableName} WHERE id = ?`;
-      return await queryOne(sql, [id]);
+      const result = await queryOne(sql, [id]);
+      return parseRecord(result);
     },
 
     /**
      * Create a new record
      */
     async create(data) {
-      const keys = Object.keys(data);
-      const values = Object.values(data);
+      const processedData = stringifyData(data);
+      const keys = Object.keys(processedData);
+      const values = Object.values(processedData);
       const placeholders = keys.map(() => '?').join(', ');
 
       const sql = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-      return await queryOne(sql, values);
+      const result = await queryOne(sql, values);
+      return parseRecord(result);
     },
 
     /**
      * Update a record by ID
      */
     async update(id, data) {
-      const keys = Object.keys(data);
-      const values = Object.values(data);
+      const processedData = stringifyData(data);
+      const keys = Object.keys(processedData);
+      const values = Object.values(processedData);
       const setClause = keys.map(key => `${key} = ?`).join(', ');
 
       const sql = `UPDATE ${tableName} SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *`;
-      return await queryOne(sql, [...values, id]);
+      const result = await queryOne(sql, [...values, id]);
+      return parseRecord(result);
     },
 
     /**
@@ -87,8 +129,9 @@ function createEntityHelper(tableName) {
       if (!records || records.length === 0) return [];
 
       const queries = records.map(data => {
-        const keys = Object.keys(data);
-        const values = Object.values(data);
+        const processedData = stringifyData(data);
+        const keys = Object.keys(processedData);
+        const values = Object.values(processedData);
         const placeholders = keys.map(() => '?').join(', ');
         return {
           sql: `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES (${placeholders}) RETURNING *`,
@@ -97,7 +140,7 @@ function createEntityHelper(tableName) {
       });
 
       const batchResults = await transaction(queries);
-      return batchResults.map(r => r.rows[0]);
+      return batchResults.map(r => parseRecord(r.rows[0]));
     },
 
     /**
@@ -113,7 +156,8 @@ function createEntityHelper(tableName) {
     async findOne(filters) {
       const { clause, params } = buildWhereClause(filters);
       const sql = `SELECT * FROM ${tableName} ${clause} LIMIT 1`;
-      return await queryOne(sql, params);
+      const result = await queryOne(sql, params);
+      return parseRecord(result);
     },
 
     /**
@@ -130,12 +174,13 @@ function createEntityHelper(tableName) {
 
 // Export entity helpers for all tables
 export const db = {
-  // Authentication
-  User: createEntityHelper('User'),
-
   // Core entities
-  Project: createEntityHelper('Project'),
-  Task: createEntityHelper('Task'),
+  Project: createEntityHelper('Project', [
+    'applicable_areas', 'area_responsibles', 'team_members',
+    'phase_responsibles', 'phase_durations', 'custom_phase_names',
+    'phase_order', 'hidden_phases'
+  ]),
+  Task: createEntityHelper('Task', ['tags', 'custom_fields', 'assigned_to']),
   TeamMember: createEntityHelper('TeamMember'),
   Client: createEntityHelper('Client'),
 
@@ -146,28 +191,28 @@ export const db = {
   SiteType: createEntityHelper('SiteType'),
 
   // Checklists & Workflow
-  ChecklistItem: createEntityHelper('ChecklistItem'),
+  ChecklistItem: createEntityHelper('ChecklistItem', ['applicable_technologies', 'applicable_site_types']),
   Conflict: createEntityHelper('Conflict'),
   WorkflowPhase: createEntityHelper('WorkflowPhase'),
   EntryCriteria: createEntityHelper('EntryCriteria'),
 
   // Tasks extended
-  TaskConfiguration: createEntityHelper('TaskConfiguration'),
-  TaskNotification: createEntityHelper('TaskNotification'),
+  TaskConfiguration: createEntityHelper('TaskConfiguration', ['custom_statuses', 'custom_priorities', 'custom_fields']),
+  TaskNotification: createEntityHelper('TaskNotification', ['metadata']),
   TaskComment: createEntityHelper('TaskComment'),
-  TaskNotificationRule: createEntityHelper('TaskNotificationRule'),
-  TaskFormPublicUrl: createEntityHelper('TaskFormPublicUrl'),
-  TaskActivityLog: createEntityHelper('TaskActivityLog'),
+  TaskNotificationRule: createEntityHelper('TaskNotificationRule', ['conditions', 'recipient_emails']),
+  TaskFormPublicUrl: createEntityHelper('TaskFormPublicUrl', ['visible_fields', 'notification_emails']),
+  TaskActivityLog: createEntityHelper('TaskActivityLog', ['notification_details', 'metadata']),
 
   // Project data
   ProjectDocument: createEntityHelper('ProjectDocument'),
   PreviewComment: createEntityHelper('PreviewComment'),
-  ScheduleTask: createEntityHelper('ScheduleTask'),
+  ScheduleTask: createEntityHelper('ScheduleTask', ['assigned_to']),
 
   // Access management
-  ProjectAccess: createEntityHelper('ProjectAccess'),
+  ProjectAccess: createEntityHelper('ProjectAccess', ['apis']),
   ProjectAccessItem: createEntityHelper('ProjectAccessItem'),
-  ProjectAccessToken: createEntityHelper('ProjectAccessToken'),
+  ProjectAccessToken: createEntityHelper('ProjectAccessToken', ['access_item_ids']),
   ProjectAccessLog: createEntityHelper('ProjectAccessLog'),
 
   // Permissions

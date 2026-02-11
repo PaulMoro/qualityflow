@@ -52,6 +52,8 @@ import GlobalAccess from './pages/GlobalAccess';
 import ProjectChecklist from './pages/ProjectChecklist';
 import PublicTaskForm from './pages/PublicTaskForm';
 import SharedAccess from './pages/SharedAccess';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +63,8 @@ export const PAGES = {
     "ProjectChecklist": ProjectChecklist,
     "PublicTaskForm": PublicTaskForm,
     "SharedAccess": SharedAccess,
+    "Login": Login,
+    "Register": Register,
 }
 
 export const pagesConfig = {

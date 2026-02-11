@@ -9,11 +9,21 @@ CREATE TABLE IF NOT EXISTS User (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     display_name TEXT,
+    role TEXT DEFAULT 'viewer',
     is_active BOOLEAN DEFAULT 1,
     last_login TEXT,
     created_date TEXT,
     updated_date TEXT,
     is_sample BOOLEAN DEFAULT 0
+);
+
+-- User Sessions
+CREATE TABLE IF NOT EXISTS UserSession (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES User(id) ON DELETE CASCADE,
+    token TEXT NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Users / Team Members

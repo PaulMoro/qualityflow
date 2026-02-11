@@ -1,8 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext();
-
-const STORAGE_KEY = 'qualityflow_user';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -19,26 +18,22 @@ export const AuthProvider = ({ children }) => {
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);
-      setIsLoadingAuth(true);
       setAuthError(null);
 
-      // Load app public settings
+      // Public settings (mock for now)
       setAppPublicSettings({ id: 'qualityflow', public_settings: {} });
       setIsLoadingPublicSettings(false);
 
-      // Check if user is already logged in (from localStorage)
-      const storedUser = localStorage.getItem(STORAGE_KEY);
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
-        } catch (e) {
-          console.error('Error parsing stored user:', e);
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      }
+      // Check real auth
+      const currentUser = await base44.auth.me();
 
+      if (currentUser) {
+        setUser(currentUser);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -51,45 +46,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async ({ email, display_name, method = 'email' }) => {
-    try {
-      setIsLoadingAuth(true);
-      setAuthError(null);
-
-      // Create user object
-      const userData = {
-        email,
-        display_name: display_name || email.split('@')[0],
-        role: 'admin', // Default role
-        method,
-        loginAt: new Date().toISOString()
-      };
-
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-
-      // Update state
-      setUser(userData);
-      setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-
-      return userData;
-    } catch (error) {
-      console.error('Login error:', error);
-      setAuthError({
-        type: 'login_failed',
-        message: error.message || 'Login failed'
-      });
-      setIsLoadingAuth(false);
-      throw error;
-    }
-  };
-
   const logout = (shouldRedirect = true) => {
-    // Clear localStorage
-    localStorage.removeItem(STORAGE_KEY);
-
-    // Clear state
+    base44.auth.logout();
     setUser(null);
     setIsAuthenticated(false);
 
@@ -110,7 +68,6 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
-      login,
       logout,
       navigateToLogin,
       checkAppState
