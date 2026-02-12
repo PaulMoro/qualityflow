@@ -1,0 +1,8 @@
+user_email,display_name,role,avatar_color,is_active,id,created_date,updated_date,created_by_id,is_sample
+"natalia.castilla@antpack.co","Natalia Castilla","product_owner","","true","69777045a7fd55c1c24e8c9f","2026-01-26T13:46:45.492000","2026-01-26T13:46:45.492000","697385915ecde75ddf2df5d8","false"
+"juliana.giraldo@antpack.co","Maria Giraldo","product_owner","","true","69776fc364a5417a384b0a9a","2026-01-26T13:44:35.796000","2026-01-26T13:44:35.796000","697385915ecde75ddf2df5d8","false"
+"juliana.giraldo@antpack.co","Juliana Giraldo","product_owner","","true","69700fac025b4319c64c64f4","2026-01-20T23:28:44.883000","2026-01-27T12:17:11.024000","6940670cff749d8ea0c5d536","false"
+"luis.restrepo@antpack.co","Luis Restrepo","web_dev","","true","69700f7c201fa3a226bfcf61","2026-01-20T23:27:56.845000","2026-01-20T23:27:56.845000","6940670cff749d8ea0c5d536","false"
+"paulina.marin@antpack.co","Paulina Marín","leader_product","","true","69700f6c8d19d70cf7ec7cfc","2026-01-20T23:27:40.635000","2026-01-20T23:27:40.635000","6940670cff749d8ea0c5d536","false"
+"lila@antpack.co","Maria Camila Sanchez","leader_seo","","true","69700f431f14655f6ece4ad3","2026-01-20T23:26:59.927000","2026-01-20T23:26:59.927000","6940670cff749d8ea0c5d536","false"
+"geraldine.hurtado@antpack.co","Geraldine Hurtado","ceo_antpack","","true","69531bab5a290e5937e9f169","2025-12-30T00:24:11.825000","2025-12-30T00:24:11.825000","6940670cff749d8ea0c5d536","false"

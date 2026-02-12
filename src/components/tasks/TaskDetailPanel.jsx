@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, Calendar as CalendarIcon, User, Clock, Tag, Trash2, Save, Loader2 } from 'lucide-react';
+import { X, Calendar as CalendarIcon, User, Clock, Tag, Trash2, Save, Loader2, Upload, FileText, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -30,8 +30,25 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
   const [formData, setFormData] = useState(task || {});
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [uploadingFields, setUploadingFields] = useState({});
 
   const queryClient = useQueryClient();
+
+  // Cargar proyecto
+  const { data: project } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: async () => {
+      const result = await base44.entities.Project.filter({ id: projectId });
+      return result[0];
+    },
+    enabled: !!projectId
+  });
+
+  // Cargar todos los miembros del equipo activos
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => base44.entities.TeamMember.filter({ is_active: true })
+  });
 
   useEffect(() => {
     setFormData(task || {});
@@ -39,7 +56,110 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
   }, [task]);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    mutationFn: async ({ id, data, previousData }) => {
+      const currentUser = await base44.auth.me();
+      
+      // Detectar si cambió el estado a completado
+      const statusChanged = data.status && data.status !== previousData?.status;
+      const nowCompleted = statusChanged && config?.custom_statuses?.find(s => s.key === data.status && s.is_final);
+      
+      // Si se completó, agregar metadata
+      if (nowCompleted) {
+        data.completed_by = currentUser.email;
+        data.completed_at = new Date().toISOString();
+      }
+      
+      const result = await base44.entities.Task.update(id, data);
+      
+      // Log de actividad
+      await base44.entities.TaskActivityLog.create({
+        task_id: id,
+        project_id: projectId,
+        action_type: nowCompleted ? 'completed' : statusChanged ? 'status_changed' : 'updated',
+        action_by: currentUser.email,
+        action_by_name: currentUser.full_name,
+        previous_value: previousData,
+        new_value: data
+      });
+      
+      // Enviar notificación si se completó
+      if (nowCompleted && previousData?.notification_email) {
+        try {
+          // Crear notificación interna
+          await base44.entities.TaskNotification.create({
+            task_id: id,
+            project_id: projectId,
+            recipient_email: previousData.notification_email,
+            event_type: 'task_completed',
+            message: `Tarea completada: ${data.title || task.title}`,
+            is_read: false,
+            metadata: {
+              completedBy: currentUser.full_name,
+              projectName: project?.name
+            }
+          });
+          
+          // Enviar email
+          await base44.functions.invoke('sendTaskNotification', {
+            taskId: id,
+            projectId: projectId,
+            notificationType: 'task_completed',
+            recipientEmail: previousData.notification_email,
+            recipientName: previousData.requester_name,
+            taskTitle: data.title || task.title,
+            taskDescription: data.description || task.description,
+            projectName: project?.name,
+            completedByName: currentUser.full_name
+          });
+          toast.success('✉️ Notificación enviada al solicitante');
+        } catch (error) {
+          console.error('Error enviando notificación:', error);
+        }
+      }
+      
+      // Si se cambió la asignación, enviar notificación
+      const oldAssigned = previousData?.assigned_to?.[0];
+      const newAssigned = data.assigned_to?.[0];
+      
+      if (newAssigned && oldAssigned !== newAssigned) {
+        const assignedMember = teamMembers.find(m => m.user_email === newAssigned);
+        try {
+          // Crear notificación interna
+          await base44.entities.TaskNotification.create({
+            task_id: id,
+            project_id: projectId,
+            recipient_email: newAssigned,
+            event_type: 'assigned',
+            message: `Te han asignado la tarea: ${data.title || task.title}`,
+            is_read: false,
+            metadata: {
+              canAddToCalendar: true,
+              taskTitle: data.title || task.title,
+              projectName: project?.name,
+              dueDate: data.due_date || task.due_date
+            }
+          });
+          
+          // Enviar email
+          await base44.functions.invoke('sendTaskNotification', {
+            taskId: id,
+            projectId: projectId,
+            notificationType: 'task_assigned',
+            recipientEmail: newAssigned,
+            recipientName: assignedMember?.display_name,
+            taskTitle: data.title || task.title,
+            taskDescription: data.description || task.description,
+            projectName: project?.name,
+            dueDate: data.due_date || task.due_date
+          });
+          toast.success('✉️ Notificación enviada al asignado');
+        } catch (error) {
+          console.error('Error enviando notificación:', error);
+        }
+      }
+      
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       setHasChanges(false);
@@ -76,7 +196,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
   const handleSave = (dataToSave = formData) => {
     if (!task?.id) return;
     setIsSaving(true);
-    updateMutation.mutate({ id: task.id, data: dataToSave });
+    updateMutation.mutate({ id: task.id, data: dataToSave, previousData: task });
   };
 
   const handleDelete = () => {
@@ -131,7 +251,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
                 {value ? format(new Date(value), "d 'de' MMMM, yyyy", { locale: es }) : 'Seleccionar fecha'}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="start">
+            <PopoverContent className="w-auto p-0 bg-[var(--bg-secondary)] border-[var(--border-primary)]" align="start">
               <Calendar
                 mode="single"
                 selected={value ? new Date(value) : undefined}
@@ -174,12 +294,100 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
             <SelectTrigger>
               <SelectValue placeholder={`Seleccionar ${field.label}`} />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
               {(field.options || []).map((opt) => (
                 <SelectItem key={opt} value={opt}>{opt}</SelectItem>
               ))}
             </SelectContent>
           </Select>
+        );
+      case 'file':
+        return (
+          <div className="space-y-2">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.svg,.png,.jpg,.jpeg,.webp"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                if (file.size > 10 * 1024 * 1024) {
+                  toast.error('El archivo no puede superar 10MB');
+                  return;
+                }
+                
+                setUploadingFields({ ...uploadingFields, [field.key]: true });
+                
+                try {
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  handleUpdate({
+                    custom_fields: { ...(formData.custom_fields || {}), [field.key]: file_url }
+                  });
+                  toast.success('Archivo subido correctamente');
+                } catch (error) {
+                  toast.error('Error al subir archivo');
+                } finally {
+                  setUploadingFields({ ...uploadingFields, [field.key]: false });
+                }
+              }}
+              disabled={uploadingFields[field.key]}
+              className="hidden"
+              id={`file-detail-${field.key}`}
+            />
+            
+            {!value ? (
+              <label htmlFor={`file-detail-${field.key}`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={uploadingFields[field.key]}
+                  asChild
+                >
+                  <span>
+                    {uploadingFields[field.key] ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Seleccionar archivo
+                      </>
+                    )}
+                  </span>
+                </Button>
+              </label>
+            ) : (
+              <div className="flex items-center gap-2 p-3 bg-[var(--bg-tertiary)] rounded border border-[var(--border-primary)]">
+                {value.match(/\.(svg|png|jpg|jpeg|webp)$/i) ? (
+                  <ImageIcon className="h-5 w-5 text-[var(--text-secondary)]" />
+                ) : (
+                  <FileText className="h-5 w-5 text-[var(--text-secondary)]" />
+                )}
+                <a 
+                  href={value} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1 text-sm text-[var(--text-primary)] hover:underline truncate"
+                >
+                  Ver archivo adjunto
+                </a>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleUpdate({
+                    custom_fields: { ...(formData.custom_fields || {}), [field.key]: null }
+                  })}
+                  className="h-8 w-8 p-0 text-red-500"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         );
       default:
         return null;
@@ -204,9 +412,9 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-      className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-white border-l border-[var(--border-primary)] shadow-2xl z-50 overflow-y-auto"
+      className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-[var(--bg-secondary)] border-l border-[var(--border-primary)] shadow-2xl z-50 overflow-y-auto"
     >
-      <div className="sticky top-0 bg-white border-b border-[var(--border-primary)] px-6 py-4 flex items-center justify-between">
+      <div className="sticky top-0 bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Detalles de la tarea</h2>
           {isSaving && (
@@ -249,7 +457,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
                 {(config?.custom_statuses || []).map((s) => (
                   <SelectItem key={s.key} value={s.key}>
                     <div className="flex items-center gap-2">
@@ -274,7 +482,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
                 {(config?.custom_priorities || []).map((p) => (
                   <SelectItem key={p.key} value={p.key}>
                     <div className="flex items-center gap-2">
@@ -301,7 +509,7 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
                 {formData.due_date ? format(new Date(formData.due_date), "d 'de' MMMM, yyyy", { locale: es }) : 'Sin fecha'}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="start">
+            <PopoverContent className="w-auto p-0 bg-[var(--bg-secondary)] border-[var(--border-primary)]" align="start">
               <Calendar
                 mode="single"
                 selected={formData.due_date ? new Date(formData.due_date) : undefined}
@@ -313,6 +521,33 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
               />
             </PopoverContent>
           </Popover>
+        </div>
+
+        {/* Asignación de usuarios */}
+        <div>
+          <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 block flex items-center gap-1">
+            <User className="h-3 w-3" />
+            Asignado a
+          </label>
+          <Select
+            value={(formData.assigned_to || [])[0] || 'unassigned'}
+            onValueChange={(value) => {
+              const newAssigned = value === 'unassigned' ? [] : [value];
+              handleUpdate({ assigned_to: newAssigned });
+            }}
+          >
+            <SelectTrigger className="bg-[var(--bg-input)]">
+              <SelectValue placeholder="Sin asignar" />
+            </SelectTrigger>
+            <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
+              <SelectItem value="unassigned">Sin asignar</SelectItem>
+              {teamMembers.map((member) => (
+                <SelectItem key={member.user_email} value={member.user_email}>
+                  {member.display_name || member.user_email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <Separator />
@@ -350,10 +585,65 @@ export default function TaskDetailPanel({ task, projectId, config, onClose }) {
 
         <Separator />
 
-        {/* Metadata */}
-        <div className="text-xs text-[var(--text-secondary)] space-y-1">
-          <div>Creado: {format(new Date(task.created_date), "d 'de' MMMM, yyyy 'a las' HH:mm", { locale: es })}</div>
-          {task.created_by && <div>Por: {task.created_by}</div>}
+        {/* Trazabilidad */}
+        <div className="space-y-3 p-4 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-secondary)]">
+          <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wider">
+            Trazabilidad
+          </h4>
+          
+          <div className="space-y-2 text-xs text-[var(--text-secondary)]">
+            {/* Creación */}
+            <div className="flex items-start gap-2">
+              <span className="font-medium text-[var(--text-primary)] min-w-[80px]">Creado:</span>
+              <div className="flex-1">
+                <div>{format(new Date(task.created_date), "d 'de' MMM yyyy, HH:mm", { locale: es })}</div>
+                {task.created_by && <div className="text-[var(--text-tertiary)]">por {task.created_by}</div>}
+              </div>
+            </div>
+            
+            {/* Solicitante (si es de formulario público) */}
+            {task.is_from_public_form && task.requester_email && (
+              <div className="flex items-start gap-2">
+                <span className="font-medium text-[var(--text-primary)] min-w-[80px]">Solicitante:</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1">
+                    {task.requester_name || task.requester_email}
+                    <Badge className="bg-purple-500 text-white text-[10px] px-1 py-0">
+                      Externo
+                    </Badge>
+                  </div>
+                  <div className="text-[var(--text-tertiary)]">{task.requester_email}</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Asignación */}
+            {task.assigned_by && (
+              <div className="flex items-start gap-2">
+                <span className="font-medium text-[var(--text-primary)] min-w-[80px]">Asignado por:</span>
+                <div className="flex-1">{task.assigned_by}</div>
+              </div>
+            )}
+            
+            {/* Completado */}
+            {task.completed_by && task.completed_at && (
+              <div className="flex items-start gap-2">
+                <span className="font-medium text-[var(--text-primary)] min-w-[80px]">Completado:</span>
+                <div className="flex-1">
+                  <div>{format(new Date(task.completed_at), "d 'de' MMM yyyy, HH:mm", { locale: es })}</div>
+                  <div className="text-[var(--text-tertiary)]">por {task.completed_by}</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Email de notificación */}
+            {task.notification_email && (
+              <div className="flex items-start gap-2">
+                <span className="font-medium text-[var(--text-primary)] min-w-[80px]">Notificar a:</span>
+                <div className="flex-1">{task.notification_email}</div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Acciones */}

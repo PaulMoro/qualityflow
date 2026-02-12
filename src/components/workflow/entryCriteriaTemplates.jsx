@@ -1,45 +1,39 @@
 export const DEFAULT_ENTRY_CRITERIA = {
   activation: [
     {
-      area: 'Criterios Generales',
-      title: 'Brief del Proyecto: Objetivos de negocio y generalidades del proyecto',
-      description: 'Objetivos claros y problema que resuelve el proyecto',
+      area: 'Inicio de proyecto',
+      title: 'Información del cliente',
+      description: 'Información completa del cliente y contexto del negocio',
       is_mandatory: true
     },
     {
-      area: 'Criterios Generales',
-      title: 'Equipo y roles: Quién aprueba, quién ejecuta por área, clientes',
-      description: 'Quién aprueba, quién ejecuta, responsabilidades claras',
+      area: 'Inicio de proyecto',
+      title: 'Brief del proyecto',
+      description: 'Brief detallado con objetivos, alcance y requerimientos del proyecto',
       is_mandatory: true
     },
     {
-      area: 'Criterios Generales',
-      title: 'Cronograma',
-      description: 'Fecha de inicio, hitos principales y entrega final',
+      area: 'Inicio de proyecto',
+      title: 'Propuesta (Presentación - documento formal, aprobado por las áreas involucradas)',
+      description: 'Propuesta formal presentada y aprobada por todas las áreas involucradas',
       is_mandatory: true
     },
     {
-      area: 'Criterios Generales',
-      title: 'Contexto y Antecedentes',
-      description: 'Contexto del proyecto y antecedentes relevantes',
+      area: 'Inicio de proyecto',
+      title: 'Contrato del proyecto (alcance corroborado por las áreas involucradas)',
+      description: 'Contrato firmado con alcance validado y corroborado por las áreas',
       is_mandatory: true
     },
     {
-      area: 'Criterios Generales',
-      title: 'Entregables: Listado táctico de qué se va a recibir',
-      description: 'Entregables tácticos definidos y documentados',
+      area: 'Inicio de proyecto',
+      title: 'Kickoff Interno, planeación del proyecto (Grabación - acta)',
+      description: 'Kickoff interno realizado con grabación y acta de reunión',
       is_mandatory: true
     },
     {
-      area: 'Criterios Generales',
-      title: 'Hoja de vida del proyecto',
-      description: 'Documento de hoja de vida del proyecto',
-      is_mandatory: true
-    },
-    {
-      area: 'Criterios Generales',
-      title: 'Insumos base',
-      description: 'Insumos base recopilados y organizados',
+      area: 'Inicio de proyecto',
+      title: 'Kickoff con Cliente (Presentación, grabación y entrega oficial para aprobación de pautas legales)',
+      description: 'Kickoff con cliente realizado, con presentación, grabación y pautas legales aprobadas',
       is_mandatory: true
     }
   ],

@@ -21,9 +21,11 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: false,
     can_access_team: false,
     can_access_reports: false,
+    can_view_reports: false,
     can_access_admin: false,
     can_approve_phases: false,
-    can_resolve_conflicts: false
+    can_resolve_conflicts: false,
+    can_access_global_access: false
   },
   qa: {
     can_access_dashboard: true,
@@ -35,9 +37,11 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: false,
     can_access_team: false,
     can_access_reports: false,
+    can_view_reports: false,
     can_access_admin: false,
     can_approve_phases: false,
-    can_resolve_conflicts: false
+    can_resolve_conflicts: false,
+    can_access_global_access: false
   },
   web_leader: {
     can_access_dashboard: true,
@@ -49,9 +53,11 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: true,
     can_access_team: true,
     can_access_reports: true,
+    can_view_reports: true,
     can_access_admin: false,
     can_approve_phases: false,
-    can_resolve_conflicts: true
+    can_resolve_conflicts: true,
+    can_access_global_access: false
   },
   product_owner: {
     can_access_dashboard: true,
@@ -63,9 +69,11 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: true,
     can_access_team: true,
     can_access_reports: true,
+    can_view_reports: true,
     can_access_admin: false,
     can_approve_phases: true,
-    can_resolve_conflicts: true
+    can_resolve_conflicts: true,
+    can_access_global_access: true
   },
   administrador: {
     can_access_dashboard: true,
@@ -77,9 +85,11 @@ const DEFAULT_PERMISSIONS = {
     can_access_schedules: true,
     can_access_team: true,
     can_access_reports: true,
+    can_view_reports: true,
     can_access_admin: true,
     can_approve_phases: true,
-    can_resolve_conflicts: true
+    can_resolve_conflicts: true,
+    can_access_global_access: true
   }
 };
 
@@ -92,10 +102,12 @@ const PERMISSION_LABELS = {
   can_access_resources: 'Ver ocupación de recursos',
   can_access_schedules: 'Ver cronogramas',
   can_access_team: 'Gestionar equipo',
-  can_access_reports: 'Ver reportes',
+  can_access_reports: 'Acceder a reportes',
+  can_view_reports: 'Ver estadísticas de reportes',
   can_access_admin: 'Acceso al panel admin',
   can_approve_phases: 'Aprobar fases',
-  can_resolve_conflicts: 'Resolver conflictos'
+  can_resolve_conflicts: 'Resolver conflictos',
+  can_access_global_access: 'Acceder a Accesos Globales'
 };
 
 export default function RolePermissionsManager() {
@@ -170,10 +182,10 @@ export default function RolePermissionsManager() {
   return (
     <div className="space-y-4">
       {Object.entries(ROLE_CONFIG).map(([roleKey, roleConfig]) => (
-        <Card key={roleKey} className="bg-[#0a0a0a] border-[#2a2a2a]">
+        <Card key={roleKey} className="bg-[var(--bg-secondary)] border-[var(--border-primary)]">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 text-[var(--text-primary)]">
                 <Shield className="h-4 w-4 text-[#FF1B7E]" />
                 <Badge className={`${roleConfig.color} text-white border-0`}>
                   {roleConfig.name}
@@ -195,8 +207,8 @@ export default function RolePermissionsManager() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(PERMISSION_LABELS).map(([permission, label]) => (
-                <div key={permission} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
-                  <Label htmlFor={`${roleKey}-${permission}`} className="text-sm text-gray-300 cursor-pointer">
+                <div key={permission} className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-secondary)]">
+                  <Label htmlFor={`${roleKey}-${permission}`} className="text-sm text-[var(--text-primary)] cursor-pointer">
                     {label}
                   </Label>
                   <Switch

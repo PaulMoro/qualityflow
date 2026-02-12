@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, GripVertical, Search, Filter, X, CheckCircle2, Loader2, Settings } from 'lucide-react';
+import { Plus, GripVertical, Search, Filter, X, CheckCircle2, Loader2, Settings, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import TaskFormModal from './TaskFormModal';
@@ -36,6 +36,12 @@ export default function TaskKanbanView({ projectId }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const queryClient = useQueryClient();
+
+  // Cargar miembros del equipo
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => base44.entities.TeamMember.filter({ is_active: true })
+  });
   
   // Verificar si el usuario es administrador
   React.useEffect(() => {
@@ -44,7 +50,9 @@ export default function TaskKanbanView({ projectId }) {
         const user = await base44.auth.me();
         const members = await base44.entities.TeamMember.filter({ user_email: user.email });
         const member = members[0];
-        setIsAdmin(member?.role === 'administrador' || user.role === 'admin');
+        // Permitir acceso a configuración si es admin de sistema o miembro del equipo
+        setIsAdmin(user.role === 'admin' || !!member);
+        console.log('👤 Usuario:', user.email, '- Admin:', user.role === 'admin' || !!member);
       } catch (error) {
         console.error('Error checking admin:', error);
       }
@@ -184,15 +192,53 @@ export default function TaskKanbanView({ projectId }) {
       const toastId = toast.loading('💾 Moviendo tarea...');
       
       try {
+        const currentUser = await base44.auth.me();
+        const updateData = { status: destination.droppableId };
+        
+        // Si se mueve a estado final, agregar metadata
+        if (destinationStatus?.is_final) {
+          updateData.completed_by = currentUser.email;
+          updateData.completed_at = new Date().toISOString();
+        }
+        
         await updateMutation.mutateAsync({
           id: task.id,
-          data: { status: destination.droppableId }
+          data: updateData
+        });
+        
+        // Log de actividad
+        await base44.entities.TaskActivityLog.create({
+          task_id: task.id,
+          project_id: projectId,
+          action_type: destinationStatus?.is_final ? 'completed' : 'status_changed',
+          action_by: currentUser.email,
+          action_by_name: currentUser.full_name,
+          previous_value: { status: source.droppableId },
+          new_value: { status: destination.droppableId }
         });
         
         toast.success(`✅ Movida a ${destinationStatus?.label}`, { id: toastId, duration: 2000 });
         
-        // Disparar notificaciones si aplica
-        await triggerTaskNotifications(task, destination.droppableId);
+        // Enviar notificación si se completó y tiene email de notificación
+        if (destinationStatus?.is_final && task.notification_email) {
+          try {
+            const project = await base44.entities.Project.filter({ id: projectId });
+            await base44.functions.invoke('sendTaskNotification', {
+              taskId: task.id,
+              projectId: projectId,
+              notificationType: 'task_completed',
+              recipientEmail: task.notification_email,
+              recipientName: task.requester_name,
+              taskTitle: task.title,
+              taskDescription: task.description,
+              projectName: project[0]?.name,
+              completedByName: currentUser.full_name
+            });
+            toast.success('✉️ Notificación enviada', { duration: 2000 });
+          } catch (error) {
+            console.error('Error enviando notificación:', error);
+          }
+        }
       } catch (error) {
         toast.error('❌ Error al mover', { id: toastId });
       }
@@ -324,7 +370,19 @@ export default function TaskKanbanView({ projectId }) {
     return (
       <div className="text-center py-12 space-y-4">
         <p className="text-[var(--text-secondary)]">No hay estados configurados</p>
-        <p className="text-xs text-[var(--text-tertiary)]">Ve a "Config Tareas" → "Estados (Columnas)" para agregar estados</p>
+        <p className="text-xs text-[var(--text-tertiary)] mb-4">Necesitas configurar al menos un estado para usar el Kanban</p>
+        {isAdmin && (
+          <Button
+            onClick={() => setShowConfig(true)}
+            className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Abrir Configuración
+          </Button>
+        )}
+        {!isAdmin && (
+          <p className="text-xs text-[var(--text-tertiary)]">Contacta a un administrador para configurar los estados</p>
+        )}
       </div>
     );
   }
@@ -339,7 +397,7 @@ export default function TaskKanbanView({ projectId }) {
   // ==================== RENDER ====================
   
   // Si está en modo configuración, mostrar panel de configuración
-  if (showConfig && isAdmin) {
+  if (showConfig) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -542,6 +600,12 @@ export default function TaskKanbanView({ projectId }) {
                                                   day: 'numeric', 
                                                   month: 'short' 
                                                 })}
+                                              </Badge>
+                                            )}
+                                            {(task.assigned_to || []).length > 0 && (
+                                              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                                                <User className="h-3 w-3" />
+                                                {teamMembers.find(m => m.user_email === task.assigned_to[0])?.display_name?.split(' ')[0] || task.assigned_to[0].split('@')[0]}
                                               </Badge>
                                             )}
                                           </div>

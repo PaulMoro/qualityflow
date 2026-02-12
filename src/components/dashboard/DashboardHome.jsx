@@ -19,7 +19,7 @@ const QUICK_ACCESS = [
     title: 'Proyectos',
     description: 'Gestiona y visualiza todos los proyectos',
     icon: FolderKanban,
-    color: 'bg-blue-500',
+    color: 'bg-[#FF1B7E]',
     section: 'projects'
   },
   {
@@ -27,7 +27,7 @@ const QUICK_ACCESS = [
     title: 'Ocupación de Recursos',
     description: 'Revisa la carga de trabajo del equipo',
     icon: Users,
-    color: 'bg-purple-500',
+    color: 'bg-[var(--text-primary)]',
     section: 'resources'
   },
   {
@@ -35,7 +35,7 @@ const QUICK_ACCESS = [
     title: 'Cronogramas Generales',
     description: 'Visualiza los cronogramas de proyectos',
     icon: Calendar,
-    color: 'bg-green-500',
+    color: 'bg-[#FF1B7E]',
     section: 'schedules'
   },
   {
@@ -43,7 +43,7 @@ const QUICK_ACCESS = [
     title: 'Reportes',
     description: 'Genera reportes y análisis',
     icon: BarChart3,
-    color: 'bg-orange-500',
+    color: 'bg-[var(--text-primary)]',
     section: 'reports'
   }
 ];
@@ -80,8 +80,8 @@ export default function DashboardHome({ onNavigate }) {
                 <p className="text-sm text-[var(--text-secondary)]">Total Proyectos</p>
                 <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{stats.total}</p>
               </div>
-              <div className="p-3 bg-blue-500/20 rounded-lg">
-                <FolderKanban className="h-6 w-6 text-blue-500" />
+              <div className="p-3 bg-[#FF1B7E]/20 rounded-lg">
+                <FolderKanban className="h-6 w-6 text-[#FF1B7E]" />
               </div>
             </div>
           </CardContent>
@@ -94,8 +94,8 @@ export default function DashboardHome({ onNavigate }) {
                 <p className="text-sm text-[var(--text-secondary)]">En Progreso</p>
                 <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{stats.inProgress}</p>
               </div>
-              <div className="p-3 bg-green-500/20 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-500" />
+              <div className="p-3 bg-[var(--text-primary)]/20 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-[var(--text-primary)]" />
               </div>
             </div>
           </CardContent>
@@ -108,8 +108,8 @@ export default function DashboardHome({ onNavigate }) {
                 <p className="text-sm text-[var(--text-secondary)]">Bloqueados</p>
                 <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{stats.blocked}</p>
               </div>
-              <div className="p-3 bg-red-500/20 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-red-500" />
+              <div className="p-3 bg-[#FF1B7E]/20 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-[#FF1B7E]" />
               </div>
             </div>
           </CardContent>
@@ -122,8 +122,8 @@ export default function DashboardHome({ onNavigate }) {
                 <p className="text-sm text-[var(--text-secondary)]">Progreso Promedio</p>
                 <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{stats.avgCompletion.toFixed(0)}%</p>
               </div>
-              <div className="p-3 bg-purple-500/20 rounded-lg">
-                <Clock className="h-6 w-6 text-purple-500" />
+              <div className="p-3 bg-[var(--text-primary)]/20 rounded-lg">
+                <Clock className="h-6 w-6 text-[var(--text-primary)]" />
               </div>
             </div>
           </CardContent>

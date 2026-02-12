@@ -14,17 +14,17 @@ import { useTechnologies } from '../checklist/useTechnologies';
 import { motion } from 'framer-motion';
 
 const STATUS_CONFIG = {
-  draft: { label: 'Borrador', color: 'bg-slate-100 text-slate-700' },
-  in_progress: { label: 'En Progreso', color: 'bg-blue-100 text-blue-700' },
-  review: { label: 'En Revisión', color: 'bg-purple-100 text-purple-700' },
-  blocked: { label: 'Bloqueado', color: 'bg-red-100 text-red-700' },
-  completed: { label: 'Completado', color: 'bg-green-100 text-green-700' }
+  draft: { label: 'Borrador', color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]' },
+  in_progress: { label: 'En Progreso', color: 'bg-[#FF1B7E]/10 text-[#FF1B7E]' },
+  review: { label: 'En Revisión', color: 'bg-[#FF1B7E]/20 text-[#FF1B7E]' },
+  blocked: { label: 'Bloqueado', color: 'bg-[var(--text-primary)]/10 text-[var(--text-primary)]' },
+  completed: { label: 'Completado', color: 'bg-[var(--text-primary)]/10 text-[var(--text-primary)]' }
 };
 
 const RISK_CONFIG = {
-  low: { color: 'bg-green-500', icon: CheckCircle2 },
-  medium: { color: 'bg-amber-500', icon: AlertTriangle },
-  high: { color: 'bg-red-500', icon: AlertTriangle }
+  low: { color: 'bg-[var(--text-primary)]', icon: CheckCircle2 },
+  medium: { color: 'bg-[#FF1B7E]', icon: AlertTriangle },
+  high: { color: 'bg-[var(--text-primary)]', icon: AlertTriangle }
 };
 
 export default function ProjectCard({ project, index, onEdit, onDuplicate, onDelete }) {
@@ -44,8 +44,8 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:shadow-lg hover:shadow-[#FF1B7E]/10 transition-all duration-300 group h-full flex flex-col">
-        <CardHeader className="pb-2">
+      <Card className="bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:shadow-md hover:border-[#FF1B7E]/20 transition-all duration-200 group h-full flex flex-col">
+        <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -54,12 +54,12 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
                   {techConfig?.name || project.technology}
                 </span>
               </div>
-              <CardTitle className="text-base sm:text-lg font-semibold text-[var(--text-primary)] group-hover:text-[#FF1B7E] transition-colors line-clamp-2">
+              <CardTitle className="text-base sm:text-lg font-semibold text-[var(--text-primary)] group-hover:text-[#FF1B7E] transition-colors duration-200 line-clamp-2">
                 {project.name}
               </CardTitle>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <Badge className={`${statusConfig.color} border-0`}>
+              <Badge className={`${statusConfig.color} border-0 font-medium`}>
                 {statusConfig.label}
               </Badge>
               <DropdownMenu>
@@ -98,16 +98,13 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-xs border-[var(--border-secondary)] text-[var(--text-secondary)]">
-              {siteTypeConfig?.name || project.site_type}
-            </Badge>
             {project.has_conflicts && (
-              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 border text-xs">
+              <Badge className="bg-[#FF1B7E]/10 text-[#FF1B7E] border-0 text-xs font-medium">
                 Conflictos
               </Badge>
             )}
             {project.critical_pending > 0 && (
-              <Badge className="bg-red-500/20 text-red-400 border-red-500/40 border text-xs">
+              <Badge className="bg-[var(--text-primary)]/10 text-[var(--text-primary)] border-0 text-xs font-medium">
                 {project.critical_pending} críticos
               </Badge>
             )}
@@ -115,11 +112,11 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
           
           {/* Progreso */}
           <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-[var(--text-secondary)]">Progreso</span>
-              <span className="font-medium text-[var(--text-primary)]">{project.completion_percentage?.toFixed(0) || 0}%</span>
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="text-[var(--text-secondary)] font-medium">Progreso</span>
+              <span className="font-semibold text-[var(--text-primary)]">{project.completion_percentage?.toFixed(0) || 0}%</span>
             </div>
-            <Progress value={project.completion_percentage || 0} className="h-2 bg-white/20 [&>div]:bg-[#FF1B7E]" />
+            <Progress value={project.completion_percentage || 0} className="h-2.5 bg-[var(--bg-tertiary)] [&>div]:bg-[#FF1B7E] rounded-full" />
           </div>
           
           {/* Fechas y equipo */}
@@ -132,7 +129,7 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
                   {daysRemaining !== null && (
                     <Badge 
                       variant="outline" 
-                      className={`ml-1 text-xs whitespace-nowrap ${daysRemaining < 0 ? 'text-red-400 border-red-500/40' : daysRemaining < 3 ? 'text-amber-400 border-amber-500/40' : 'text-[var(--text-secondary)] border-[var(--border-secondary)]'}`}
+                      className={`ml-1 text-xs whitespace-nowrap ${daysRemaining < 0 ? 'text-[#FF1B7E] border-[#FF1B7E]/40' : daysRemaining < 3 ? 'text-[#FF1B7E] border-[#FF1B7E]/40' : 'text-[var(--text-secondary)] border-[var(--border-secondary)]'}`}
                     >
                       {daysRemaining < 0 ? `${Math.abs(daysRemaining)}d vencido` : `${daysRemaining}d`}
                     </Badge>
@@ -157,9 +154,9 @@ export default function ProjectCard({ project, index, onEdit, onDuplicate, onDel
           
           <div className="mt-auto pt-4">
             <Link to={createPageUrl(`ProjectChecklist?id=${project.id}`)}>
-              <Button className="w-full bg-[#FF1B7E] hover:bg-white hover:text-black text-white transition-colors">
-                Ver Checklist
-                <ArrowRight className="h-4 w-4 ml-2" />
+              <Button className="w-full group-hover:shadow-md transition-all">
+                Ver Proyecto
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </Link>
           </div>

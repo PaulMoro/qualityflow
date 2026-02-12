@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CheckCircle2, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
+import { CheckCircle2, Calendar as CalendarIcon, Loader2, Upload } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -24,29 +25,20 @@ export default function PublicTaskForm() {
   const { data: formConfig, isLoading } = useQuery({
     queryKey: ['public-form', formToken],
     queryFn: async () => {
-      const forms = await base44.entities.TaskFormPublicUrl.filter({ 
-        form_token: formToken,
-        is_active: true 
+      const response = await base44.functions.invoke('getPublicForm', {
+        form_token: formToken
       });
       
-      if (!forms || forms.length === 0) {
-        throw new Error('Formulario no encontrado o inactivo');
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || 'Formulario no encontrado');
       }
-
-      const form = forms[0];
       
-      // Cargar configuración de tareas
-      const configs = await base44.entities.TaskConfiguration.filter({ 
-        project_id: form.project_id 
-      });
-      
-      return {
-        ...form,
-        taskConfig: configs[0]
-      };
+      return response.data.data;
     },
     enabled: !!formToken,
-    retry: false
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000
   });
 
   const submitMutation = useMutation({
@@ -75,6 +67,19 @@ export default function PublicTaskForm() {
     // Validar título obligatorio
     if (!formData.title) {
       setError('El título es obligatorio');
+      return;
+    }
+    
+    // Validar email del solicitante obligatorio
+    if (!formData.requester_email) {
+      setError('El email es obligatorio');
+      return;
+    }
+    
+    // Validar formato email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.requester_email)) {
+      setError('Email inválido');
       return;
     }
     
@@ -192,6 +197,7 @@ export default function PublicTaskForm() {
                     ...formData,
                     custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: e.target.value }
                   })}
+                  placeholder={field.default_value || ''}
                   required={field.required}
                 />
               </div>
@@ -209,9 +215,80 @@ export default function PublicTaskForm() {
                     ...formData,
                     custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: e.target.value }
                   })}
+                  placeholder={field.default_value || ''}
                   required={field.required}
                   className="h-24"
                 />
+              </div>
+            );
+
+          case 'number':
+            return (
+              <div>
+                <label className="text-sm font-medium text-[var(--text-primary)] mb-2 block">
+                  {field.label} {field.required && '*'}
+                </label>
+                <Input
+                  type="number"
+                  value={formData.custom_fields?.[fieldKey] || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: e.target.value }
+                  })}
+                  placeholder={field.default_value || ''}
+                  required={field.required}
+                />
+              </div>
+            );
+
+          case 'date':
+            return (
+              <div>
+                <label className="text-sm font-medium text-[var(--text-primary)] mb-2 block">
+                  {field.label} {field.required && '*'}
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.custom_fields?.[fieldKey] ? format(new Date(formData.custom_fields[fieldKey]), "d 'de' MMMM, yyyy", { locale: es }) : 'Seleccionar fecha'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-white">
+                    <Calendar
+                      mode="single"
+                      selected={formData.custom_fields?.[fieldKey] ? new Date(formData.custom_fields[fieldKey]) : undefined}
+                      onSelect={(date) => {
+                        setFormData({
+                          ...formData,
+                          custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: date ? format(date, 'yyyy-MM-dd') : null }
+                        });
+                        document.body.click();
+                      }}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            );
+
+          case 'checkbox':
+            return (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={fieldKey}
+                  checked={formData.custom_fields?.[fieldKey] === true}
+                  onCheckedChange={(checked) => setFormData({
+                    ...formData,
+                    custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: checked }
+                  })}
+                />
+                <label
+                  htmlFor={fieldKey}
+                  className="text-sm font-medium text-[var(--text-primary)] cursor-pointer"
+                >
+                  {field.label} {field.required && '*'}
+                </label>
               </div>
             );
           
@@ -237,6 +314,36 @@ export default function PublicTaskForm() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            );
+          
+          case 'file':
+            return (
+              <div>
+                <label className="text-sm font-medium text-[var(--text-primary)] mb-2 block">
+                  {field.label} {field.required && '*'}
+                </label>
+                <Input
+                  type="file"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const { data } = await base44.integrations.Core.UploadFile({ file });
+                        setFormData({
+                          ...formData,
+                          custom_fields: { ...(formData.custom_fields || {}), [fieldKey]: data.file_url }
+                        });
+                      } catch (error) {
+                        setError('Error al subir el archivo');
+                      }
+                    }
+                  }}
+                  required={field.required}
+                />
+                {formData.custom_fields?.[fieldKey] && (
+                  <p className="text-xs text-green-600 mt-1">✓ Archivo cargado</p>
+                )}
               </div>
             );
           
@@ -312,15 +419,36 @@ export default function PublicTaskForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Campos base siempre visibles */}
-            {renderField({ key: 'title', type: 'title' })}
-            {renderField({ key: 'description', type: 'description' })}
-            {renderField({ key: 'priority', type: 'priority' })}
-            {renderField({ key: 'due_date', type: 'due_date' })}
+            {/* Campos base y personalizados basados en visible_fields */}
+            <div>
+              <label className="text-sm font-medium text-[var(--text-primary)] mb-2 block">
+                Tu correo electrónico *
+              </label>
+              <Input
+                type="email"
+                value={formData.requester_email || ''}
+                onChange={(e) => setFormData({ ...formData, requester_email: e.target.value })}
+                placeholder="tu@email.com"
+                required
+              />
+            </div>
+
+            {/* Campos estándar */}
+            {(!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes('title')) && 
+              renderField({ key: 'title', type: 'title' })}
+            
+            {(!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes('description')) && 
+              renderField({ key: 'description', type: 'description' })}
+            
+            {(!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes('priority')) && 
+              renderField({ key: 'priority', type: 'priority' })}
+            
+            {(!formConfig.visible_fields || formConfig.visible_fields.length === 0 || formConfig.visible_fields.includes('due_date')) && 
+              renderField({ key: 'due_date', type: 'due_date' })}
             
             {/* Campos personalizados visibles */}
             {(formConfig.taskConfig?.custom_fields || [])
-              .filter(f => f.visible)
+              .filter(field => field.visible === true)
               .map((field) => (
                 <div key={field.key}>
                   {renderField(field)}

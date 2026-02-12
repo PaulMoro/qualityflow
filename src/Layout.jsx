@@ -1,15 +1,16 @@
 import React from 'react';
 import Sidebar from './components/navigation/Sidebar';
 import UserProfileMenu from './components/navigation/UserProfileMenu';
-import LoginScreen from './components/auth/LoginScreen';
 import { base44 } from '@/api/base44Client';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 export default function Layout({ children, currentPageName }) {
   const [currentSection, setCurrentSection] = React.useState('dashboard');
   const [sidebarAction, setSidebarAction] = React.useState(null);
   const [user, setUser] = React.useState(undefined);
   const [theme, setTheme] = React.useState(() => localStorage.getItem('theme') || 'light');
-  
+
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -22,19 +23,37 @@ export default function Layout({ children, currentPageName }) {
         if (isAuth) {
           const u = await base44.auth.me();
           setUser(u);
-          
-          // Notificar nuevo usuario si no tiene TeamMember
-          try {
-            const members = await base44.entities.TeamMember.filter({ user_email: u.email });
-            if (members.length === 0) {
-              // Usuario nuevo, enviar notificación
-              await base44.functions.invoke('notifyNewUser', {
-                userEmail: u.email,
-                userName: u.full_name
-              });
+
+          // Configurar juan@antpack.co como administrador automáticamente
+          if (u.email === 'juan@antpack.co') {
+            try {
+              const members = await base44.entities.TeamMember.filter({ user_email: u.email });
+              if (members.length === 0) {
+                await base44.entities.TeamMember.create({
+                  user_email: u.email,
+                  display_name: u.full_name || 'Juan',
+                  role: 'administrador',
+                  is_active: true
+                });
+              } else if (members[0].role !== 'administrador') {
+                await base44.entities.TeamMember.update(members[0].id, { role: 'administrador' });
+              }
+            } catch (error) {
+              console.error('Error setting admin role:', error);
             }
-          } catch (error) {
-            console.error('Error checking user:', error);
+          } else {
+            // Notificar nuevo usuario si no tiene TeamMember
+            try {
+              const members = await base44.entities.TeamMember.filter({ user_email: u.email });
+              if (members.length === 0) {
+                await base44.functions.invoke('notifyNewUser', {
+                  userEmail: u.email,
+                  userName: u.full_name
+                });
+              }
+            } catch (error) {
+              console.error('Error checking user:', error);
+            }
           }
         } else {
           setUser(null);
@@ -45,72 +64,103 @@ export default function Layout({ children, currentPageName }) {
     };
     loadUser();
   }, []);
-  
-  // Mostrar pantalla de login si no hay usuario
-  if (user === null) {
-    return <LoginScreen />;
-  }
-  
-  // Mostrar loading mientras verificamos autenticación
-  if (user === undefined) {
+
+  // Páginas públicas que no requieren autenticación
+  const isPublicPage = currentPageName === 'PublicTaskForm' || currentPageName === 'SharedAccess';
+  const isAuthPage = currentPageName === 'Login' || currentPageName === 'Register';
+
+  // Renderizar Login o Register si corresponde
+  if (currentPageName === 'Login') return <Login />;
+  if (currentPageName === 'Register') return <Register />;
+
+  // Redirigir al login si no hay usuario (excepto páginas públicas y auth apps)
+  if (user === null && !isPublicPage && !isAuthPage) {
+    base44.auth.redirectToLogin();
     return null;
   }
-  
+
+  // Mostrar loading mientras verificamos autenticación (excepto páginas públicas)
+  if (user === undefined && !isPublicPage && !isAuthPage) {
+    return null;
+  }
+
+  // Si es página pública, renderizar directamente sin layout
+  if (isPublicPage) {
+    return <div className="min-h-screen bg-[var(--bg-primary)]">{children}</div>;
+  }
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   // Si estamos en una página específica (no Dashboard), no mostrar el layout de navegación
   const isProjectPage = currentPageName === 'ProjectChecklist';
-  
+
   if (isProjectPage) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)]">
         <style>{`
           :root {
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-sans: Satoshi, sans-serif;
             --primary-magenta: #FF1B7E;
           }
           
-          /* Dark Mode */
-          [data-theme="dark"] {
-            --bg-primary: #ffffff;
+          /* Light Mode (default) */
+          [data-theme="light"] {
+            --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
-            --bg-tertiary: #f8f9fa;
-            --bg-hover: rgba(248, 249, 250, 0.8);
-            --text-primary: #000000;
-            --text-secondary: #52525b;
-            --text-tertiary: #71717a;
-            --border-primary: #e5e7eb;
-            --border-secondary: #d1d5db;
+            --bg-tertiary: #f5f5f5;
+            --bg-hover: #f8f8f8;
+            --text-primary: #171717;
+            --text-secondary: #525252;
+            --text-tertiary: #737373;
+            --border-primary: #e5e5e5;
+            --border-secondary: #d4d4d4;
             --shadow: rgba(0, 0, 0, 0.1);
-            --particle-opacity: 0.15;
+            --particle-opacity: 0.12;
             --particle-color: #1a1a1a;
           }
-          
-          /* Light Mode */
-          [data-theme="light"] {
-            --bg-primary: #ffffff;
+
+          /* Dark Mode */
+          [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #171717;
+            --bg-tertiary: #262626;
+            --bg-hover: #1f1f1f;
+            --text-primary: #fafafa;
+            --text-secondary: #a3a3a3;
+            --text-tertiary: #737373;
+            --border-primary: #262626;
+            --border-secondary: #404040;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --particle-opacity: 0.2;
+            --particle-color: white;
+          }
+
+          /* Fallback sin tema definido */
+          :root:not([data-theme]) {
+            --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
-            --bg-tertiary: #f8f9fa;
-            --bg-hover: rgba(248, 249, 250, 0.8);
-            --text-primary: #000000;
-            --text-secondary: #52525b;
-            --text-tertiary: #71717a;
-            --border-primary: #e5e7eb;
-            --border-secondary: #d1d5db;
+            --bg-tertiary: #f5f5f5;
+            --bg-hover: #f8f8f8;
+            --text-primary: #171717;
+            --text-secondary: #525252;
+            --text-tertiary: #737373;
+            --border-primary: #e5e5e5;
+            --border-secondary: #d4d4d4;
             --shadow: rgba(0, 0, 0, 0.1);
-            --particle-opacity: 0.15;
+            --particle-opacity: 0.12;
             --particle-color: #1a1a1a;
           }
           
           body {
-            font-family: var(--font-sans);
+            font-family: Satoshi, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background: var(--bg-primary);
             color: var(--text-primary);
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.2s ease, color 0.2s ease;
+            font-style: normal !important;
           }
           
           ::-webkit-scrollbar {
@@ -160,12 +210,12 @@ export default function Layout({ children, currentPageName }) {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
       <style>{`
         :root {
-          --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+          --font-sans: Satoshi, sans-serif;
           --primary-magenta: #FF1B7E;
         }
         
@@ -202,12 +252,18 @@ export default function Layout({ children, currentPageName }) {
         }
         
         body {
-          font-family: var(--font-sans);
+          font-family: Satoshi, var(--font-sans);
+          font-style: normal !important;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           background: var(--bg-primary);
           color: var(--text-primary);
           transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        * {
+          font-style: normal !important;
+          font-family: Satoshi, -apple-system, BlinkMacSystemFont, sans-serif !important;
         }
         
         ::-webkit-scrollbar {
@@ -253,21 +309,21 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       <div className="particle-bg" />
-      
+
       <div className="flex min-h-screen">
-        <Sidebar 
-          currentSection={currentSection} 
+        <Sidebar
+          currentSection={currentSection}
           onSectionChange={setCurrentSection}
           onAction={setSidebarAction}
         />
 
         <div className="flex-1 flex flex-col">
           {/* Top Bar */}
-          <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10">
-            <div className="flex items-center justify-end px-6 py-3 gap-4">
+          <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10 backdrop-blur-sm bg-opacity-95">
+            <div className="flex items-center justify-end px-6 py-3.5 gap-3">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-all duration-200 active:scale-95"
                 title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               >
                 {theme === 'dark' ? (
@@ -285,9 +341,9 @@ export default function Layout({ children, currentPageName }) {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
-            {React.cloneElement(children, { 
-              currentSection, 
+          <main className="flex-1 p-6 overflow-auto">
+            {React.cloneElement(children, {
+              currentSection,
               onSectionChange: setCurrentSection,
               sidebarAction,
               onActionHandled: () => setSidebarAction(null),

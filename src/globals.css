@@ -5,44 +5,52 @@ css
 
 @layer base {
   :root {
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-sans: Satoshi, sans-serif;
     --primary-magenta: #FF1B7E;
-  }
-
-  /* Dark Mode */
-  [data-theme="dark"] {
-    --bg-primary: #ffffff;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #f8f9fa;
-    --bg-hover: rgba(248, 249, 250, 0.8);
-    --bg-card: #ffffff;
-    --bg-input: #ffffff;
-    --text-primary: #000000;
-    --text-secondary: #52525b;
-    --text-tertiary: #71717a;
-    --text-muted: #a1a1aa;
-    --border-primary: #e5e7eb;
-    --border-secondary: #d1d5db;
-    --shadow: rgba(0, 0, 0, 0.1);
-    --ring: rgba(255, 27, 126, 0.15);
+    --primary-magenta-hover: #e6156e;
+    --primary-magenta-light: rgba(255, 27, 126, 0.08);
   }
 
   /* Light Mode */
   [data-theme="light"] {
-    --bg-primary: #ffffff;
+    --bg-primary: #fafafa;
     --bg-secondary: #ffffff;
-    --bg-tertiary: #f8f9fa;
-    --bg-hover: rgba(248, 249, 250, 0.8);
+    --bg-tertiary: #f5f5f5;
+    --bg-hover: #f8f8f8;
     --bg-card: #ffffff;
     --bg-input: #ffffff;
-    --text-primary: #000000;
-    --text-secondary: #52525b;
-    --text-tertiary: #71717a;
-    --text-muted: #a1a1aa;
-    --border-primary: #e5e7eb;
-    --border-secondary: #d1d5db;
-    --shadow: rgba(0, 0, 0, 0.1);
-    --ring: rgba(255, 27, 126, 0.15);
+    --text-primary: #171717;
+    --text-secondary: #525252;
+    --text-tertiary: #737373;
+    --text-muted: #a3a3a3;
+    --border-primary: #e5e5e5;
+    --border-secondary: #d4d4d4;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --ring: rgba(255, 27, 126, 0.2);
+  }
+
+  /* Dark Mode */
+  [data-theme="dark"] {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #171717;
+    --bg-tertiary: #262626;
+    --bg-hover: #1f1f1f;
+    --bg-card: #171717;
+    --bg-input: #262626;
+    --text-primary: #fafafa;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #737373;
+    --text-muted: #525252;
+    --border-primary: #262626;
+    --border-secondary: #404040;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+    --ring: rgba(255, 27, 126, 0.3);
   }
 
   * {
@@ -51,9 +59,29 @@ css
 
   body {
     @apply bg-[var(--bg-primary)] text-[var(--text-primary)];
-    font-family: var(--font-sans);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: Satoshi, var(--font-sans);
+    font-style: normal !important;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  * {
+    font-style: normal !important;
+    font-family: Satoshi, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  }
+
+  button, input, textarea, select {
+    font-family: Satoshi, -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-style: normal !important;
+  }
+
+  h1 { @apply text-3xl font-semibold tracking-tight; }
+  h2 { @apply text-2xl font-semibold tracking-tight; }
+  h3 { @apply text-xl font-semibold tracking-tight; }
+  h4 { @apply text-lg font-semibold; }
+  h5 { @apply text-base font-semibold; }
+  h6 { @apply text-sm font-semibold; }
 }
 
 @layer utilities {

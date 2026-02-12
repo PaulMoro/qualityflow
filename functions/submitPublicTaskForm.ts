@@ -37,6 +37,11 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Validar email del solicitante
+    if (!task_data.requester_email) {
+      return Response.json({ error: 'Email del solicitante es obligatorio' }, { status: 400 });
+    }
+
     // Crear la tarea
     const taskPayload = {
       project_id: formConfig.project_id,
@@ -45,32 +50,40 @@ Deno.serve(async (req) => {
       status: formConfig.default_status || 'todo',
       priority: task_data.priority,
       due_date: task_data.due_date,
+      requester_email: task_data.requester_email,
       custom_fields: task_data.custom_fields || {},
       order: 0
     };
 
     const newTask = await base44.asServiceRole.entities.Task.create(taskPayload);
+    console.log('✅ Task created:', newTask.id);
 
     // Enviar notificación por email si está configurado
-    if (formConfig.notification_email) {
+    if (formConfig.notification_emails && formConfig.notification_emails.length > 0) {
+      console.log('📧 Sending email to:', formConfig.notification_emails);
       try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: formConfig.notification_email,
-          subject: `Nueva tarea: ${task_data.title}`,
-          body: `
-            Se ha recibido una nueva tarea a través del formulario "${formConfig.form_title}".
-            
-            Título: ${task_data.title}
-            Descripción: ${task_data.description || 'Sin descripción'}
-            Prioridad: ${task_data.priority || 'Sin prioridad'}
-            
-            Ver en el sistema: ${Deno.env.get('APP_URL') || 'https://app.base44.com'}
-          `
-        });
+        for (const email of formConfig.notification_emails) {
+          const emailResult = await base44.asServiceRole.integrations.Core.SendEmail({
+            to: email,
+            subject: `Nueva tarea: ${task_data.title}`,
+            body: `Se ha recibido una nueva tarea a través del formulario "${formConfig.form_title}".
+
+Solicitante: ${task_data.requester_email}
+Título: ${task_data.title}
+Descripción: ${task_data.description || 'Sin descripción'}
+Prioridad: ${task_data.priority || 'Sin prioridad'}
+
+Ver tarea en el sistema.`
+          });
+          console.log('Email sent result:', emailResult);
+        }
+        console.log('✅ Email notifications sent');
       } catch (emailError) {
-        console.error('Error sending notification email:', emailError);
+        console.error('❌ Error sending notification email:', emailError.message, emailError.stack);
         // No fallar el request si el email falla
       }
+    } else {
+      console.log('ℹ️ No notification emails configured');
     }
 
     // Disparar reglas de notificación para task_created

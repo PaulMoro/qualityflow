@@ -1,0 +1,6 @@
+name,key,description,color,is_active,id,created_date,updated_date,created_by_id,is_sample
+"Desarrollo página web","desarrollo_página_web","","","true","6977718322d93aeed6b9ab7e","2026-01-26T13:52:03.410000","2026-01-26T13:52:03.410000","697385915ecde75ddf2df5d8","false"
+"prueba","prueba","","","true","6961975e60ef509f1f6eae06","2026-01-10T00:03:42.255000","2026-01-10T00:03:42.255000","6940670cff749d8ea0c5d536","false"
+"Prueba","prueba","","","true","694b308dfa52706a687decde","2025-12-24T00:15:09.894000","2025-12-24T00:15:09.894000","6940670cff749d8ea0c5d536","false"
+"Item global","item_global","","","true","694b2ecf6cdecaf99bc3906f","2025-12-24T00:07:43.246000","2025-12-24T00:07:43.246000","6940670cff749d8ea0c5d536","false"
+"Landing","landing","","","true","694b2a2a3f2c8b86dca5fd95","2025-12-23T23:47:54.164000","2025-12-23T23:47:54.164000","6940670cff749d8ea0c5d536","false"

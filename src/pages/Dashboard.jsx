@@ -15,7 +15,9 @@ import RoleSelector from '../components/team/RoleSelector';
 import ResourceOccupancy from '../components/resources/ResourceOccupancy';
 import GeneralSchedules from '../components/schedule/GeneralSchedules';
 import DashboardHome from '../components/dashboard/DashboardHome';
+import DashboardByRole from '../components/dashboard/DashboardByRole';
 import AdminPanel from '../components/admin/AdminPanel';
+import ReportsView from '../components/reports/ReportsView';
 
 
 export default function Dashboard({ currentSection = 'dashboard', onSectionChange, sidebarAction, onActionHandled, currentUser }) {
@@ -23,10 +25,21 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
-  
+
   const queryClient = useQueryClient();
   const user = currentUser;
-  
+
+  // Obtener TeamMember del usuario
+  const { data: teamMember } = useQuery({
+    queryKey: ['team-member', user?.email],
+    queryFn: async () => {
+      if (!user) return null;
+      const members = await base44.entities.TeamMember.filter({ user_email: user.email });
+      return members[0] || null;
+    },
+    enabled: !!user
+  });
+
   // Handle sidebar actions
   useEffect(() => {
     if (sidebarAction === 'create-project') {
@@ -34,57 +47,57 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       onActionHandled?.();
     }
   }, [sidebarAction, onActionHandled]);
-  
+
   useEffect(() => {
     if (userRole) {
       localStorage.setItem('userRole', userRole);
     }
   }, [userRole]);
-  
+
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: () => base44.entities.Project.list('-created_date')
   });
-  
+
   const [editingProject, setEditingProject] = useState(null);
-  
+
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // 1. Crear el proyecto
       const newProject = await base44.entities.Project.create(data);
-      
+
       // 2. Crear automáticamente configuración de tareas para este proyecto
       const { data: globalConfigs } = await queryClient.fetchQuery({
         queryKey: ['task-configurations'],
         queryFn: async () => {
           const allConfigs = await base44.entities.TaskConfiguration.list('-created_date');
-          return (allConfigs || []).filter(c => !c.project_id);
+          return (allConfigs || []).filter((c) => !c.project_id);
         }
       });
-      
+
       const globalConfig = globalConfigs?.[0];
-      
+
       // Crear config del proyecto basada en la global o default
       const projectConfig = {
         project_id: newProject.id,
         module_enabled: true,
         custom_statuses: [
-          { key: 'todo', label: 'Por hacer', color: 'gray', is_final: false, order: 0 },
-          { key: 'in_progress', label: 'En progreso', color: 'blue', is_final: false, order: 1 },
-          { key: 'completed', label: 'Finalizado', color: 'green', is_final: true, order: 2 }
-        ],
+        { key: 'todo', label: 'Por hacer', color: 'gray', is_final: false, order: 0 },
+        { key: 'in_progress', label: 'En progreso', color: 'blue', is_final: false, order: 1 },
+        { key: 'completed', label: 'Finalizado', color: 'green', is_final: true, order: 2 }],
+
         custom_priorities: [
-          { key: 'low', label: 'Baja', color: 'gray', order: 0 },
-          { key: 'medium', label: 'Media', color: 'yellow', order: 1 },
-          { key: 'high', label: 'Alta', color: 'red', order: 2 }
-        ],
+        { key: 'low', label: 'Baja', color: 'gray', order: 0 },
+        { key: 'medium', label: 'Media', color: 'yellow', order: 1 },
+        { key: 'high', label: 'Alta', color: 'red', order: 2 }],
+
         custom_fields: []
       };
-      
+
       console.log('🔧 Creando configuración de tareas para proyecto:', newProject.id, projectConfig);
       const createdConfig = await base44.entities.TaskConfiguration.create(projectConfig);
       console.log('✅ Configuración creada:', createdConfig);
-      
+
       return newProject;
     },
     onSuccess: (newProject) => {
@@ -94,7 +107,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       toast.success('✅ Proyecto creado con configuración de tareas');
     }
   });
-  
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Project.update(id, data),
     onSuccess: () => {
@@ -102,7 +115,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       setEditingProject(null);
     }
   });
-  
+
   const duplicateMutation = useMutation({
     mutationFn: async (project) => {
       const { id, created_date, updated_date, created_by, completion_percentage, critical_pending, risk_level, has_conflicts, ...projectData } = project;
@@ -113,7 +126,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         completion_percentage: 0,
         critical_pending: 0
       });
-      
+
       // Duplicar checklist items
       const items = await base44.entities.ChecklistItem.filter({ project_id: project.id });
       if (items.length > 0) {
@@ -124,14 +137,14 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         }));
         await base44.entities.ChecklistItem.bulkCreate(newItems);
       }
-      
+
       return newProject;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     }
   });
-  
+
   const deleteMutation = useMutation({
     mutationFn: async (projectId) => {
       // Eliminar tareas
@@ -139,25 +152,25 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       for (const task of tasks) {
         await base44.entities.Task.delete(task.id);
       }
-      
+
       // Eliminar configuración de tareas
       const configs = await base44.entities.TaskConfiguration.filter({ project_id: projectId });
       for (const config of configs) {
         await base44.entities.TaskConfiguration.delete(config.id);
       }
-      
+
       // Eliminar checklist items
       const items = await base44.entities.ChecklistItem.filter({ project_id: projectId });
       for (const item of items) {
         await base44.entities.ChecklistItem.delete(item.id);
       }
-      
+
       // Eliminar conflictos
       const conflicts = await base44.entities.Conflict.filter({ project_id: projectId });
       for (const conflict of conflicts) {
         await base44.entities.Conflict.delete(conflict.id);
       }
-      
+
       // Eliminar proyecto
       await base44.entities.Project.delete(projectId);
     },
@@ -171,26 +184,44 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       toast.error('❌ Error al eliminar el proyecto');
     }
   });
-  
-  const filteredProjects = projects.filter(p => {
+
+  const filteredProjects = projects.filter((p) => {
     const matchesSearch = p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         p.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    p.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-  
+
   const stats = {
     total: projects.length,
-    inProgress: projects.filter(p => p.status === 'in_progress').length,
-    blocked: projects.filter(p => p.status === 'blocked' || p.has_conflicts).length,
-    completed: projects.filter(p => p.status === 'completed').length
+    inProgress: projects.filter((p) => p.status === 'in_progress').length,
+    blocked: projects.filter((p) => p.status === 'blocked' || p.has_conflicts).length,
+    completed: projects.filter((p) => p.status === 'completed').length
   };
-  
+
   // Home Dashboard
   if (currentSection === 'dashboard') {
+    // Mostrar loading mientras se carga el TeamMember
+    if (user && !teamMember && isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF1B7E] mx-auto mb-4"></div>
+            <p className="text-[var(--text-secondary)]">Cargando dashboard...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // Si tiene TeamMember con rol, mostrar dashboard por perfil
+    if (teamMember?.role) {
+      return <DashboardByRole user={user} teamMember={teamMember} onSectionChange={onSectionChange} />;
+    }
+    
+    // Si no, mostrar dashboard general
     return <DashboardHome onNavigate={onSectionChange} />;
   }
-  
+
   // Vista de Proyectos por Área
   if (currentSection?.startsWith('area-')) {
     const areaKey = currentSection.replace('area-', '');
@@ -202,9 +233,9 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       'paid': 'Paid Media',
       'social': 'Social Media'
     };
-    
-    const areaProjects = projects.filter(p => p.applicable_areas?.includes(areaKey));
-    
+
+    const areaProjects = projects.filter((p) => p.applicable_areas?.includes(areaKey));
+
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
@@ -213,14 +244,14 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
           </h2>
         </div>
         
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl h-64 animate-pulse" />
-            ))}
-          </div>
-        ) : areaProjects.length === 0 ? (
-          <div className="text-center py-20">
+        {isLoading ?
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) =>
+          <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl h-64 animate-pulse" />
+          )}
+          </div> :
+        areaProjects.length === 0 ?
+        <div className="text-center py-20">
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
               <FolderKanban className="h-10 w-10 text-[var(--text-tertiary)]" />
             </div>
@@ -230,29 +261,29 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             <p className="text-[var(--text-secondary)] mb-6">
               Los proyectos con esta área aparecerán aquí
             </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          </div> :
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {areaProjects.map((project, index) => (
-                <ProjectCard 
-                  key={project.id} 
-                  project={project} 
-                  index={index}
-                  onEdit={setEditingProject}
-                  onDuplicate={(p) => duplicateMutation.mutate(p)}
-                  onDelete={(p) => {
-                    if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
-                      deleteMutation.mutate(p.id);
-                    }
-                  }}
-                />
-              ))}
+              {areaProjects.map((project, index) =>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              index={index}
+              onEdit={setEditingProject}
+              onDuplicate={(p) => duplicateMutation.mutate(p)}
+              onDelete={(p) => {
+                if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                  deleteMutation.mutate(p.id);
+                }
+              }} />
+
+            )}
             </AnimatePresence>
           </div>
-        )}
-      </div>
-    );
+        }
+      </div>);
+
   }
 
   // Vista de Cronogramas
@@ -263,8 +294,8 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
           <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Cronogramas Generales</h2>
         </div>
         <GeneralSchedules />
-      </div>
-    );
+      </div>);
+
   }
 
   // Vista de Ocupación de Recursos
@@ -275,8 +306,20 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
           <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Ocupación de Recursos</h2>
         </div>
         <ResourceOccupancy />
-      </div>
-    );
+      </div>);
+
+  }
+
+  // Vista de Reportes
+  if (currentSection === 'reports') {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Reportes</h2>
+        </div>
+        <ReportsView />
+      </div>);
+
   }
 
   // Vista de Proyectos
@@ -285,7 +328,7 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <RoleSelector value={userRole} onChange={setUserRole} />
-          <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
+          <Button onClick={() => setIsCreateOpen(true)} className="not-italic inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:shadow active:scale-[0.98] h-9 px-4 py-2 bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
             <Plus className="h-4 w-4 mr-2" />
             Nuevo Proyecto
           </Button>
@@ -295,10 +338,10 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
       <div>
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <motion.div 
+          <motion.div
             className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-[#FF1B7E]/30 transition-all"
-            whileHover={{ y: -4, scale: 1.02 }}
-          >
+            whileHover={{ y: -4, scale: 1.02 }}>
+
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[var(--bg-tertiary)] rounded-lg">
                 <LayoutGrid className="h-5 w-5 text-[var(--text-secondary)]" />
@@ -310,10 +353,10 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </div>
           </motion.div>
           
-          <motion.div 
+          <motion.div
             className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-[#FF1B7E]/30 transition-all"
-            whileHover={{ y: -4, scale: 1.02 }}
-          >
+            whileHover={{ y: -4, scale: 1.02 }}>
+
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#FF1B7E]/10 rounded-lg">
                 <Clock className="h-5 w-5 text-[#FF1B7E]" />
@@ -325,10 +368,10 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </div>
           </motion.div>
           
-          <motion.div 
+          <motion.div
             className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-red-500/30 transition-all"
-            whileHover={{ y: -4, scale: 1.02 }}
-          >
+            whileHover={{ y: -4, scale: 1.02 }}>
+
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-500/10 rounded-lg">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -340,10 +383,10 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
             </div>
           </motion.div>
           
-          <motion.div 
+          <motion.div
             className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-primary)] hover:border-green-500/30 transition-all"
-            whileHover={{ y: -4, scale: 1.02 }}
-          >
+            whileHover={{ y: -4, scale: 1.02 }}>
+
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-500/10 rounded-lg">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -365,8 +408,8 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
                 placeholder="Buscar proyectos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E] focus:ring-[var(--ring)]"
-              />
+                className="pl-9 bg-[var(--bg-input)] border-[var(--border-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#FF1B7E] focus:ring-[var(--ring)]" />
+
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-[var(--bg-primary)] border-[var(--border-primary)]">
@@ -381,14 +424,14 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
         </div>
         
         {/* Projects Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl h-64 animate-pulse" />
-            ))}
-          </div>
-        ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-20">
+        {isLoading ?
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) =>
+          <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl h-64 animate-pulse" />
+          )}
+          </div> :
+        filteredProjects.length === 0 ?
+        <div className="text-center py-20">
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
               <LayoutGrid className="h-10 w-10 text-[var(--text-tertiary)]" />
             </div>
@@ -396,61 +439,61 @@ export default function Dashboard({ currentSection = 'dashboard', onSectionChang
               {searchQuery || statusFilter !== 'all' ? 'No se encontraron proyectos' : 'Sin proyectos'}
             </h3>
             <p className="text-[var(--text-secondary)] mb-6">
-              {searchQuery || statusFilter !== 'all' 
-                ? 'Intenta con otros filtros de búsqueda' 
-                : 'Crea tu primer proyecto para comenzar'}
+              {searchQuery || statusFilter !== 'all' ?
+            'Intenta con otros filtros de búsqueda' :
+            'Crea tu primer proyecto para comenzar'}
             </p>
-            {!searchQuery && statusFilter === 'all' && (
-              <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
+            {!searchQuery && statusFilter === 'all' &&
+          <Button onClick={() => setIsCreateOpen(true)} className="bg-[#FF1B7E] hover:bg-[#e6156e] text-white shadow-lg shadow-[#FF1B7E]/20">
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Proyecto
               </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          }
+          </div> :
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredProjects.map((project, index) => (
-                <ProjectCard 
-                  key={project.id} 
-                  project={project} 
-                  index={index}
-                  onEdit={setEditingProject}
-                  onDuplicate={(p) => duplicateMutation.mutate(p)}
-                  onDelete={(p) => {
-                    if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
-                      deleteMutation.mutate(p.id);
-                    }
-                  }}
-                />
-              ))}
+              {filteredProjects.map((project, index) =>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              index={index}
+              onEdit={setEditingProject}
+              onDuplicate={(p) => duplicateMutation.mutate(p)}
+              onDelete={(p) => {
+                if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                  deleteMutation.mutate(p.id);
+                }
+              }} />
+
+            )}
             </AnimatePresence>
           </div>
-        )}
+        }
       </div>
       
       <CreateProjectModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onCreate={(data) => createMutation.mutate(data)}
-        isLoading={createMutation.isPending}
-      />
+        isLoading={createMutation.isPending} />
+
       
-      {editingProject && (
-        <EditProjectModal
-          isOpen={!!editingProject}
-          onClose={() => setEditingProject(null)}
-          onSave={(data) => updateMutation.mutate({ id: editingProject.id, data })}
-          onDelete={(id) => {
-            if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
-              deleteMutation.mutate(id);
-            }
-          }}
-          project={editingProject}
-          isLoading={updateMutation.isPending || deleteMutation.isPending}
-        />
-      )}
-      
-      </div>
-      );
+      {editingProject &&
+      <EditProjectModal
+        isOpen={!!editingProject}
+        onClose={() => setEditingProject(null)}
+        onSave={(data) => updateMutation.mutate({ id: editingProject.id, data })}
+        onDelete={(id) => {
+          if (confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) {
+            deleteMutation.mutate(id);
+          }
+        }}
+        project={editingProject}
+        isLoading={updateMutation.isPending || deleteMutation.isPending} />
+
       }
+      
+      </div>);
+
+}
